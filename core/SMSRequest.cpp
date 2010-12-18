@@ -379,13 +379,13 @@ namespace sms {
         }
         hex = _hex;
 
-        if ( ( utf != "1" ) && ( hex != "1" ) )
-            msg = StringCp1251ToUtf8(msg);
         state = checkMsg(_msg);
         if (state.getCode() != ERR_OK) {
             return;
         }
         msg = _msg;
+        if ( ( utf != "1" ) && ( hex != "1" ) )
+            msg = StringCp1251ToUtf8(msg);
 
         state = checkTid(_tid);
         if (state.getCode() != ERR_OK) {
