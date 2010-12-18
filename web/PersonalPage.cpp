@@ -92,7 +92,7 @@ void PersonalPage::onLogin() {
     if ( !authorized ) {
         failedMsgLabel->setHidden( false );
         passBox->setText( "" );
-        passBox->setFocus( true );
+        passBox->setFocus( );
     } else {
         root()->removeWidget( wLoginBlock );
         buildPersonalPage();
