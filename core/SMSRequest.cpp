@@ -437,7 +437,11 @@ namespace sms {
         }
         garant = _garant;
 
-        ( hex == "1" ) ? parts = 1: parts = utils::getGsmParts( msg );
+	try {
+	        ( hex == "1" ) ? parts = 1: parts = utils::getGsmParts( msg );
+	} catch ( ... ) {
+		state = SMSError(ERR_PARAM, "Invalid charset");
+	}
 
         id = genID();
         state = checkAuth(uname, pass);
@@ -535,11 +539,7 @@ namespace sms {
         } else {
 
             out << "&coding=2";
-            if (utf == "1") {
-                out << "&text=" << UrlEncodeString(StringUtf8ToUcs2be(msg));
-            } else {
-                out << "&text=" << UrlEncodeString(StringCp1251ToUcs2be(msg));
-            }
+            out << "&text=" << UrlEncodeString(StringUtf8ToUcs2be(msg));
         }
 
 
