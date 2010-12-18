@@ -441,6 +441,7 @@ namespace sms {
 	        ( hex == "1" ) ? parts = 1: parts = utils::getGsmParts( msg );
 	} catch ( ... ) {
 		state = SMSError(ERR_PARAM, "Invalid charset");
+		return;
 	}
 
         id = genID();
