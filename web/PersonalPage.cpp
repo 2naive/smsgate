@@ -159,7 +159,7 @@ PersonalPage::MsgidList PersonalPage::genMsgIds( const std::string& _idp, const 
         boost::posix_time::ptime begin( orig, boost::posix_time::hours(0) );
 
         boost::posix_time::time_period lv( begin, from );
-        req << "AND \"WHEN\" > '" << lv.length().total_seconds() << "' ";
+        req << "AND \"WHEN\" > '" << lv.length().total_seconds()-3*60*60 << "' ";
     }
 
     if ( !( _rdate == "Null" ) ) {
@@ -170,7 +170,7 @@ PersonalPage::MsgidList PersonalPage::genMsgIds( const std::string& _idp, const 
         boost::posix_time::ptime begin( orig, boost::posix_time::hours(0) );
 
         boost::posix_time::time_period rv( begin, to );
-        req << "AND \"WHEN\" < '" << rv.length().total_seconds() << "' ";
+        req << "AND \"WHEN\" < '" << rv.length().total_seconds()-3*60*60 << "' ";
     }
 
 
@@ -238,7 +238,7 @@ PersonalPage::ReqResp PersonalPage::genReq( const MsgidList& list, int status ) 
             row.push_back((*dbr)[0].as<string>());
             row.push_back(it->second);
             boost::gregorian::date orig( 1970, boost::gregorian::Jan, 1 );
-            boost::posix_time::ptime dt( orig, boost::posix_time::seconds( (*dbr)[1].as<long>() ) );
+            boost::posix_time::ptime dt( orig, boost::posix_time::seconds( (*dbr)[1].as<long>()+3*60*60 ) );
 
             row.push_back( boost::posix_time::to_simple_string(dt) );
             row.push_back( (*dbr)[2].as<std::string>() );
