@@ -432,7 +432,7 @@ void RequestTracker::parseMessage2kannelEvent( SMSRequest::PTR req, SMSMessage::
         }
         op_queue.push(SMSOperation::create<OP_NewHistoryElement > (std::make_pair(
                           msg->getID(),
-                          SMSMessage::HistoryElement(1, 1, SMSMessage::Status::ST_REJECTED, gates, now.sec)),
+                          SMSMessage::HistoryElement(2, 1, SMSMessage::Status::ST_REJECTED, gates, now.sec)),
                           idp, ma_p, OP_NewHistoryElementP ),
                           ma_p, OP_NewHistoryElementP );
         Logger::get_mutable_instance().smslogerr( out.str() );
@@ -471,7 +471,7 @@ void RequestTracker::parseNewHistoryElement( SMSMessage::ID msg_id, SMSMessage::
         msg->addHistoryElement( element );
 
         if ( msg->getStatus() < element.op_result ) {
-            if ( ( msg->getStatus() != SMSMessage::Status::ST_REJECTED ) || ( element.gateway.c_str()[0] == '[' ) ) {
+            if ( ( msg->getStatus() != SMSMessage::Status::ST_REJECTED ) || ( element.op_code == 2 ) ) {
                 msg->setStatus( element.op_result );
             }
 
