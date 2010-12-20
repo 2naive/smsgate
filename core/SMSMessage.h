@@ -112,6 +112,10 @@ namespace sms {
                 return ( priority(value) == priority(r.value));
             }
 
+            bool operator!=(const Status& r) const {
+                return ( priority(value) == priority(r.value));
+            }
+
         private:
             __STATUS value;
 
