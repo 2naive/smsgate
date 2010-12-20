@@ -352,7 +352,7 @@ void RequestTracker::parseMarkUndeliveredEvent( SMSRequest::PTR req, SMSMessage:
         }
         op_queue.push(SMSOperation::create<OP_NewHistoryElement > (std::make_pair(
                           msg->getID(),
-                          SMSMessage::HistoryElement(1, 1, SMSMessage::Status::ST_NOT_DELIVERED, gates, now.sec)),
+                          SMSMessage::HistoryElement(1, 1, SMSMessage::Status::ST_EXPIRED, gates, now.sec)),
                           idp, ma_p, OP_NewHistoryElementP ),
                           ma_p, OP_NewHistoryElementP );
     }
@@ -432,7 +432,7 @@ void RequestTracker::parseMessage2kannelEvent( SMSRequest::PTR req, SMSMessage::
         }
         op_queue.push(SMSOperation::create<OP_NewHistoryElement > (std::make_pair(
                           msg->getID(),
-                          SMSMessage::HistoryElement(1, 1, SMSMessage::Status::ST_NOT_DELIVERED, gates, now.sec)),
+                          SMSMessage::HistoryElement(1, 1, SMSMessage::Status::ST_REJECTED, gates, now.sec)),
                           idp, ma_p, OP_NewHistoryElementP ),
                           ma_p, OP_NewHistoryElementP );
         Logger::get_mutable_instance().smslogerr( out.str() );
