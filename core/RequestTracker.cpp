@@ -281,7 +281,7 @@ void RequestTracker::parseCheckDeliveryEvent( SMSRequest::PTR req, SMSMessage::I
     << msg->getID().to_str() << " "
     << "status=" << msg->getStatus()() << " ";
 
-    if ( msg->getStatus() < SMSMessage::Status::ST_BUFFERED ) {
+    if ( msg->getStatus()() < SMSMessage::Status( SMSMessage::Status::ST_BUFFERED )() ) {
         out << "Final status has not been reached; resending; ";
         op_queue.push( SMSOperation::create<OP_SendMessage>( std::make_pair( req, msgid ), idp, ma_p, OP_SendMessageP ), ma_p, OP_SendMessageP );
     }
