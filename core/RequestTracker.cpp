@@ -472,8 +472,6 @@ void RequestTracker::parseNewHistoryElement( SMSMessage::ID msg_id, SMSMessage::
 
         if ( msg->getStatus() < element.op_result ) {
             msg->setStatus( element.op_result );
-            if ( !req->tid.empty() )
-                op_queue.push( SMSOperation::create<OP_DeliveryNotify>( std::make_pair( req, msg_id ), idp, ma_p, OP_DeliveryNotifyP ), ma_p, OP_DeliveryNotifyP );
 
             out << "updated";
             //TODO

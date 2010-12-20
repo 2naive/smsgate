@@ -119,8 +119,6 @@ namespace sms {
                 switch (_value) {
                 case ST_UNKNOWN:
                     return -1;
-                case ST_REJECTED:
-                    return 0;
                 case ST_PREPARING:
                     return 10;
                 case ST_BUFFERED:
@@ -131,8 +129,10 @@ namespace sms {
                     return 100;
                 case ST_NOT_DELIVERED:
                     return 99;
-                case ST_EXPIRED:
+                case ST_REJECTED:
                     return 98;
+                case ST_EXPIRED:
+                    return 97;
                 }
                 return 0;
             }
