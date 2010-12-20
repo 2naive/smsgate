@@ -245,6 +245,16 @@ PersonalPage::ReqResp PersonalPage::genReq( const MsgidList& list, int status ) 
             int statusid;
 
             switch ( (*dbr)[3].as<int>() ) {
+            case -3:
+                if ( status == 1 )
+                    continue;
+                row.push_back( "Неверный номер" );
+                break;
+            case -2:
+                if ( status == 1 )
+                    continue;
+                row.push_back( "Таймаут" );
+                break;
             case -1:
                 if ( status == 1 )
                     continue;
