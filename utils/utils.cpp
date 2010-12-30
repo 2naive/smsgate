@@ -127,10 +127,10 @@ namespace sms {
         std::string StringRecodeFromTo(std::string src, std::string from, std::string to) throw ( ParamError) {
             string res = src;
             int err;
-            size_t srcsize = src.length() + 1;
+            size_t srcsize = src.length();
             size_t dstsize = srcsize * 3;
             size_t origdst = dstsize;
-            char* srcbuf = new char[ srcsize ];
+            char* srcbuf = new char[ srcsize+1 ];
             char* destbuf = new char[ dstsize ];
             strcpy(srcbuf, src.c_str());
 
