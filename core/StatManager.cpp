@@ -305,7 +305,7 @@ namespace sms {
                 std::ostringstream req_jane, req_view;
 
                 req_view        << "create or replace temp view idlist as "
-                                << "select * from message_status where NOW \"STATUS\"=-3 ";
+                                << "select * from message_status where \"STATUS\"=-3 ";
                 if ( !cname.empty() )
                     req_view    << "AND \"COUNTRY\"='"<< cname <<"' ";
                 if ( !opname.empty() )
