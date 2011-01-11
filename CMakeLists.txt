@@ -53,6 +53,11 @@ set( smsgate_SRCS ${smsgate_SRCS} core/SMPPGateFilterParser.h core/SMPPGateFilte
 set( smsgate_SRCS ${smsgate_SRCS} core/SMSMessage.h          core/SMSMessage.cpp )
 set( smsgate_SRCS ${smsgate_SRCS} core/SMSRequest.h          core/SMSRequest.cpp )
 set( smsgate_SRCS ${smsgate_SRCS} core/StatManager.h         core/StatManager.cpp )
+set( smsgate_SRCS ${smsgate_SRCS} core/Tariff.h              core/Tariff.cpp )
+
+set( thelper_SRCS ${thelper_SRCS} core/Tariff.h              core/Tariff.cpp )
+set( thelper_SRCS ${thelper_SRCS} utils/utils.h              utils/utils.cpp )
+
 
 set( smsgate_linked_libs wt wthttp curl pqxx boost_serialization)
 if ( ${CMAKE_SYSTEM_NAME} MATCHES FreeBSD )
@@ -61,6 +66,9 @@ endif ( ${CMAKE_SYSTEM_NAME} MATCHES FreeBSD )
 
 add_executable(smsgate ${smsgate_SRCS} smsgate.cpp)
 target_link_libraries(smsgate ${smsgate_linked_libs})
+
+add_executable(thelper ${thelper_SRCS} thelper.cpp)
+target_link_libraries(thelper ${smsgate_linked_libs})
 
 #set( pgtest_SRCS ${pgtest_SRCS} PGSql.h               PGSql.cpp )
 #set( pgtest_linked_libs pqxx boost_thread-mt )
