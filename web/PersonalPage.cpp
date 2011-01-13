@@ -272,7 +272,7 @@ PersonalPage::ReqResp PersonalPage::genReq( const MsgidList& list, int status ) 
                 row.push_back( "В процессе доставки" );
             }
             try {
-                PartnerInfo p = PartnerManager::get_mutable_instance().findByName( (*dbr)[0].as<string>() );
+                PartnerInfo p = PartnerManager::get_mutable_instance().findById( (*dbr)[0].as<string>() );
                 SMSMessage::PTR msg = SMSMessageManager::get_mutable_instance().loadMessage( it->first );
                 float price = p.tariff.costs( msg->getMsgClass().country, msg->getMsgClass().opcode );
                 row.push_back( boost::lexical_cast< string >( price ) );
