@@ -335,7 +335,7 @@ void PersonalPage::onReportGenerate() {
             //tbl->elementAt( i+2, 3 )->addWidget( new WText( req[i][4] ) );
             tr = new WInfoText( WString::fromUTF8(req[i][5]) );
             tbl->elementAt( i+2, 4 )->addWidget( tr );
-            tbl->elementAt( i+2, 4 )->setColumnSpan( 2 );
+            //tbl->elementAt( i+2, 4 )->setColumnSpan( 2 );
 
             tbl->elementAt( i+2, 5 )->addWidget( new WText( WString::fromUTF8(req[i][6] )) );
 
