@@ -275,7 +275,7 @@ PersonalPage::ReqResp PersonalPage::genReq( const MsgidList& list, int status ) 
                 PartnerInfo p = PartnerManager::get_mutable_instance().findById( (*dbr)[0].as<string>() );
                 SMSMessage::PTR msg = SMSMessageManager::get_mutable_instance().loadMessage( it->first );
                 float price = p.tariff.costs( msg->getMsgClass().country, msg->getMsgClass().opcode );
-                row.push_back( boost::lexical_cast< string >( floor( price * 100 )/100 ) );
+                row.push_back( boost::lexical_cast< string >( int(floor( price * 100 )) / 100) + string(".") +  boost::lexical_cast< string >( int(floor( price * 100 )) % 100 ) );
             } catch ( std::exception& err ) {
                 row.push_back( "1.21" );
                 Logger::get_mutable_instance().smslogwarn( err.what() );
