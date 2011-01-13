@@ -75,10 +75,9 @@ void RequestTracker::markUndelivered() {
         std::ostringstream r;
 
         r       << "UPDATE message_status "
-                << "SET \"STATUS\"='-1' "
+                << "SET \"STATUS\"='" << SMSMessage::Status::ST_NOT_DELIVERED << "' "
                 << "WHERE \"WHEN\"<='" << now.sec - 24*60*60 << "' "
-                << "AND NOT \"STATUS\"='-1' "
-                << "AND NOT \"STATUS\"='0';";
+                << "AND \"STATUS\">'0';";
 
         PGSql::ConnectionHolder cHold( db );
         ConnectionPTR conn = cHold.get();
