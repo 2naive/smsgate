@@ -127,7 +127,7 @@ void Tariff::addFilterCountryOperator( std::string cname, std::string opcode, fl
 Tariff Tariff::buildFromFile( const std::string& filename ) {
     std::ifstream ifs( filename.c_str() );
     if ( !ifs.good() )
-        throw std::runtime_error( "Cannot deserialize tariff" );;
+        throw std::runtime_error( string( "Cannot open tariff file: " ) + filename );;
     try {
         Tariff t;
         boost::archive::xml_iarchive ia( ifs );
@@ -135,8 +135,8 @@ Tariff Tariff::buildFromFile( const std::string& filename ) {
         t.rebuildBases();
 
         return t;
-    } catch (...) {
-        throw std::runtime_error( "Cannot deserialize tariff" );
+    } catch ( std::exception& err ) {
+        throw std::runtime_error( string( "Cannot deserialize tariff[" ) + filename + string( "]: " ) + err.what() );
     }
 }
 
