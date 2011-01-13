@@ -276,8 +276,9 @@ PersonalPage::ReqResp PersonalPage::genReq( const MsgidList& list, int status ) 
                 SMSMessage::PTR msg = SMSMessageManager::get_mutable_instance().loadMessage( it->first );
                 float price = p.tariff.costs( msg->getMsgClass().country, msg->getMsgClass().opcode );
                 row.push_back( boost::lexical_cast< string >( price ) );
-             } catch ( ... ) {
+            } catch ( std::exception& err ) {
                 row.push_back( "Неизвестно" );
+                Logger::get_mutable_instance().smslogwarn( err.what() );
             }
 
             r.push_back(row);

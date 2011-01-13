@@ -60,7 +60,9 @@ struct PartnerInfo {
         this->text = text;
         try {
             this->tariff = Tariff::buildFromFile( tariff );
-        } catch ( ... ) {}
+        } catch ( std::exception& err ) {
+            Logger::get_mutable_instance().smslogerr( err.what() );
+        }
 
         this->pBalance = pBalance;
         this->pCredit = pCredit;
