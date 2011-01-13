@@ -129,14 +129,15 @@ void PersonalPage::buildPersonalPage( ) {
     tbl->elementAt( 0, 2 )->addWidget( date_to );
     tbl->elementAt( 0, 3 )->addWidget( text );
     tbl->elementAt( 0, 4 )->addWidget( status );
-    tbl->elementAt( 0, 5 )->addWidget( reportbtn );
+    tbl->elementAt( 0, 6 )->addWidget( reportbtn );
 
     tbl->elementAt( 1, 0 )->addWidget( new WLabel(WString::fromUTF8("IDP")) );
     tbl->elementAt( 1, 1 )->addWidget( new WLabel(WString::fromUTF8("Телефон")) );
     tbl->elementAt( 1, 2 )->addWidget( new WLabel(WString::fromUTF8("Дата")) );
     tbl->elementAt( 1, 3 )->addWidget( new WLabel(WString::fromUTF8("Текст")) );
     tbl->elementAt( 1, 4 )->addWidget( new WLabel(WString::fromUTF8("Статус")) );
-    tbl->elementAt( 1, 5 )->addWidget( reportstatus );
+    tbl->elementAt( 1, 5 )->addWidget( new WLabel(WString::fromUTF8("Цена")) );
+    tbl->elementAt( 1, 6 )->addWidget( reportstatus );
 
     root()->addWidget( tbl );
 
@@ -270,6 +271,15 @@ PersonalPage::ReqResp PersonalPage::genReq( const MsgidList& list, int status ) 
                     continue;
                 row.push_back( "В процессе доставки" );
             }
+            try {
+                PartnerInfo p = PartnerManager::get_mutable_instance().findById( (*dbr)[0].as<string>() );
+                SMSMessage::PTR msg = SMSMessageManager::get_mutable_instance().loadMessage( it->first );
+                float price = p.tariff.costs( msg->getMsgClass().country, msg->getMsgClass().opcode );
+                row.push_back( boost::lexical_cast< string >( int(floor( price * 100 )) / 100) + string(".") +  boost::lexical_cast< string >( int(floor( price * 100 )) % 100 ) );
+            } catch ( std::exception& err ) {
+                row.push_back( "1.21" );
+                Logger::get_mutable_instance().smslogwarn( err.what() );
+            }
 
             r.push_back(row);
         }
@@ -326,7 +336,14 @@ void PersonalPage::onReportGenerate() {
             //tbl->elementAt( i+2, 3 )->addWidget( new WText( req[i][4] ) );
             tr = new WInfoText( WString::fromUTF8(req[i][5]) );
             tbl->elementAt( i+2, 4 )->addWidget( tr );
-            tbl->elementAt( i+2, 4 )->setColumnSpan( 2 );
+            //tbl->elementAt( i+2, 4 )->setColumnSpan( 2 );
+
+            if ( req[i][5] == "Неверный номер" ) {
+                tbl->elementAt( i+2, 5 )->addWidget( new WText( "0.00" ) );
+            } else {
+                tbl->elementAt( i+2, 5 )->addWidget( new WText( WString::fromUTF8(req[i][6] )) );
+            }
+
         }
     } catch ( PGBrokenConnection& err ) {
         reportbtn->enable();
