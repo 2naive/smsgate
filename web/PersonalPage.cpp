@@ -338,7 +338,11 @@ void PersonalPage::onReportGenerate() {
             tbl->elementAt( i+2, 4 )->addWidget( tr );
             //tbl->elementAt( i+2, 4 )->setColumnSpan( 2 );
 
-            tbl->elementAt( i+2, 5 )->addWidget( new WText( WString::fromUTF8(req[i][6] )) );
+            if ( req[i][5] == "Неверный номер" ) {
+                tbl->elementAt( i+2, 5 )->addWidget( new WText( "0.00" ) );
+            } else {
+                tbl->elementAt( i+2, 5 )->addWidget( new WText( WString::fromUTF8(req[i][6] )) );
+            }
 
         }
     } catch ( PGBrokenConnection& err ) {
