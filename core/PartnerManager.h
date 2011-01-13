@@ -12,6 +12,7 @@
 #include "ConfigManager.h"
 #include "Logger.h"
 #include "Error.h"
+#include "Tariff.h"
 
 using std::string;
 using namespace boost::multi_index;
@@ -26,6 +27,9 @@ struct PartnerInfo {
     string pId;
     string pCName;
     string pManager;
+    string phone;
+    string text;
+    Tariff tariff;
     double pBalance;
     double pCredit;
     int pLimit;
@@ -33,12 +37,31 @@ struct PartnerInfo {
     bool pIsTrial;
     int pPriority;
 
-    PartnerInfo( string pName, string pPass, string pId, string pCName, string pManager, double pBalance, double pCredit, int pLimit, bool pPostPay, bool pIsTrial, int pPriority ) {
+    PartnerInfo(string pName,
+                string pPass,
+                string pId,
+                string pCName,
+                string pManager,
+                string phone,
+                string text,
+                string tariff,
+                double pBalance,
+                double pCredit,
+                int pLimit,
+                bool pPostPay,
+                bool pIsTrial,
+                int pPriority ): tariff( Tariff::buildEmpty( pId ) ) {
         this->pName = pName;
         this->pPass = pPass;
         this->pId = pId;
         this->pCName = pCName;
         this->pManager = pManager;
+        this->phone = phone;
+        this->text = text;
+        try {
+            this->tariff = Tariff::buildFromFile( tariff );
+        } catch ( ... ) {}
+
         this->pBalance = pBalance;
         this->pCredit = pCredit;
         this->pLimit = pLimit;
