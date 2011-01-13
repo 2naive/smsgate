@@ -184,7 +184,7 @@ PersonalPage::MsgidList PersonalPage::genMsgIds( const std::string& _idp, const 
         req << "AND \"PID\"='" << tr->esc( _idp ) << "' ";
     }
 
-    req << "ORDER BY \"WHEN\" DESC limit 1000; ";
+    req << "ORDER BY \"WHEN\" DESC limit 20000; ";
 
     std::string a = req.str();
 
