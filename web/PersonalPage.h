@@ -72,6 +72,26 @@ private:
     }
 };
 
+class WScrollTable: public Wt::WTable {
+public:
+    WScrollTable( WContainerWidget *parent=0 ): WTable( parent ) {}
+    ~WScrollTable();
+};
+
+template < class RowType >
+class WDataSource {
+public:
+    typedef std::vector< RowType > RowList;
+    int getTotalLines();
+
+    RowList& getLineRange( int lnl, int lnr );
+    void releaseCache();
+private:
+    virtual void cacheFill( int lnl, int lnr ) = 0;
+
+    RowList cache;
+    int __lines;
+};
 
 class PersonalPage : public WApplication {
 public:
