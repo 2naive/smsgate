@@ -42,7 +42,6 @@ namespace sms {
         std::string opregion;
 
         typedef std::map< std::string, std::string > CostMapT;
-        CostMapT costs;
 
         OpInfo( int ccode,
                 std::string clcode,

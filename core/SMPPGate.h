@@ -16,6 +16,7 @@
 #include "SMSMessage.h"
 #include "SMSRequest.h"
 #include "HttpClient.h"
+#include "Tariff.h"
 
 namespace sms {
     using std::string;
@@ -41,6 +42,7 @@ namespace sms {
         bool setBusy( bool what ) { _busy = what; }
         string gateRule() { return _gateRule; }
         bool optionExists( string oName ) { return ( _gateProperties.find( oName ) != _gateProperties.end() ); }
+        const Tariff& getTariff() { return tariff; }
         template < class T >
         T getOption( string oName );
         map< string, string > gateProperties() { return _gateProperties; }
@@ -60,6 +62,7 @@ namespace sms {
         bool _suspended;
         bool _busy;
         map< string, string > _gateProperties;
+        Tariff tariff;
 
     };
 

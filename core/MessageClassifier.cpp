@@ -52,7 +52,6 @@ namespace sms {
             inf.opcode = to_vec[3];
             inf.opname = to_vec[4];
             inf.opregion = to_vec[5];
-            if ( to_vec.size() >= 8 ) utils::splitArgs( to_vec[7], inf.costs );
 
             dict.insert( std::make_pair( to_vec[0], inf ) );
 
@@ -108,11 +107,6 @@ namespace sms {
                 if ( dict.count( s ) == 1) {
                     OpInfo inf = dict.equal_range(s).first->second;
                     int j = i-1;
-                    while ( inf.costs.empty() && ( j > 0 ) ) {
-                        std::string s = phone.substr(0, j );
-                        j--;
-                        inf.costs = getMsgClass( s ).costs;
-                    }
                     return inf;
                 }
 
@@ -135,12 +129,6 @@ namespace sms {
                 }
 
 		int j = i-1;
-                while ( inf.costs.empty() && ( j > 0 ) ) {
-                    std::string s = phone.substr(0, j );
-                    j--;
-                    inf.costs = getMsgClass( s ).costs;
-                }
-
                 return inf;
             }
         }

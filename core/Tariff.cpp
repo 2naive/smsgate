@@ -151,11 +151,11 @@ void Tariff::saveToFile( const std::string& filename ) {
 }
 
 
-float Tariff::costs( sms::OpInfo& op ) {
+float Tariff::costs( sms::OpInfo& op ) const {
     return costs( op.country, op.opcode );
 }
 
-float Tariff::costs( std::string cname, std::string opcode ) {
+float Tariff::costs( std::string cname, std::string opcode ) const {
     float res;
     if ( searchForCountryOperatorPrice( cname, opcode, res ) )
         return res;
@@ -192,8 +192,8 @@ float Tariff::costs( std::string cname, std::string opcode ) {
     }
 }
 
-bool Tariff::searchForCountryPrice( std::string cname, float& res ) {
-    std::list< std::pair< std::string, float > >::iterator it;
+bool Tariff::searchForCountryPrice( std::string cname, float& res ) const {
+    std::list< std::pair< std::string, float > >::const_iterator it;
     for ( it = CFilterList.begin(); it != CFilterList.end(); it++ ) {
         std::string _cname = it->first;
         float _res = it->second;
@@ -206,8 +206,8 @@ bool Tariff::searchForCountryPrice( std::string cname, float& res ) {
     return false;
 }
 
-bool Tariff::searchForCountryOperatorPrice( std::string cname, std::string opcode, float& res ) {
-    std::list< std::pair< std::pair< std::string, std::string >, float > >::iterator it;
+bool Tariff::searchForCountryOperatorPrice( std::string cname, std::string opcode, float& res ) const {
+    std::list< std::pair< std::pair< std::string, std::string >, float > >::const_iterator it;
     for ( it = COFilterList.begin(); it != COFilterList.end(); it++ ) {
         std::string _cname = it->first.first;
         std::string _opcode = it->first.second;
@@ -221,7 +221,7 @@ bool Tariff::searchForCountryOperatorPrice( std::string cname, std::string opcod
     return false;
 }
 
-Tariff& Tariff::tariffByID( ID id ) {
+const Tariff& Tariff::tariffByID( ID id ) const {
     if ( tlist.find( id ) == tlist.end() )
         throw std::runtime_error( "Entry not found in tariff" );
 

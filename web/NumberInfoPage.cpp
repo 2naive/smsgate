@@ -1,6 +1,7 @@
 #include "NumberInfoPage.h"
 #include "MessageClassifier.h"
 #include "StatManager.h"
+#include "SMPPGateManager.h"
 
 #include <boost/lexical_cast.hpp>
 
@@ -70,17 +71,21 @@ void NumberInfoPage::onPhonePrintInfo() {
     out << "Код оператора: " <<  msg.opcode << std::endl;
     out << "Регион: " << msg.opregion << std::endl << std::endl;
 
+    SMPPGateManager::SMPPGatesMap gm = SMPPGateManager::Instance()->getGates();
+
     sms::StatManager::TCountryInfoTable tcd = sms::StatManager::Instance()->getCountryInfoLastUpdate();
 
-    if ( msg.costs.empty() ) {
-        out << "Информация по ценам недоступна" << std::endl;
-    } else {
-
+    {
         out << "Информация по ценам:" << std::endl;
-        for ( sms::OpInfo::CostMapT::iterator it = msg.costs.begin(); it != msg.costs.end(); it++ ) {
+        for ( SMPPGateManager::SMPPGatesMap::iterator it = gm.begin(); it != gm.end(); it++ ) {
             sms::CountryInfo msgci;
-            bool found;
-            double c = boost::lexical_cast<double>( it->second );
+            double c;
+            try {
+                c = it->second.getTariff().costs( msg);
+            } catch ( ... ) {
+                c = -1;
+            }
+            bool found = false;
             for ( int i = 0; i < tcd.size(); i++ ) {
                 for ( int j = 0; j < tcd[i].size(); j++ ) {
                     sms::CountryInfo ci = tcd[i][j];

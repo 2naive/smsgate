@@ -11,16 +11,14 @@
 
 namespace sms {
 
-    SMPPGate::SMPPGate( string gName, string uName, string uPass, int gPort, int gPriority, bool gEnabled, string gRule, string gOptions ) {
-        //out_queue = TOutBoxQueuePTR( new TOutBoxQueue() );
+    SMPPGate::SMPPGate( string gName, string uName, string uPass, int gPort, int gPriority, bool gEnabled, string gRule, string gOptions ): tariff( Tariff::buildEmpty( gName ) ) {
         reinit( gName, uName, uPass, gPort, gPriority, gEnabled, gRule, gOptions );
     }
 
-    SMPPGate::SMPPGate() {
+    SMPPGate::SMPPGate(): tariff( Tariff::buildEmpty( "" ) ) {
         this->_enabled = true;
         _suspended = false;
         _busy = false;
-        //out_queue = TOutBoxQueuePTR( new TOutBoxQueue() );
     }
 
     void SMPPGate::reinit(string gName, string uName, string uPass, int gPort, int gPriority, bool gEnabled, string gRule, string gOptions) {
@@ -34,6 +32,7 @@ namespace sms {
         utils::splitArgs( gOptions, this->_gateProperties );
         _suspended = false;
         _busy = false;
+        tariff = Tariff::buildEmpty( gName );
 
         int limit = -1;
         int interval = 10;
@@ -43,7 +42,13 @@ namespace sms {
         if ( optionExists( "Interval" ) )
             interval = getOption<int>( "Interval" );
 
-        //out_queue->setLimit( limit, interval );
+        if ( optionExists( "Tariff" ) ) {
+            try {
+                this->tariff = Tariff::buildFromFile( getOption<std::string>("Tariff") );
+            } catch ( std::exception& err ) {
+                Logger::get_mutable_instance().smslogerr( err.what() );
+            }
+        }
     }
 
     void SMPPGate::reinit(string gName, string uName, string uPass, int gPort, int gPriority, bool gEnabled, string gRule, map< string, string > gOptions) {
@@ -57,6 +62,7 @@ namespace sms {
         this->_gateProperties = gOptions;
         _suspended = false;
         _busy = false;
+        tariff = Tariff::buildEmpty( gName );
 
         int limit = -1;
         int interval = 10;
@@ -66,7 +72,13 @@ namespace sms {
         if ( optionExists( "Interval" ) )
             interval = getOption<int>( "Interval" );
 
-        //out_queue->setLimit( limit, interval );
+        if ( optionExists( "Tariff" ) ) {
+            try {
+                this->tariff = Tariff::buildFromFile( getOption<std::string>("Tariff") );
+            } catch ( std::exception& err ) {
+                Logger::get_mutable_instance().smslogerr( err.what() );
+            }
+        }
     }
 
     SMPPGate SMPPGate::loadFromDb( PGSql& db, string gName ) {

@@ -36,8 +36,8 @@ public:
 
     void addFilterCountry( std::string cname, float price );
     void addFilterCountryOperator( std::string cname, std::string opcode, float price );
-    float costs( sms::OpInfo& op );
-    float costs( std::string cname, std::string opcode );
+    float costs( sms::OpInfo& op ) const;
+    float costs( std::string cname, std::string opcode ) const;
 
     template<class Archive>
         void serialize(Archive & ar, const unsigned int) {
@@ -61,10 +61,10 @@ private:
 
     Tariff();
     Tariff( ID name, int tarifftype );
-    bool searchForCountryPrice( std::string cname, float& res );
-    bool searchForCountryOperatorPrice( std::string cname, std::string opcode, float& res );
+    bool searchForCountryPrice( std::string cname, float& res ) const;
+    bool searchForCountryOperatorPrice( std::string cname, std::string opcode, float& res ) const;
     void rebuildBases();
-    Tariff& tariffByID( ID id );
+    const Tariff& tariffByID( ID id ) const;
 };
 
 #endif // TARIFF_H

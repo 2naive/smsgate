@@ -343,10 +343,8 @@ namespace sms {
             double quality = double(msgci.deliveres) / ( msgci.requests == 0 ? 1: msgci.requests );
             double c;
             try {
-                if ( msg.costs.find( gname ) != msg.costs.end() )
-                    c = boost::lexical_cast<double>( msg.costs[ gname ] );
-                else
-                    c = 10;
+                SMPPGateManager::SMPPGatesMap gm = SMPPGateManager::Instance()->getGates();
+                c = gm[ gname ].getTariff().costs( msg );
             } catch (...) {
                 c = 10;
             }
