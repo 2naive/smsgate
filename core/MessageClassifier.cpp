@@ -106,7 +106,6 @@ namespace sms {
             if ( dict.find( s ) != dict.end() ) {
                 if ( dict.count( s ) == 1) {
                     OpInfo inf = dict.equal_range(s).first->second;
-                    int j = i-1;
                     return inf;
                 }
 
@@ -128,7 +127,6 @@ namespace sms {
                     }
                 }
 
-		int j = i-1;
                 return inf;
             }
         }
