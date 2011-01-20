@@ -6,7 +6,12 @@
 using namespace std;
 
 void print_usage( ) {
-    cerr << "Invalid usage" << endl;
+    cerr << "Invalid usage:" << endl;
+    cerr << "\tthelper tariff_create tariff_name tariff_filename" << endl;
+    cerr << "\tthelper tariff_inherit tariff_name tariff_filename base_filename" << endl;
+    cerr << "\tthelper tariff_mult tariff_name tariff_filename base_filename multiplication_value" << endl;
+    cerr << "\tthelper tariff_check tariff_filename country_name operator_code" << endl;
+
 }
 
 int main( int argc, char** argv ) {
