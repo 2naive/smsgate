@@ -10,7 +10,7 @@ public:
     WDataSource();
     virtual int getTotalLines() = 0;
 
-    RowList& getLineRange( int lnl, int lnr );
+    RowList getLineRange( int lnl, int lnr );
     void releaseCache();
 private:
     virtual void execute( int lnl, int lnr, RowList& data ) = 0;
@@ -27,10 +27,10 @@ WDataSource< RowType >::WDataSource() {
 }
 
 template < class RowType >
-typename WDataSource< RowType >::RowList&
+typename WDataSource< RowType >::RowList
 WDataSource< RowType >::getLineRange( int lnl, int lnr ) {
     if ( ( lnl >= __cache_from ) && ( lnr <= __cache_from + __lines ) ) {
-        return RowList( cache[ lnl - __cache_from ], cache[ lnr - __cache_from ] );
+        return RowList( &cache[ lnl - __cache_from ], &cache[ lnr - __cache_from ] );
     }
 
     execute( lnl, lnr, cache );

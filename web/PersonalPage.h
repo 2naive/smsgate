@@ -8,6 +8,7 @@
 #include <Wt/WContainerWidget>
 #include <Wt/WLineEdit>
 #include <Wt/WVBoxLayout>
+#include <Wt/WHBoxLayout>
 #include <Wt/WPushButton>
 #include <Wt/WOverlayLoadingIndicator>
 #include <Wt/WDefaultLoadingIndicator>
@@ -26,15 +27,32 @@
 
 using namespace Wt;
 
-class WDBDataSource: public WDataSource< vector< string > > {
+class PersonalPage;
+
+class WStatPageHeader: public WDataSource< vector< boost::shared_ptr< WWidget* > > > {
 public:
+    typedef vector< boost::shared_ptr< WWidget > > Row;
+    typedef WDataSource< vector< boost::shared_ptr< WWidget > > >::RowList RowList;
 
-    WDBDataSource();
-    ~WDBDataSource();
+    WStatPageHeader( PersonalPage* _ppage );
 
+    virtual int getTotalLines();
     virtual void execute( int lnl, int lnr, RowList &data );
 private:
-    PGSql& db;
+    PersonalPage* ppage;
+};
+
+class WStatPageFooter: public WDataSource< vector< boost::shared_ptr< WWidget* > > > {
+public:
+    typedef vector< boost::shared_ptr< WWidget > > Row;
+    typedef WDataSource< vector< boost::shared_ptr< WWidget > > >::RowList RowList;
+
+    WStatPageFooter( PersonalPage* _ppage );
+
+    virtual int getTotalLines();
+    virtual void execute( int lnl, int lnr, RowList &data );
+private:
+    PersonalPage* ppage;
 };
 
 class PersonalPage : public WApplication {
@@ -60,11 +78,22 @@ private:
     WContainerWidget* buildLoginPage( const WEnvironment& env );
     void buildPersonalPage( );
     void onLogin();
+    void onReportBtnClicked(
+            WLineEdit* pid,
+            WLineEdit* phone,
+            WDatePicker* date_from,
+            WDatePicker* date_to,
+            WLineEdit* text,
+            WComboBox* status,
+            WPushButton* reportbtn,
+            WLabel* report_status );
+
     MsgidList genMsgIds( const std::string& _idp, const std::string& phone, const std::string& _ldate, const std::string& _rdate, const std::string& _text, int page );
     ReqResp genReq( const MsgidList& list, int status );
     void onReportGenerate();
 
     static PGSql& db;
+    friend class WStatPageHeader;
 
 };
 

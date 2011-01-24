@@ -1,7 +1,108 @@
 #include "PersonalPage.h"
 #include "PartnerManager.h"
 
+using namespace Wt;
+
 PGSql& PersonalPage::db( PGSqlConnPoolStats::get_mutable_instance().getdb() );
+
+WStatPageHeader::WStatPageHeader( PersonalPage* ppage ) {
+    this->ppage = ppage;
+}
+
+int WStatPageHeader::getTotalLines() {
+    return 2;
+}
+
+void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
+    data.clear();
+    for ( int line = lnl; line < lnr; line++ ) {
+        Row r;
+        r.resize( 7 );
+        WLabel* report_status = new WLabel();
+        switch ( line ) {
+        case 0:
+            WLineEdit* pid;
+            WLineEdit* phone;
+            WDatePicker* date_from, *date_to;
+            WLineEdit* text;
+            WComboBox* status;
+            WVBoxLayout *wDateGrp;
+            WHBoxLayout *wDateLblGrp_from;
+            WHBoxLayout *wDateLblGrp_to;
+            WContainerWidget* date_from_group;
+            WContainerWidget* date_to_group;
+            WContainerWidget* date;
+            WPushButton* reportbtn;
+
+            //Pid input field
+            pid = new WLineEdit(); pid->setMaximumSize(  WLength( 1, WLength::Centimeter ), WLength::Auto  );
+            //Phone input field
+            phone = new WLineEdit();
+            //Date input field
+            date_from = new WDatePicker(); date_from->setDate( WDate::currentDate().addDays( -7 ) );
+            date_to = new WDatePicker(); date_to->setDate( WDate::currentDate() );
+            wDateGrp = new WVBoxLayout();
+            wDateLblGrp_from = new WHBoxLayout();
+            wDateLblGrp_from->addWidget( new WLabel( WString::fromUTF8("С") ) );
+            wDateLblGrp_from->addWidget( date_from );
+            wDateLblGrp_to = new WHBoxLayout();
+            wDateLblGrp_to->addWidget( new WLabel( WString::fromUTF8("По") ) );
+            wDateLblGrp_to->addWidget( date_to );
+            date_from_group = new WContainerWidget();
+            date_from_group->setLayout( wDateLblGrp_from, AlignMiddle | AlignCenter );
+            wDateGrp->addWidget( date_from_group );
+            date_to_group = new WContainerWidget();
+            date_to_group->setLayout( wDateLblGrp_to, AlignMiddle | AlignCenter );
+            wDateGrp->addWidget( date_to_group );
+            date = new WContainerWidget();
+            date->setLayout( wDateGrp, AlignMiddle | AlignCenter );
+            //Message text field
+            text = new WLineEdit();
+            text->setMinimumSize( WLength( 6, WLength::Centimeter ), WLength::Auto );
+            //Delivery status field
+            status = new WComboBox();
+            status->addItem(WString::fromUTF8("Любой"));
+            status->addItem(WString::fromUTF8("Доставлено"));
+            status->addItem(WString::fromUTF8("Не доставлено"));
+            //Report button
+            reportbtn = new WPushButton( WString::fromUTF8("Сгенерировать отчет") );
+            reportbtn->clicked().connect(boost::bind(
+                                             &PersonalPage::onReportBtnClicked,
+                                             ppage,
+                                             pid,
+                                             phone,
+                                             date_from,
+                                             date_to,
+                                             text,
+                                             status,
+                                             reportbtn,
+                                             report_status
+                                             )
+                                         );
+
+            r.push_back( boost::shared_ptr< WWidget >( pid ) );
+            r.push_back( boost::shared_ptr< WWidget >( phone ) );
+            r.push_back( boost::shared_ptr< WWidget >( date ) );
+            r.push_back( boost::shared_ptr< WWidget >( text ) );
+            r.push_back( boost::shared_ptr< WWidget >( status ) );
+            r.push_back( boost::shared_ptr< WWidget >( /*empty*/ ) );
+            r.push_back( boost::shared_ptr< WWidget >( reportbtn ) );
+            break;
+
+        case 1:
+            r.push_back( boost::shared_ptr< WWidget >( new WLabel(WString::fromUTF8("IDP")) ) );
+            r.push_back( boost::shared_ptr< WWidget >( new WLabel(WString::fromUTF8("Телефон")) ) );
+            r.push_back( boost::shared_ptr< WWidget >( new WLabel(WString::fromUTF8("Дата")) ) );
+            r.push_back( boost::shared_ptr< WWidget >( new WLabel(WString::fromUTF8("Текст")) ) );
+            r.push_back( boost::shared_ptr< WWidget >( new WLabel(WString::fromUTF8("Статус")) ) );
+            r.push_back( boost::shared_ptr< WWidget >( new WLabel(WString::fromUTF8("Цена")) ) );
+            r.push_back( boost::shared_ptr< WWidget >( report_status ) );
+
+            break;
+        }
+        data.push_back( r );
+    }
+}
 
 WApplication *createPersonalPage(const WEnvironment& env) {
   /*
@@ -98,6 +199,19 @@ void PersonalPage::onLogin() {
         buildPersonalPage();
     }
 }
+
+void PersonalPage::onReportBtnClicked(
+        WLineEdit* pid,
+        WLineEdit* phone,
+        WDatePicker* date_from,
+        WDatePicker* date_to,
+        WLineEdit* text,
+        WComboBox* status,
+        WPushButton* reportbtn,
+        WLabel* report_status ) {
+
+}
+
 
 void PersonalPage::buildPersonalPage( ) {
     setTitle( WString::fromUTF8("GreenSMS: Личный кабинет ") );
