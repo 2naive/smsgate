@@ -473,13 +473,14 @@ void RequestTracker::parseNewHistoryElement( SMSMessage::ID msg_id, SMSMessage::
             if ( msg->getStatus() == SMSMessage::Status::ST_REJECTED ) {
                 if ( element.op_code == 2 ) {
                     msg->setStatus( element.op_result );
+                    out << "updated";
+                } else {
+                    out << "ignored";
                 }
             } else {
                 msg->setStatus( element.op_result );
+                out << "updated";
             }
-
-            out << "updated";
-            //TODO
         } else {
             out << "ignored";
         }
