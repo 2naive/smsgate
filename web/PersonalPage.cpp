@@ -7,6 +7,7 @@ PGSql& PersonalPage::db( PGSqlConnPoolStats::get_mutable_instance().getdb() );
 
 WStatPageHeader::WStatPageHeader( PersonalPage* ppage ) {
     this->ppage = ppage;
+
 }
 
 int WStatPageHeader::getTotalLines() {
@@ -15,7 +16,7 @@ int WStatPageHeader::getTotalLines() {
 
 void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
     data.clear();
-    for ( int line = lnl; line < lnr; line++ ) {
+    for ( int line = lnl; line <= lnr; line++ ) {
         Row r;
         r.resize( 7 );
         WLabel* report_status = new WLabel();
@@ -80,23 +81,23 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
                                              )
                                          );
 
-            r.push_back( boost::shared_ptr< WWidget >( pid ) );
-            r.push_back( boost::shared_ptr< WWidget >( phone ) );
-            r.push_back( boost::shared_ptr< WWidget >( date ) );
-            r.push_back( boost::shared_ptr< WWidget >( text ) );
-            r.push_back( boost::shared_ptr< WWidget >( status ) );
-            r.push_back( boost::shared_ptr< WWidget >( /*empty*/ ) );
-            r.push_back( boost::shared_ptr< WWidget >( reportbtn ) );
+            r.push_back( pid );
+            r.push_back( phone );
+            r.push_back( date );
+            r.push_back( text );
+            r.push_back( status );
+            r.push_back( NULL );
+            r.push_back( reportbtn );
             break;
 
         case 1:
-            r.push_back( boost::shared_ptr< WWidget >( new WLabel(WString::fromUTF8("IDP")) ) );
-            r.push_back( boost::shared_ptr< WWidget >( new WLabel(WString::fromUTF8("Телефон")) ) );
-            r.push_back( boost::shared_ptr< WWidget >( new WLabel(WString::fromUTF8("Дата")) ) );
-            r.push_back( boost::shared_ptr< WWidget >( new WLabel(WString::fromUTF8("Текст")) ) );
-            r.push_back( boost::shared_ptr< WWidget >( new WLabel(WString::fromUTF8("Статус")) ) );
-            r.push_back( boost::shared_ptr< WWidget >( new WLabel(WString::fromUTF8("Цена")) ) );
-            r.push_back( boost::shared_ptr< WWidget >( report_status ) );
+            r.push_back( new WLabel(WString::fromUTF8("IDP")) );
+            r.push_back( new WLabel(WString::fromUTF8("Телефон")) );
+            r.push_back( new WLabel(WString::fromUTF8("Дата")) );
+            r.push_back( new WLabel(WString::fromUTF8("Текст")) );
+            r.push_back( new WLabel(WString::fromUTF8("Статус")) );
+            r.push_back( new WLabel(WString::fromUTF8("Цена")) );
+            r.push_back( report_status );
 
             break;
         }
@@ -107,6 +108,9 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
 WStatPageData::WStatPageData( PersonalPage* _ppage ) {
     initialized = false;
     __total_lines = 0;
+
+    view_name = string("v") + _ppage->sessionId();
+    res_name =string("p") + _ppage->sessionId();
 }
 
 WStatPageData::~WStatPageData( ) {
@@ -134,11 +138,6 @@ WStatPageData::~WStatPageData( ) {
 
 void WStatPageData::prepareRequest( ) {
     PGSql& db = ppage->db;
-
-    if ( !initialized ) {
-        view_name = "v"; view_name += ppage->sessionId();
-        res_name = "p"; res_name += ppage->sessionId();
-    }
 
     // Drop temp table if exists
     if ( initialized ) {
@@ -309,12 +308,12 @@ void WStatPageData::execute( int lnl, int lnr, RowList &data ) {
             string __price = "unknown";
 
             Row row;
-            row.push_back( boost::shared_ptr<WWidget>( new WLabel( WString::fromUTF8( __pid ) ) ) );
-            row.push_back( boost::shared_ptr<WWidget>( new WLabel( WString::fromUTF8( __phone ) ) ) );
-            row.push_back( boost::shared_ptr<WWidget>( new WLabel( WString::fromUTF8( __date ) ) ) );
-            row.push_back( boost::shared_ptr<WWidget>( new WLabel( WString::fromUTF8( __txt ) ) ) );
-            row.push_back( boost::shared_ptr<WWidget>( new WLabel( WString::fromUTF8( __status ) ) ) );
-            row.push_back( boost::shared_ptr<WWidget>( new WLabel( WString::fromUTF8( __price ) ) ) );
+            row.push_back( new WLabel( WString::fromUTF8( __pid ) ) );
+            row.push_back( new WLabel( WString::fromUTF8( __phone ) ) );
+            row.push_back( new WLabel( WString::fromUTF8( __date ) ) );
+            row.push_back( new WLabel( WString::fromUTF8( __txt ) ) );
+            row.push_back( new WLabel( WString::fromUTF8( __status ) ) );
+            row.push_back( new WLabel( WString::fromUTF8( __price ) ) );
 
             data.push_back( row );
         }
