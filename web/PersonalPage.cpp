@@ -16,10 +16,11 @@ int WStatPageHeader::getTotalLines() {
 
 void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
     data.clear();
+    WLabel* report_status = new WLabel();
+
     for ( int line = lnl; line <= lnr; line++ ) {
         Row r;
         r.resize( 7 );
-        WLabel* report_status = new WLabel();
         switch ( line ) {
         case 0:
             WLineEdit* pid;
