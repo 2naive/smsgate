@@ -20,6 +20,9 @@ set( smsgate_SRCS ${smsgate_SRCS} web/NumberInfoPage.h       web/NumberInfoPage.
 set( smsgate_SRCS ${smsgate_SRCS} web/PersonalCabinet.h      web/PersonalCabinet.cpp )
 set( smsgate_SRCS ${smsgate_SRCS} web/PersonalPage.h         web/PersonalPage.cpp )
 
+set( smsgate_SRCS ${smsgate_SRCS} web/WScrollTable.h         web/WScrollTable.cpp )
+set( smsgate_SRCS ${smsgate_SRCS} web/WHintLinePassEdit.h )
+set( smsgate_SRCS ${smsgate_SRCS} web/WHintLineEdit.h )
 
 #Utils
 set( smsgate_SRCS ${smsgate_SRCS} utils/Cache.h )
@@ -35,6 +38,7 @@ set( smsgate_SRCS ${smsgate_SRCS} utils/utils.h              utils/utils.cpp )
 
 #Core
 set( smsgate_SRCS ${smsgate_SRCS} core/ConfigManager.h       core/ConfigManager.cpp )
+set( smsgate_SRCS ${smsgate_SRCS} core/DataSource.h )
 set( smsgate_SRCS ${smsgate_SRCS} core/DeliveryHandler.h     core/DeliveryHandler.cpp )
 set( smsgate_SRCS ${smsgate_SRCS} core/DLRHandler.h          core/DLRHandler.cpp )
 set( smsgate_SRCS ${smsgate_SRCS} core/HttpClient.h          core/HttpClient.cpp )
