@@ -12,14 +12,20 @@ public:
     typedef WDataSource< RowType > Storage;
     WScrollTable( Storage& header, Storage& footer, Storage& data, Wt::WContainerWidget *parent=0 );
 
+    void rebuildData();
 private:
     Storage& header;
     Storage& footer;
     Storage& data;
 
+    int headerlen;
+    int footerlen;
+    int datalen;
+
     void buildHeader();
     void buildFooter();
     void buildData();
+
 };
 
 #endif // WSCROLLTABLE_H

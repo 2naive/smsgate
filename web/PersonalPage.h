@@ -29,7 +29,7 @@ using namespace Wt;
 
 class PersonalPage;
 
-class WStatPageHeader: public WDataSource< vector< boost::shared_ptr< WWidget* > > > {
+class WStatPageHeader: public WDataSource< vector< boost::shared_ptr< WWidget > > > {
 public:
     typedef vector< boost::shared_ptr< WWidget > > Row;
     typedef WDataSource< vector< boost::shared_ptr< WWidget > > >::RowList RowList;
@@ -37,22 +37,58 @@ public:
     WStatPageHeader( PersonalPage* _ppage );
 
     virtual int getTotalLines();
-    virtual void execute( int lnl, int lnr, RowList &data );
 private:
+    virtual void execute( int lnl, int lnr, RowList &data );
     PersonalPage* ppage;
 };
 
-class WStatPageFooter: public WDataSource< vector< boost::shared_ptr< WWidget* > > > {
+class WStatPageFooter: public WDataSource< vector< boost::shared_ptr< WWidget > > > {
 public:
     typedef vector< boost::shared_ptr< WWidget > > Row;
     typedef WDataSource< vector< boost::shared_ptr< WWidget > > >::RowList RowList;
 
-    WStatPageFooter( PersonalPage* _ppage );
+    WStatPageFooter( PersonalPage* _ppage ) { ppage = _ppage; }
+
+    virtual int getTotalLines() { return 0; }
+private:
+    virtual void execute( int lnl, int lnr, RowList &data ) { }
+
+    PersonalPage* ppage;
+};
+
+class WStatPageData: public WDataSource< vector< boost::shared_ptr< WWidget > > > {
+public:
+    typedef vector< boost::shared_ptr< WWidget > > Row;
+    typedef WDataSource< vector< boost::shared_ptr< WWidget > > >::RowList RowList;
+
+    WStatPageData( PersonalPage* _ppage );
+    ~WStatPageData( );
+
+    void prepareRequest( );
+    void resetFilter( );
+    void setPidFilter( string pid );
+    void setPhoneFilter( string phone );
+    void setDateFromFilter( long date_from );
+    void setDateToFilter( long date_to );
+    void setTextFilter( string text );
+    void setStatusFilter( SMSMessage::Status status );
 
     virtual int getTotalLines();
-    virtual void execute( int lnl, int lnr, RowList &data );
 private:
+    virtual void execute( int lnl, int lnr, RowList &data );
+
     PersonalPage* ppage;
+    bool initialized;
+    bool pid_filter; string pid_value;
+    bool phone_filter; string phone_value;
+    bool date_from_filter; long date_from_value;
+    bool date_to_filter; long date_to_value;
+    bool text_filter; string text_value;
+    bool status_filter; SMSMessage::Status status_value;
+
+    string view_name;
+    string res_name;
+    int __total_lines;
 };
 
 class PersonalPage : public WApplication {
@@ -65,15 +101,12 @@ private:
 
     string pId;
     bool authorized;
-    WTable* tbl;
-    WPushButton* reportbtn;
-    WLabel* reportstatus;
 
-    WLineEdit* pid;
-    WLineEdit* phone;
-    WDatePicker* date_from, *date_to;
-    WLineEdit* text;
-    WComboBox* status;
+    WStatPageHeader header;
+    WStatPageData data;
+    WStatPageFooter footer;
+
+    WScrollTable* statistics;
 
     WContainerWidget* buildLoginPage( const WEnvironment& env );
     void buildPersonalPage( );
@@ -88,12 +121,10 @@ private:
             WPushButton* reportbtn,
             WLabel* report_status );
 
-    MsgidList genMsgIds( const std::string& _idp, const std::string& phone, const std::string& _ldate, const std::string& _rdate, const std::string& _text, int page );
-    ReqResp genReq( const MsgidList& list, int status );
-    void onReportGenerate();
-
     static PGSql& db;
     friend class WStatPageHeader;
+    friend class WStatPageFooter;
+    friend class WStatPageData;
 
 };
 
