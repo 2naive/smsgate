@@ -26,7 +26,8 @@ void WScrollTable::buildData() {
         insertRow( rownum );
         datalen++;
         for ( colnum = 0; colnum < row.size(); colnum++ ) {
-            this->elementAt( rownum, colnum )->addWidget( row[ colnum ].get() );
+            if ( row[ colnum ].get() )
+                this->elementAt( rownum, colnum )->addWidget( row[ colnum ].get() );
         }
     }
 
@@ -43,7 +44,8 @@ void WScrollTable::buildFooter() {
         insertRow( rownum );
         footerlen++;
         for ( colnum = 0; colnum < row.size(); colnum++ ) {
-            this->elementAt( rownum, colnum )->addWidget( row[ colnum ].get() );
+            if ( row[ colnum ].get() )
+                this->elementAt( rownum, colnum )->addWidget( row[ colnum ].get() );
         }
     }
 }
@@ -60,7 +62,8 @@ void WScrollTable::buildHeader() {
         insertRow( rownum );
         headerlen++;
         for ( colnum = 0; colnum < row.size(); colnum++ ) {
-            this->elementAt( rownum, colnum )->addWidget( row[ colnum ].get() );
+            if ( row[ colnum ].get() )
+                this->elementAt( rownum, colnum )->addWidget( row[ colnum ].get() );
         }
     }
 }

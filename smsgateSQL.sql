@@ -96,6 +96,8 @@ CREATE INDEX dlrs_status on dlrs( status );
 CREATE INDEX dlrs_boxc on dlrs( boxc );
 CREATE INDEX added on dlrs( added );
 
+CREATE LANGUAGE plpgsql;
+
 CREATE OR REPLACE FUNCTION insert_dlr() RETURNS trigger AS $$
 BEGIN
   new.added = NOW();
