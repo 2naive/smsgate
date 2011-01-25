@@ -154,7 +154,21 @@ void WStatPageData::prepareRequest( ) {
 
         } catch ( ... ) {
             initialized = false;
-            throw;
+        }
+
+        try {
+            PGSql::ConnectionHolder cHold( db );
+            ConnectionPTR conn = cHold.get();
+            TransactionPTR tr = db.openTransaction( conn, "WStatPageData::prepareRequest ( drop result view ) " );
+
+            std::ostringstream req;
+            req     <<  "DROP VIEW " << view_name << ";";
+
+            tr->exec( req.str() );
+            tr->commit();
+
+        } catch ( ... ) {
+            initialized = false;
         }
     }
 
@@ -167,16 +181,16 @@ void WStatPageData::prepareRequest( ) {
         TransactionPTR tr = db.openTransaction( conn, "WStatPageData::prepareRequest ( create temp view ) " );
 
         std::ostringstream req;
-        req     <<  "CREATE OR REPLACE TEMP VIEW " << view_name << " AS ";
-        req     <<  "SELECT smsrequest.\"REQUESTID\", smsrequest.\"MESSAGEID\", \"TXT\", \"FROM\", \"PID\", smsrequest.\"WHEN\", "
-                <<  "\"STATUS\", \"TO\", \"PARTS\", \"COUNTRY\", \"COUNTRYCODE\", \"OPERATOR\", \"OPERATORCODE\", \"REGION\", 0, message_status.\"WHEN\" "
-                <<  "FROM smsrequest, message_status WHERE smsrequest.\"REQUESTID\"=message_status.\"REQUESTID\" AND smsrequest.\"MESSAGEID\"=message_status.\"MESSAGEID\" ";
+        req     <<  "CREATE OR REPLACE VIEW " << view_name << " AS ";
+        req     <<  "SELECT message_status.\"REQUESTID\", message_status.\"MESSAGEID\", \"TXT\", \"FROM\", \"PID\", smsrequest.\"WHEN\" AS REQUESTDATE, "
+                <<  "\"STATUS\", message_status.\"TO\", \"PARTS\", \"COUNTRY\", \"COUNTRYCODE\", \"OPERATOR\", \"OPERATORCODE\", \"REGION\", message_status.\"WHEN\" AS DELIVERYDATE, 0 "
+                <<  "FROM smsrequest, message_status WHERE smsrequest.\"REQUESTID\"=message_status.\"REQUESTID\"  ";
         if ( pid_filter )
             req <<  "AND \"PID\"='" << tr->esc( pid_value ) << "' ";
         if ( phone_filter )
             req <<  "AND message_status.\"TO\"='" << tr->esc( phone_value ) << "' ";
         if ( date_from_filter )
-            req <<  "AND smsrequest.\"WHEN\">'" << date_from_value << "'' ";
+            req <<  "AND smsrequest.\"WHEN\">'" << date_from_value << "' ";
         if ( date_to_filter )
             req <<  "AND smsrequest.\"WHEN\"<'" << date_to_value << "' ";
         if ( text_filter )
@@ -285,6 +299,8 @@ void WStatPageData::execute( int lnl, int lnr, RowList &data ) {
         return;
     }
     PGSql& db = ppage->db;
+
+
 
     // build required widgets
     try {
@@ -469,16 +485,19 @@ void PersonalPage::onReportBtnClicked(
 
     reportbtn->disable();
     reportstatus->setText(WString::fromUTF8("Идет генерация данных"));
+    this->processEvents();
 
     try {
         data.prepareRequest();
     } catch ( PGBrokenConnection& err ) {
         reportbtn->enable();
         reportstatus->setText(WString::fromUTF8(string("Ошибка соеднинения с базой") + err.what()));
+        this->processEvents();
         return;
     } catch ( PGSqlError& err ) {
         reportbtn->enable();
         reportstatus->setText(WString::fromUTF8(string("Ошибка SQL запроса") + err.what()));
+        this->processEvents();
         return;
     }
 
@@ -486,6 +505,7 @@ void PersonalPage::onReportBtnClicked(
 
     reportbtn->enable();
     reportstatus->setText(WString::fromUTF8("Генерации отчета завершена"));
+    this->processEvents();
 }
 
 
