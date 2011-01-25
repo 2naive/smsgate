@@ -135,8 +135,10 @@ WStatPageData::~WStatPageData( ) {
 void WStatPageData::prepareRequest( ) {
     PGSql& db = ppage->db;
 
-    view_name = "v"; view_name += ppage->sessionId();
-    res_name = "p"; res_name += ppage->sessionId();
+    if ( !initialized ) {
+        view_name = "v"; view_name += ppage->sessionId();
+        res_name = "p"; res_name += ppage->sessionId();
+    }
 
     // Drop temp table if exists
     if ( initialized ) {
