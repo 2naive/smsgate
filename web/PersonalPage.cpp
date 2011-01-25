@@ -106,9 +106,6 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
 
 WStatPageData::WStatPageData( PersonalPage* _ppage ) {
     initialized = false;
-    view_name = "v"; view_name += ppage->sessionId();
-    res_name = "p"; res_name += ppage->sessionId();
-
     __total_lines = 0;
 }
 
@@ -137,6 +134,9 @@ WStatPageData::~WStatPageData( ) {
 
 void WStatPageData::prepareRequest( ) {
     PGSql& db = ppage->db;
+
+    view_name = "v"; view_name += ppage->sessionId();
+    res_name = "p"; res_name += ppage->sessionId();
 
     // Drop temp table if exists
     if ( initialized ) {
