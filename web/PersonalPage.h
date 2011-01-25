@@ -29,10 +29,10 @@ using namespace Wt;
 
 class PersonalPage;
 
-class WStatPageHeader: public WDataSource< vector< boost::shared_ptr< WWidget > > > {
+class WStatPageHeader: public WDataSource< vector< WWidget* > > {
 public:
-    typedef vector< boost::shared_ptr< WWidget > > Row;
-    typedef WDataSource< vector< boost::shared_ptr< WWidget > > >::RowList RowList;
+    typedef vector< WWidget* > Row;
+    typedef WDataSource< vector< WWidget* > >::RowList RowList;
 
     WStatPageHeader( PersonalPage* _ppage );
 
@@ -42,10 +42,10 @@ private:
     PersonalPage* ppage;
 };
 
-class WStatPageFooter: public WDataSource< vector< boost::shared_ptr< WWidget > > > {
+class WStatPageFooter: public WDataSource< vector< WWidget* > > {
 public:
-    typedef vector< boost::shared_ptr< WWidget > > Row;
-    typedef WDataSource< vector< boost::shared_ptr< WWidget > > >::RowList RowList;
+    typedef vector< WWidget* > Row;
+    typedef WDataSource< vector< WWidget* > >::RowList RowList;
 
     WStatPageFooter( PersonalPage* _ppage ) { ppage = _ppage; }
 
@@ -56,10 +56,10 @@ private:
     PersonalPage* ppage;
 };
 
-class WStatPageData: public WDataSource< vector< boost::shared_ptr< WWidget > > > {
+class WStatPageData: public WDataSource< vector< WWidget* > > {
 public:
-    typedef vector< boost::shared_ptr< WWidget > > Row;
-    typedef WDataSource< vector< boost::shared_ptr< WWidget > > >::RowList RowList;
+    typedef vector< WWidget* > Row;
+    typedef WDataSource< vector< WWidget* > >::RowList RowList;
 
     WStatPageData( PersonalPage* _ppage );
     ~WStatPageData( );

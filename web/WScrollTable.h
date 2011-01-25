@@ -8,7 +8,7 @@
 
 class WScrollTable: public Wt::WTable {
 public:
-    typedef std::vector< boost::shared_ptr< Wt::WWidget > > RowType ;
+    typedef std::vector< Wt::WWidget* > RowType ;
     typedef WDataSource< RowType > Storage;
     WScrollTable( Storage& header, Storage& footer, Storage& data, Wt::WContainerWidget *parent=0 );
 
