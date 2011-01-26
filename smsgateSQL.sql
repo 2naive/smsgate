@@ -94,7 +94,6 @@ CREATE INDEX dlrs_url on dlrs( url );
 CREATE INDEX dlrs_mask on dlrs( mask );
 CREATE INDEX dlrs_status on dlrs( status );
 CREATE INDEX dlrs_boxc on dlrs( boxc );
-CREATE INDEX added on dlrs( added );
 
 CREATE LANGUAGE plpgsql;
 

@@ -28,36 +28,23 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             WDatePicker* date_from, *date_to;
             WLineEdit* text;
             WComboBox* status;
-            WVBoxLayout *wDateGrp;
-            WHBoxLayout *wDateLblGrp_from;
-            WHBoxLayout *wDateLblGrp_to;
-            WContainerWidget* date_from_group;
-            WContainerWidget* date_to_group;
-            WContainerWidget* date;
+            WTable* date;
             WPushButton* reportbtn;
 
-            //Pid input field
-            pid = new WLineEdit(); pid->setMaximumSize(  WLength( 1, WLength::Centimeter ), WLength::Auto  );
+            if ( ppage->isAdmin ) {
+                //Pid input field
+                pid = new WLineEdit(); pid->setMaximumSize(  WLength( 1, WLength::Centimeter ), WLength::Auto  );
+            }
             //Phone input field
             phone = new WLineEdit();
             //Date input field
             date_from = new WDatePicker(); date_from->setDate( WDate::currentDate().addDays( -7 ) );
             date_to = new WDatePicker(); date_to->setDate( WDate::currentDate() );
-            wDateGrp = new WVBoxLayout();
-            wDateLblGrp_from = new WHBoxLayout();
-            wDateLblGrp_from->addWidget( new WLabel( WString::fromUTF8("С") ) );
-            wDateLblGrp_from->addWidget( date_from );
-            wDateLblGrp_to = new WHBoxLayout();
-            wDateLblGrp_to->addWidget( new WLabel( WString::fromUTF8("По") ) );
-            wDateLblGrp_to->addWidget( date_to );
-            date_from_group = new WContainerWidget();
-            date_from_group->setLayout( wDateLblGrp_from, AlignMiddle | AlignCenter );
-            wDateGrp->addWidget( date_from_group );
-            date_to_group = new WContainerWidget();
-            date_to_group->setLayout( wDateLblGrp_to, AlignMiddle | AlignCenter );
-            wDateGrp->addWidget( date_to_group );
-            date = new WContainerWidget();
-            date->setLayout( wDateGrp, AlignMiddle | AlignCenter );
+            date = new WTable();
+            date->elementAt(0, 0)->addWidget( new WLabel( WString::fromUTF8("С") ) );
+            date->elementAt(0, 1)->addWidget( date_from );
+            date->elementAt(1, 0)->addWidget( new WLabel( WString::fromUTF8("По") ) );
+            date->elementAt(1, 1)->addWidget( date_to );
             //Message text field
             text = new WLineEdit();
             text->setMinimumSize( WLength( 6, WLength::Centimeter ), WLength::Auto );
@@ -81,8 +68,8 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
                                              report_status
                                              )
                                          );
-
-            r.push_back( pid );
+            if ( ppage->isAdmin )
+                r.push_back( pid );
             r.push_back( phone );
             r.push_back( date );
             r.push_back( text );
@@ -92,7 +79,8 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             break;
 
         case 1:
-            r.push_back( new WLabel(WString::fromUTF8("IDP")) );
+            if ( ppage->isAdmin )
+                r.push_back( new WLabel(WString::fromUTF8("IDP")) );
             r.push_back( new WLabel(WString::fromUTF8("Телефон")) );
             r.push_back( new WLabel(WString::fromUTF8("Дата")) );
             r.push_back( new WLabel(WString::fromUTF8("Текст")) );
@@ -195,7 +183,7 @@ void WStatPageData::prepareRequest( ) {
         if ( date_to_filter )
             req <<  "AND smsrequest.\"WHEN\"<'" << date_to_value << "' ";
         if ( text_filter )
-            req << "AND \"TXT\" LIKE '%" << utils::escapeString( tr->esc( text_value ), "%_", "\\" ) << "%' ESCAPE '\\\\' ";
+            req << "AND \"TXT\" LIKE '%" << utils::escapeString( tr->esc( text_value ), "%_", "\\" ) << "%' ESCAPE E'\\\\' ";
         if ( status_filter )
             req <<  "AND \"STATUS\"='" << status_value() << "' ";
         req << ";";
@@ -407,6 +395,7 @@ WContainerWidget* PersonalPage::buildLoginPage( const WEnvironment &env ) {
 
 void PersonalPage::onLogin() {
     authorized = false;
+    isAdmin = false;
 
     WContainerWidget* wLoginBlock = static_cast<WContainerWidget*>( root()->find( "wLoginBlock" ) );
     if ( !wLoginBlock )
@@ -428,6 +417,7 @@ void PersonalPage::onLogin() {
         PartnerInfo p = PartnerManager::get_mutable_instance().findByName( loginBox->text().toUTF8() );
         authorized = ( p.pPass == passBox->text().toUTF8() );
         pId = p.pId;
+        isAdmin = p.isAdmin();
     } catch ( ... ) {
         return;
     }
@@ -452,8 +442,13 @@ void PersonalPage::onReportBtnClicked(
         WPushButton* reportbtn,
         WLabel* reportstatus ) {
 
-    if ( !pid->text().empty() )
+    data.resetFilter();
+
+    if ( isAdmin && !pid->text().empty() )
         data.setPidFilter( pid->text().toUTF8() );
+
+    if ( !isAdmin )
+        data.setPidFilter( pId );
 
     if ( !phone->text().empty() )
         data.setPhoneFilter( phone->text().toUTF8() );
@@ -485,7 +480,7 @@ void PersonalPage::onReportBtnClicked(
     }
 
     reportbtn->disable();
-    reportstatus->setText(WString::fromUTF8("Идет генерация данных"));
+    reportstatus->setText(WString::fromUTF8("Обработка"));
     this->processEvents();
 
     try {
@@ -493,20 +488,17 @@ void PersonalPage::onReportBtnClicked(
     } catch ( PGBrokenConnection& err ) {
         reportbtn->enable();
         reportstatus->setText(WString::fromUTF8(string("Ошибка соеднинения с базой") + err.what()));
-        this->processEvents();
         return;
     } catch ( PGSqlError& err ) {
         reportbtn->enable();
         reportstatus->setText(WString::fromUTF8(string("Ошибка SQL запроса") + err.what()));
-        this->processEvents();
         return;
     }
 
     statistics->rebuildData();
 
     reportbtn->enable();
-    reportstatus->setText(WString::fromUTF8("Генерации отчета завершена"));
-    this->processEvents();
+    reportstatus->setText(WString::fromUTF8("Готово"));
 }
 
 
@@ -514,6 +506,8 @@ void PersonalPage::buildPersonalPage( ) {
     setTitle( WString::fromUTF8("GreenSMS: Личный кабинет ") );
 
     this->useStyleSheet( "/resources/css/resp_table.css" );
+    isAdmin = false;
+    authorized = false;
 
     statistics = new WScrollTable( header, data, footer );
     root()->addWidget( statistics );

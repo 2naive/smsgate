@@ -101,6 +101,7 @@ private:
 
     string pId;
     bool authorized;
+    bool isAdmin;
 
     WStatPageHeader header;
     WStatPageData data;
