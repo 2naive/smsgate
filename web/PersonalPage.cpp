@@ -190,8 +190,16 @@ void WStatPageData::prepareRequest( ) {
             req <<  "AND \"STATUS\"='" << status_value() << "' ";
         req << ";";
 
-        tr->exec( req.str() );
-        tr->commit();
+
+        {
+            boost::xtime from, to;
+            boost::xtime_get( &from, boost::TIME_UTC );
+            tr->exec( req.str() );
+            tr->commit();
+            boost::xtime_get( &to, boost::TIME_UTC );
+            req << " for " << to.sec - from.sec << " seconds";
+            Logger::get_mutable_instance().dbloginfo( req.str() );
+        }
 
     } catch ( ... ) {
         initialized = false;
@@ -207,8 +215,15 @@ void WStatPageData::prepareRequest( ) {
         std::ostringstream req;
         req     <<  "SELECT create_matview( '" << res_name << "', '" << view_name << "' );";
 
-        tr->exec( req.str() );
-        tr->commit();
+        {
+            boost::xtime from, to;
+            boost::xtime_get( &from, boost::TIME_UTC );
+            tr->exec( req.str() );
+            tr->commit();
+            boost::xtime_get( &to, boost::TIME_UTC );
+            req << " for " << to.sec - from.sec << " seconds";
+            Logger::get_mutable_instance().dbloginfo( req.str() );
+        }
 
     } catch ( ... ) {
         initialized = false;
@@ -223,11 +238,19 @@ void WStatPageData::prepareRequest( ) {
         std::ostringstream req;
         req     <<  "SELECT count(*) from " << res_name << ";";
 
-        Result res = tr->exec( req.str() );
-        tr->commit();
 
-        for ( Result::const_iterator it = res.begin(); it != res.end(); it++ ) {
-            __total_lines = (*it)[0].as<int>();
+        {
+            boost::xtime from, to;
+            boost::xtime_get( &from, boost::TIME_UTC );
+            Result res = tr->exec( req.str() );
+            tr->commit();
+
+            for ( Result::const_iterator it = res.begin(); it != res.end(); it++ ) {
+                __total_lines = (*it)[0].as<int>();
+            }
+            boost::xtime_get( &to, boost::TIME_UTC );
+            req << " for " << to.sec - from.sec << " seconds";
+            Logger::get_mutable_instance().dbloginfo( req.str() );
         }
 
     } catch ( ... ) {
@@ -506,6 +529,7 @@ void PersonalPage::onReportBtnClicked(
 
 void PersonalPage::buildPersonalPage( ) {
     setTitle( WString::fromUTF8("GreenSMS: Личный кабинет ") );
+    setCssTheme("polished");
 
     this->useStyleSheet( "/resources/css/resp_table.css" );
     isAdmin = false;
