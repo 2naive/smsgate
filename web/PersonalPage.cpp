@@ -55,6 +55,7 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             status->addItem(WString::fromUTF8("Любой"));
             status->addItem(WString::fromUTF8("Доставлено"));
             status->addItem(WString::fromUTF8("Не доставлено"));
+            status->addItem(WString::fromUTF8("Неверный номер"));
             //Report button
             reportbtn = new WPushButton( WString::fromUTF8("Сгенерировать отчет") );
             reportbtn->clicked().connect(boost::bind(
