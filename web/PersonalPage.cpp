@@ -74,9 +74,10 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
                                                 ) );
             controlBlock = new WTable();
             controlBlock->elementAt( 0, 0 )->addWidget( reportbtn );
-            controlBlock->elementAt( 0, 0 )->columnSpan();
+            controlBlock->elementAt( 0, 1 )->columnSpan();
             controlBlock->elementAt( 1, 0 )->addWidget( prev );
             controlBlock->elementAt( 1, 1 )->addWidget( next );
+            controlBlock->setStyleClass("datetable");
             reportbtn->clicked().connect(boost::bind(
                                              &PersonalPage::onReportBtnClicked,
                                              ppage,
