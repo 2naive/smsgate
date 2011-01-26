@@ -636,7 +636,6 @@ void PersonalPage::buildPersonalPage( ) {
     statistics->buildHeader();
     statistics->buildData();
     statistics->buildFooter();
-    statistics->setPageLimit( 2 );
     root()->addWidget( statistics );
 }
 
