@@ -32,6 +32,8 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             WTable* controlBlock;
             WLabel* next;
             WLabel* prev;
+            WLayout* lnext;
+            WLayout* lprev;
 
             if ( ppage->isAdmin ) {
                 //Pid input field
@@ -62,21 +64,28 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             //Report button
             reportbtn = new WPushButton( WString::fromUTF8("Сгенерировать отчет") );
             next = new WLabel( WString::fromUTF8(">>") );
+            next->addStyleClass("link");
             next->clicked().connect( boost::bind(
                                         &WScrollTable::nextPage,
                                         ppage->statistics
                                                 ) );
 
             prev = new WLabel( WString::fromUTF8("<<") );
+            prev->addStyleClass("link");
             prev->clicked().connect( boost::bind(
                                         &WScrollTable::prevPage,
                                         ppage->statistics
                                                 ) );
+            lnext = new WVBoxLayout();
+            lnext->addWidget( next );
+            lprev = new WVBoxLayout();
+            lprev->addWidget( prev );
+
             controlBlock = new WTable();
             controlBlock->elementAt( 0, 0 )->addWidget( reportbtn );
-            controlBlock->elementAt( 0, 1 )->columnSpan();
-            controlBlock->elementAt( 1, 0 )->addWidget( prev );
-            controlBlock->elementAt( 1, 1 )->addWidget( next );
+            controlBlock->elementAt( 0, 0 )->setColumnSpan( 2 );
+            controlBlock->elementAt( 1, 0 )->setLayout( lprev, AlignLeft );
+            controlBlock->elementAt( 1, 1 )->setLayout( lnext, AlignRight );
             controlBlock->setStyleClass("datetable");
             reportbtn->clicked().connect(boost::bind(
                                              &PersonalPage::onReportBtnClicked,
@@ -98,6 +107,8 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             r.push_back( text );
             r.push_back( status );
             r.push_back( NULL );
+            r.push_back( NULL );
+            r.push_back( NULL );
             r.push_back( controlBlock );
 
             data.push_back( r );
@@ -112,6 +123,8 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             r.push_back( new WLabel(WString::fromUTF8("Дата")) );
             r.push_back( new WLabel(WString::fromUTF8("Текст")) );
             r.push_back( new WLabel(WString::fromUTF8("Статус")) );
+            r.push_back( new WLabel(WString::fromUTF8("Страна")) );
+            r.push_back( new WLabel(WString::fromUTF8("Регион")) );
             r.push_back( new WLabel(WString::fromUTF8("Цена")) );
             r.push_back( report_status );
 
@@ -355,6 +368,7 @@ void WStatPageData::execute( int lnl, int lnr, RowList &data ) {
 
         data.clear();
         for ( Result::const_iterator it = res.begin(); it != res.end(); it++ ) {
+            SMSMessage::ID msgid = SMSMessage::ID( (*it)[0].as<long long>(), (*it)[1].as<int>() );
             string __pid = (*it)[4].as<string>();
             string __phone = (*it)[7].as<string>();
             long __date_num = (*it)[5].as<long>();
@@ -363,7 +377,22 @@ void WStatPageData::execute( int lnl, int lnr, RowList &data ) {
             string __date = boost::posix_time::to_simple_string(dt);
             string __txt = (*it)[2].as<string>();
             string __status = SMSMessage::Status::russianDescr( SMSMessage::Status( (*it)[6].as<int>() ) );
-            string __price = "unknown";
+            string __price = "1.21";
+            try {
+                PartnerInfo p = PartnerManager::get_mutable_instance().findById( __pid );
+                SMSMessage::PTR msg = SMSMessageManager::get_mutable_instance().loadMessage( msgid );
+                float price = p.tariff.costs( msg->getMsgClass().country, msg->getMsgClass().opcode );
+                __price = boost::lexical_cast< string >( int(floor( price * 100 )) / 100) + string(".") +  boost::lexical_cast< string >( int(floor( price * 100 )) % 100 );
+            } catch ( std::exception& err ) {
+                Logger::get_mutable_instance().smslogwarn( err.what() );
+            }
+
+            if ( SMSMessage::Status( (*it)[6].as<int>() ) == SMSMessage::Status::ST_REJECTED ) {
+                __price = "0.00";
+            }
+
+            string __country = (*it)[9].as<string>();
+            string __region = (*it)[13].as<string>();
 
             Row row;
             if ( ppage->isAdmin )
@@ -373,6 +402,8 @@ void WStatPageData::execute( int lnl, int lnr, RowList &data ) {
             row.push_back( new WLabel( WString::fromUTF8( __date ) ) );
             row.push_back( new WLabel( WString::fromUTF8( __txt ) ) );
             row.push_back( new WLabel( WString::fromUTF8( __status ) ) );
+            row.push_back( new WLabel( WString::fromUTF8( __country ) ) );
+            row.push_back( new WLabel( WString::fromUTF8( __region ) ) );
             row.push_back( new WLabel( WString::fromUTF8( __price ) ) );
 
             data.push_back( row );
@@ -502,7 +533,7 @@ void PersonalPage::onReportBtnClicked(
     if ( pid && isAdmin && !pid->text().empty() )
         data.setPidFilter( pid->text().toUTF8() );
 
-    if ( pid && !isAdmin )
+    if ( !isAdmin )
         data.setPidFilter( pId );
 
     if ( !phone->text().empty() )
@@ -533,6 +564,23 @@ void PersonalPage::onReportBtnClicked(
 
         data.setDateToFilter( rv.length().total_seconds()-3*60*60 );
     }
+
+    if ( status->tabIndex() == 0 ) {
+        // Ничего не делаем
+    }
+
+    if ( status->currentIndex() == 1 ) {
+        data.setStatusFilter( SMSMessage::Status( SMSMessage::Status::ST_DELIVERED ) );
+    }
+
+    if ( status->currentIndex() == 2 ) {
+        data.setStatusFilter( SMSMessage::Status( SMSMessage::Status::ST_NOT_DELIVERED ) );
+    }
+
+    if ( status->currentIndex() == 3 ) {
+        data.setStatusFilter( SMSMessage::Status( SMSMessage::Status::ST_REJECTED ) );
+    }
+
 
     reportbtn->disable();
     reportstatus->setText(WString::fromUTF8("Обработка"));
