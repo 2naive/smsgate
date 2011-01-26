@@ -16,7 +16,7 @@ WScrollTable::WScrollTable( Storage& _header, Storage& _data, Storage& _footer, 
 }
 
 void WScrollTable::setPageLimit( int limit ) {
-    this->limit = limit - 1;
+    this->limit = limit;
 }
 
 void WScrollTable::buildData( int offset ) {
@@ -24,7 +24,8 @@ void WScrollTable::buildData( int offset ) {
     WDataSource< RowType >::RowList::iterator it;
     int rownum;
     int colnum;
-    rows = data.getLineRange( offset, (offset + limit) > (data.getTotalLines() - 1)? (data.getTotalLines() - 1): (offset + limit) );
+    skipped = offset;
+    rows = data.getLineRange( offset, (offset + limit) > (data.getTotalLines() - 1)? (data.getTotalLines() - 1): (offset + limit - 1) );
     for ( rownum = header.getTotalLines(), it = rows.begin(); it != rows.end(); it++, rownum++ ) {
         RowType& row = *it;
         insertRow( rownum );
@@ -33,11 +34,6 @@ void WScrollTable::buildData( int offset ) {
             if ( row[ colnum ] )
                 elementAt( rownum, colnum )->addWidget( row[ colnum ] );
         }
-    }
-    if( rows.empty() && offset > limit ) {
-        rebuildData( skipped );
-    } else {
-        skipped = offset;
     }
 }
 

@@ -2,6 +2,7 @@
 #define PERSONALPAGE_H
 
 #include <boost/function.hpp>
+#include <boost/bind.hpp>
 
 #include <Wt/WApplication>
 #include <Wt/WLabel>
@@ -15,6 +16,7 @@
 #include <Wt/WTable>
 #include <Wt/WDatePicker>
 #include <Wt/WComboBox>
+#include <Wt/WSpinBox>
 #include "WHintLineEdit.h"
 #include "WHintLinePassEdit.h"
 #include "WScrollTable.h"
@@ -118,9 +120,10 @@ private:
             WDatePicker* date_from,
             WDatePicker* date_to,
             WLineEdit* text,
-            WComboBox* status,
+            std::pair<WComboBox*, WSpinBox*>  status_page,
             WPushButton* reportbtn,
             WLabel* report_status );
+    void onPageUpdate( WSpinBox* page );
 
     static PGSql& db;
     friend class WStatPageHeader;
