@@ -17,10 +17,28 @@ public:
 
     void buildHeader();
     void buildFooter();
+    int getPage() { return skipped / limit; }
+    int getLastPage() { return (data.getTotalLines()-1) / limit; }
     void buildData( int offset = 0 );
-    void nextPage() { rebuildData( skipped + limit ); }
-    void prevPage() { rebuildData( (skipped - limit) > 0 ? skipped - limit: 0 ); }
-    void exactPage( int page ) { rebuildData( page*limit ); }
+    void nextPage() {
+        if ( skipped + limit < data.getTotalLines() ) {
+            rebuildData( skipped + limit );
+        }
+    }
+
+    void prevPage() {
+        if ( skipped - limit >= 0 ) {
+            rebuildData( skipped - limit );
+        }
+    }
+
+    void exactPage( int page ) {
+        if ( ( (page-1)*limit < data.getTotalLines() ) &&
+             ( (page-1)*limit >= 0 ) )
+        {
+                rebuildData( (page-1)*limit );
+        }
+    }
 private:
     Storage& header;
     Storage& footer;

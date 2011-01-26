@@ -32,8 +32,10 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             WTable* controlBlock;
             WLabel* next;
             WLabel* prev;
+            WSpinBox* page;
             WLayout* lnext;
             WLayout* lprev;
+            WLayout* lpage;
 
             if ( ppage->isAdmin ) {
                 //Pid input field
@@ -63,8 +65,22 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             status->addItem(WString::fromUTF8("Неверный номер"));
             //Report button
             reportbtn = new WPushButton( WString::fromUTF8("Сгенерировать отчет") );
+
+            page = new WSpinBox(); page->setRange( 1, 1 );
+            page->setValue(1);
+            page->setMaximumSize(  WLength( 1, WLength::Centimeter ), WLength::Auto  );
+            page->valueChanged().connect( boost::bind(
+                                             &WScrollTable::exactPage,
+                                             ppage->statistics,
+                                             _1
+                                                     ) );
+
             next = new WLabel( WString::fromUTF8(">>") );
             next->addStyleClass("link");
+            next->clicked().connect( boost::bind(
+                                        &PersonalPage::onPageUpdate,
+                                        ppage,
+                                        page ) );
             next->clicked().connect( boost::bind(
                                         &WScrollTable::nextPage,
                                         ppage->statistics
@@ -73,6 +89,10 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             prev = new WLabel( WString::fromUTF8("<<") );
             prev->addStyleClass("link");
             prev->clicked().connect( boost::bind(
+                                        &PersonalPage::onPageUpdate,
+                                        ppage,
+                                        page ) );
+            prev->clicked().connect( boost::bind(
                                         &WScrollTable::prevPage,
                                         ppage->statistics
                                                 ) );
@@ -80,12 +100,15 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             lnext->addWidget( next );
             lprev = new WVBoxLayout();
             lprev->addWidget( prev );
+            lpage = new WVBoxLayout();
+            lpage->addWidget( page );
 
             controlBlock = new WTable();
             controlBlock->elementAt( 0, 0 )->addWidget( reportbtn );
-            controlBlock->elementAt( 0, 0 )->setColumnSpan( 2 );
+            controlBlock->elementAt( 0, 0 )->setColumnSpan( 3 );
             controlBlock->elementAt( 1, 0 )->setLayout( lprev, AlignLeft );
-            controlBlock->elementAt( 1, 1 )->setLayout( lnext, AlignRight );
+            controlBlock->elementAt( 1, 1 )->setLayout( lpage, AlignCenter );
+            controlBlock->elementAt( 1, 2 )->setLayout( lnext, AlignRight );
             controlBlock->setStyleClass("datetable");
             reportbtn->clicked().connect(boost::bind(
                                              &PersonalPage::onReportBtnClicked,
@@ -95,7 +118,7 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
                                              date_from,
                                              date_to,
                                              text,
-                                             status,
+                                             std::make_pair(status, page),
                                              reportbtn,
                                              report_status
                                              )
@@ -210,7 +233,7 @@ void WStatPageData::prepareRequest( ) {
         TransactionPTR tr = db.openTransaction( conn, "WStatPageData::prepareRequest ( create temp view ) " );
 
         std::ostringstream req;
-        req     <<  "CREATE OR REPLACE VIEW " << view_name << " AS ";
+        req     <<  "CREATE OR REPLACE TEMP VIEW " << view_name << " AS ";
         req     <<  "SELECT message_status.\"REQUESTID\", message_status.\"MESSAGEID\", \"TXT\", \"FROM\", \"PID\", smsrequest.\"WHEN\" AS REQUESTDATE, "
                 <<  "\"STATUS\", message_status.\"TO\", \"PARTS\", \"COUNTRY\", \"COUNTRYCODE\", \"OPERATOR\", \"OPERATORCODE\", \"REGION\", message_status.\"WHEN\" AS DELIVERYDATE, 0 "
                 <<  "FROM smsrequest, message_status WHERE smsrequest.\"REQUESTID\"=message_status.\"REQUESTID\"  ";
@@ -226,45 +249,35 @@ void WStatPageData::prepareRequest( ) {
             req << "AND \"TXT\" LIKE '%" << utils::escapeString( tr->esc( text_value ), "%_", "\\" ) << "%' ESCAPE E'\\\\' ";
         if ( status_filter )
             req <<  "AND \"STATUS\"='" << status_value() << "' ";
-        req << ";";
+        req << "ORDER BY smsrequest.\"WHEN\" DESC;";
 
 
         {
             boost::xtime from, to;
             boost::xtime_get( &from, boost::TIME_UTC );
             tr->exec( req.str() );
-            tr->commit();
             boost::xtime_get( &to, boost::TIME_UTC );
             req << " for " << to.sec - from.sec << " seconds";
             Logger::get_mutable_instance().dbloginfo( req.str() );
         }
+
+        std::ostringstream req2;
+        req2    <<  "SELECT create_matview( '" << res_name << "', '" << view_name << "' );";
+
+        {
+            boost::xtime from, to;
+            boost::xtime_get( &from, boost::TIME_UTC );
+            tr->exec( req2.str() );
+            tr->commit();
+            boost::xtime_get( &to, boost::TIME_UTC );
+            req2 << " for " << to.sec - from.sec << " seconds";
+            Logger::get_mutable_instance().dbloginfo( req2.str() );
+        }
+
 
     } catch ( ... ) {
         initialized = false;
         throw;
-    }
-
-    // execute request and fill temporary table with result
-    try {
-        PGSql::ConnectionHolder cHold( db );
-        ConnectionPTR conn = cHold.get();
-        TransactionPTR tr = db.openTransaction( conn, "WStatPageData::prepareRequest ( fill result table ) " );
-
-        std::ostringstream req;
-        req     <<  "SELECT create_matview( '" << res_name << "', '" << view_name << "' );";
-
-        {
-            boost::xtime from, to;
-            boost::xtime_get( &from, boost::TIME_UTC );
-            tr->exec( req.str() );
-            tr->commit();
-            boost::xtime_get( &to, boost::TIME_UTC );
-            req << " for " << to.sec - from.sec << " seconds";
-            Logger::get_mutable_instance().dbloginfo( req.str() );
-        }
-
-    } catch ( ... ) {
-        initialized = false;
     }
 
     // calculate total_lines_value
@@ -524,7 +537,7 @@ void PersonalPage::onReportBtnClicked(
         WDatePicker* date_from,
         WDatePicker* date_to,
         WLineEdit* text,
-        WComboBox* status,
+        std::pair<WComboBox*, WSpinBox*>  status_page,
         WPushButton* reportbtn,
         WLabel* reportstatus ) {
 
@@ -565,19 +578,19 @@ void PersonalPage::onReportBtnClicked(
         data.setDateToFilter( rv.length().total_seconds()-3*60*60 );
     }
 
-    if ( status->tabIndex() == 0 ) {
+    if ( status_page.first->currentIndex() == 0 ) {
         // Ничего не делаем
     }
 
-    if ( status->currentIndex() == 1 ) {
+    if ( status_page.first->currentIndex() == 1 ) {
         data.setStatusFilter( SMSMessage::Status( SMSMessage::Status::ST_DELIVERED ) );
     }
 
-    if ( status->currentIndex() == 2 ) {
+    if ( status_page.first->currentIndex() == 2 ) {
         data.setStatusFilter( SMSMessage::Status( SMSMessage::Status::ST_NOT_DELIVERED ) );
     }
 
-    if ( status->currentIndex() == 3 ) {
+    if ( status_page.first->currentIndex() == 3 ) {
         data.setStatusFilter( SMSMessage::Status( SMSMessage::Status::ST_REJECTED ) );
     }
 
@@ -601,9 +614,14 @@ void PersonalPage::onReportBtnClicked(
     statistics->rebuildData();
 
     reportbtn->enable();
-    reportstatus->setText(WString::fromUTF8("Готово"));
+    reportstatus->setText(WString::fromUTF8(string("Готово: ") + boost::lexical_cast<string>( statistics->getLastPage() + 1 ) + string(" страниц")));
+    onPageUpdate( status_page.second );
 }
 
+void PersonalPage::onPageUpdate( WSpinBox* page ) {
+    page->setRange( 1, statistics->getLastPage() + 1 );
+    page->setValue( statistics->getPage() + 1 );
+}
 
 void PersonalPage::buildPersonalPage( ) {
     setTitle( WString::fromUTF8("GreenSMS: Личный кабинет ") );
@@ -618,7 +636,7 @@ void PersonalPage::buildPersonalPage( ) {
     statistics->buildHeader();
     statistics->buildData();
     statistics->buildFooter();
-//    statistics->setPageLimit( 2 );
+    statistics->setPageLimit( 2 );
     root()->addWidget( statistics );
 }
 
