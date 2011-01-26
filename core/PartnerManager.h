@@ -71,6 +71,8 @@ struct PartnerInfo {
         this->pIsTrial = pIsTrial;
         this->pPriority = pPriority;
     }
+
+    bool isAdmin() { return pId == "1"; }
 };
 
 
