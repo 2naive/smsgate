@@ -10,9 +10,13 @@ class WScrollTable: public Wt::WTable {
 public:
     typedef std::vector< Wt::WWidget* > RowType ;
     typedef WDataSource< RowType > Storage;
-    WScrollTable( Storage& header, Storage& footer, Storage& data, Wt::WContainerWidget *parent=0 );
+    WScrollTable( Storage& header, Storage& data, Storage& footer, Wt::WContainerWidget *parent=0 );
 
     void rebuildData();
+
+    void buildHeader();
+    void buildFooter();
+    void buildData();
 private:
     Storage& header;
     Storage& footer;
@@ -22,9 +26,6 @@ private:
     int footerlen;
     int datalen;
 
-    void buildHeader();
-    void buildFooter();
-    void buildData();
 
 };
 

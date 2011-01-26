@@ -1,6 +1,6 @@
 #include "WScrollTable.h"
 
-WScrollTable::WScrollTable( Storage& _header, Storage& _footer, Storage& _data, Wt::WContainerWidget *parent ):
+WScrollTable::WScrollTable( Storage& _header, Storage& _data, Storage& _footer, Wt::WContainerWidget *parent ):
     Wt::WTable( parent ),
     header( _header ),
     footer( _footer ),
@@ -9,10 +9,6 @@ WScrollTable::WScrollTable( Storage& _header, Storage& _footer, Storage& _data, 
     headerlen = 0;
     footerlen = 0;
     datalen = 0;
-
-    buildHeader();
-    buildFooter();
-    buildData();
 }
 
 void WScrollTable::buildData() {
@@ -27,7 +23,7 @@ void WScrollTable::buildData() {
         datalen++;
         for ( colnum = 0; colnum < row.size(); colnum++ ) {
             if ( row[ colnum ] )
-                this->elementAt( rownum, colnum )->addWidget( row[ colnum ] );
+                elementAt( rownum, colnum )->addWidget( row[ colnum ] );
         }
     }
 
@@ -73,5 +69,6 @@ void WScrollTable::rebuildData() {
         this->deleteRow( headerlen );
     }
 
+    datalen = 0;
     buildData();
 }

@@ -19,10 +19,9 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
     WLabel* report_status = new WLabel();
 
     for ( int line = lnl; line <= lnr; line++ ) {
-        Row r;
-        r.resize( 7 );
-        switch ( line ) {
-        case 0:
+        if ( line == 0 ) {
+            Row r;
+            r.reserve( 7 );
             WLineEdit* pid;
             WLineEdit* phone;
             WDatePicker* date_from, *date_to;
@@ -47,6 +46,7 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             date->elementAt(0, 1)->addWidget( date_from );
             date->elementAt(1, 0)->addWidget( new WLabel( WString::fromUTF8("По") ) );
             date->elementAt(1, 1)->addWidget( date_to );
+            date->setStyleClass("datetable");
             //Message text field
             text = new WLineEdit();
             text->setMinimumSize( WLength( 6, WLength::Centimeter ), WLength::Auto );
@@ -78,9 +78,13 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             r.push_back( status );
             r.push_back( NULL );
             r.push_back( reportbtn );
-            break;
 
-        case 1:
+            data.push_back( r );
+        }
+
+        if ( line == 1 ) {
+            Row r;
+            r.reserve( 7 );
             if ( ppage->isAdmin )
                 r.push_back( new WLabel(WString::fromUTF8("IDP")) );
             r.push_back( new WLabel(WString::fromUTF8("Телефон")) );
@@ -90,18 +94,18 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             r.push_back( new WLabel(WString::fromUTF8("Цена")) );
             r.push_back( report_status );
 
-            break;
+            data.push_back( r );
         }
-        data.push_back( r );
     }
 }
 
 WStatPageData::WStatPageData( PersonalPage* _ppage ) {
     initialized = false;
     __total_lines = 0;
+    ppage = _ppage;
 
-    view_name = string("v") + _ppage->sessionId();
-    res_name =string("p") + _ppage->sessionId();
+    view_name = string("v") + ppage->sessionId();
+    res_name =string("p") + ppage->sessionId();
 }
 
 WStatPageData::~WStatPageData( ) {
@@ -323,7 +327,7 @@ void WStatPageData::execute( int lnl, int lnr, RowList &data ) {
         TransactionPTR tr = db.openTransaction( conn, "WStatPageData::execute ( extract results ) " );
 
         std::ostringstream req;
-        req     <<  "SELECT * from " << res_name << " limit " << lnr - lnl << " offset " << lnl << ";";
+        req     <<  "SELECT * from " << res_name << " limit " << lnr - lnl + 1 << " offset " << lnl << ";";
 
         Result res = tr->exec( req.str() );
         tr->commit();
@@ -338,7 +342,9 @@ void WStatPageData::execute( int lnl, int lnr, RowList &data ) {
             string __price = "unknown";
 
             Row row;
-            row.push_back( new WLabel( WString::fromUTF8( __pid ) ) );
+            if ( ppage->isAdmin )
+                row.push_back( new WLabel( WString::fromUTF8( __pid ) ) );
+
             row.push_back( new WLabel( WString::fromUTF8( __phone ) ) );
             row.push_back( new WLabel( WString::fromUTF8( __date ) ) );
             row.push_back( new WLabel( WString::fromUTF8( __txt ) ) );
@@ -531,11 +537,15 @@ void PersonalPage::buildPersonalPage( ) {
     setTitle( WString::fromUTF8("GreenSMS: Личный кабинет ") );
     setCssTheme("polished");
 
-    this->useStyleSheet( "/resources/css/resp_table.css" );
+    this->useStyleSheet( "/resources/css/PersonalPage.css" );
     isAdmin = false;
     authorized = false;
 
     statistics = new WScrollTable( header, data, footer );
+    statistics->setStyleClass("restable");
+    statistics->buildHeader();
+    statistics->buildData();
+    statistics->buildFooter();
     root()->addWidget( statistics );
 }
 
