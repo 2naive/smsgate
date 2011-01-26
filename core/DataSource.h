@@ -24,6 +24,7 @@ WDataSource< RowType >::WDataSource() {
 template < class RowType >
 typename WDataSource< RowType >::RowList
 WDataSource< RowType >::getLineRange( int lnl, int lnr ) {
+    releaseCache();
     execute( lnl, lnr, cache );
     return cache;
 }

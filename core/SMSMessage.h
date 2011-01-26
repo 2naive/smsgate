@@ -87,6 +87,27 @@ namespace sms {
                 }
             }
 
+            static std::string russianDescr( const Status& st ) {
+                switch (st.value) {
+                case ST_UNKNOWN:
+                    return "Неизвестно";
+                case ST_REJECTED:
+                    return "Неверный номер";
+                case ST_PREPARING:
+                    return "Подготовка";
+                case ST_BUFFERED:
+                    return "Отправлено";
+                case ST_ABSENT:
+                    return "Вне зоны";
+                case ST_DELIVERED:
+                    return "Доставлено";
+                case ST_NOT_DELIVERED:
+                    return "Не доставлено";
+                case ST_EXPIRED:
+                    return "Просрочено";
+                }
+            }
+
             Status & operator=( const Status& orig ) {
                 value = orig.value;
                 return *this;
