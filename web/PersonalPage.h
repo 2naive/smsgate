@@ -1,96 +1,94 @@
 #ifndef PERSONALPAGE_H
 #define PERSONALPAGE_H
 
+#include <boost/function.hpp>
+
 #include <Wt/WApplication>
 #include <Wt/WLabel>
 #include <Wt/WContainerWidget>
 #include <Wt/WLineEdit>
 #include <Wt/WVBoxLayout>
+#include <Wt/WHBoxLayout>
 #include <Wt/WPushButton>
 #include <Wt/WOverlayLoadingIndicator>
 #include <Wt/WDefaultLoadingIndicator>
 #include <Wt/WTable>
 #include <Wt/WDatePicker>
 #include <Wt/WComboBox>
+#include "WHintLineEdit.h"
+#include "WHintLinePassEdit.h"
+#include "WScrollTable.h"
 
 #include "PartnerManager.h"
 #include "RequestTracker.h"
 #include "PGSql.h"
 #include "AdminPage.h"
+#include "DataSource.h"
 
 using namespace Wt;
 
-class WHintLineEdit: public WLineEdit {
+class PersonalPage;
+
+class WStatPageHeader: public WDataSource< vector< WWidget* > > {
 public:
-    WHintLineEdit( WContainerWidget *parent=0 ): WLineEdit( parent ) {}
-    WHintLineEdit( const WString &content, WContainerWidget *parent=0 ): WLineEdit( content ) {
-        hint = content;
+    typedef vector< WWidget* > Row;
+    typedef WDataSource< vector< WWidget* > >::RowList RowList;
 
-        focussed().connect( SLOT( this, WHintLineEdit::onFocus ) );
-        blurred().connect( SLOT( this, WHintLineEdit::onFocusLost ) );
-    }
+    WStatPageHeader( PersonalPage* _ppage );
+
+    virtual int getTotalLines();
 private:
-    WString hint;
-
-    void onFocus() {
-        if ( text() == hint ) {
-            setText( "" );
-        }
-    }
-
-    void onFocusLost() {
-        if ( text() == "" ) {
-            setText( hint );
-        }
-    }
+    virtual void execute( int lnl, int lnr, RowList &data );
+    PersonalPage* ppage;
 };
 
-class WHintLinePassEdit: public WLineEdit {
+class WStatPageFooter: public WDataSource< vector< WWidget* > > {
 public:
-    WHintLinePassEdit( WContainerWidget *parent=0 ): WLineEdit( parent ) {}
-    WHintLinePassEdit( const WString &content, WContainerWidget *parent=0 ): WLineEdit( content ) {
-        hint = content;
+    typedef vector< WWidget* > Row;
+    typedef WDataSource< vector< WWidget* > >::RowList RowList;
 
-        focussed().connect( SLOT( this, WHintLinePassEdit::onFocus ) );
-        blurred().connect( SLOT( this, WHintLinePassEdit::onFocusLost ) );
-    }
+    WStatPageFooter( PersonalPage* _ppage ) { ppage = _ppage; }
+
+    virtual int getTotalLines() { return 0; }
 private:
-    WString hint;
+    virtual void execute( int lnl, int lnr, RowList &data ) { }
 
-    void onFocus() {
-        if ( text() == hint ) {
-            setText( "" );
-            setEchoMode( WLineEdit::Password );
-        }
-    }
-
-    void onFocusLost() {
-        if ( text() == "" ) {
-            setEchoMode( WLineEdit::Normal );
-            setText( hint );
-        }
-    }
+    PersonalPage* ppage;
 };
 
-class WScrollTable: public Wt::WTable {
+class WStatPageData: public WDataSource< vector< WWidget* > > {
 public:
-    WScrollTable( WContainerWidget *parent=0 ): WTable( parent ) {}
-    ~WScrollTable();
-};
+    typedef vector< WWidget* > Row;
+    typedef WDataSource< vector< WWidget* > >::RowList RowList;
 
-template < class RowType >
-class WDataSource {
-public:
-    typedef std::vector< RowType > RowList;
-    int getTotalLines();
+    WStatPageData( PersonalPage* _ppage );
+    ~WStatPageData( );
 
-    RowList& getLineRange( int lnl, int lnr );
-    void releaseCache();
+    void prepareRequest( );
+    void resetFilter( );
+    void setPidFilter( string pid );
+    void setPhoneFilter( string phone );
+    void setDateFromFilter( long date_from );
+    void setDateToFilter( long date_to );
+    void setTextFilter( string text );
+    void setStatusFilter( SMSMessage::Status status );
+
+    virtual int getTotalLines();
 private:
-    virtual void cacheFill( int lnl, int lnr ) = 0;
+    virtual void execute( int lnl, int lnr, RowList &data );
 
-    RowList cache;
-    int __lines;
+    PersonalPage* ppage;
+    bool initialized;
+    bool pid_filter; string pid_value;
+    bool phone_filter; string phone_value;
+    bool date_from_filter; long date_from_value;
+    bool date_to_filter; long date_to_value;
+    bool text_filter; string text_value;
+    bool status_filter; SMSMessage::Status status_value;
+
+    string view_name;
+    string res_name;
+    int __total_lines;
 };
 
 class PersonalPage : public WApplication {
@@ -103,24 +101,30 @@ private:
 
     string pId;
     bool authorized;
-    WTable* tbl;
-    WPushButton* reportbtn;
-    WLabel* reportstatus;
 
-    WLineEdit* pid;
-    WLineEdit* phone;
-    WDatePicker* date_from, *date_to;
-    WLineEdit* text;
-    WComboBox* status;
+    WStatPageHeader header;
+    WStatPageData data;
+    WStatPageFooter footer;
+
+    WScrollTable* statistics;
 
     WContainerWidget* buildLoginPage( const WEnvironment& env );
     void buildPersonalPage( );
     void onLogin();
-    MsgidList genMsgIds( const std::string& _idp, const std::string& phone, const std::string& _ldate, const std::string& _rdate, const std::string& _text, int page );
-    ReqResp genReq( const MsgidList& list, int status );
-    void onReportGenerate();
+    void onReportBtnClicked(
+            WLineEdit* pid,
+            WLineEdit* phone,
+            WDatePicker* date_from,
+            WDatePicker* date_to,
+            WLineEdit* text,
+            WComboBox* status,
+            WPushButton* reportbtn,
+            WLabel* report_status );
 
     static PGSql& db;
+    friend class WStatPageHeader;
+    friend class WStatPageFooter;
+    friend class WStatPageData;
 
 };
 

@@ -96,6 +96,8 @@ CREATE INDEX dlrs_status on dlrs( status );
 CREATE INDEX dlrs_boxc on dlrs( boxc );
 CREATE INDEX added on dlrs( added );
 
+CREATE LANGUAGE plpgsql;
+
 CREATE OR REPLACE FUNCTION insert_dlr() RETURNS trigger AS $$
 BEGIN
   new.added = NOW();
@@ -121,3 +123,63 @@ CREATE TABLE partners (
     trial       BOOL DEFAULT FALSE,
     priority    INTEGER DEFAULT 0
 );
+
+CREATE TABLE matviews (
+  mv_name NAME NOT NULL PRIMARY KEY
+  , v_name NAME NOT NULL
+  , last_refresh TIMESTAMP WITH TIME ZONE
+);
+
+CREATE OR REPLACE FUNCTION create_matview(NAME, NAME)
+RETURNS VOID
+SECURITY DEFINER
+LANGUAGE plpgsql AS '
+DECLARE
+    matview ALIAS FOR $1;
+    view_name ALIAS FOR $2;
+    entry matviews%ROWTYPE;
+BEGIN
+    SELECT * INTO entry FROM matviews WHERE mv_name = matview;
+
+    IF FOUND THEN
+        RAISE EXCEPTION ''Materialized view ''''%'''' already exists.'',
+          matview;
+    END IF;
+
+    EXECUTE ''REVOKE ALL ON '' || view_name || '' FROM PUBLIC''; 
+
+    EXECUTE ''GRANT SELECT ON '' || view_name || '' TO PUBLIC'';
+
+    EXECUTE ''CREATE TABLE '' || matview || '' AS SELECT * FROM '' || view_name;
+
+    EXECUTE ''REVOKE ALL ON '' || matview || '' FROM PUBLIC'';
+
+    EXECUTE ''GRANT SELECT ON '' || matview || '' TO PUBLIC'';
+
+    INSERT INTO matviews (mv_name, v_name, last_refresh)
+      VALUES (matview, view_name, CURRENT_TIMESTAMP); 
+    
+    RETURN;
+END
+';
+
+CREATE OR REPLACE FUNCTION drop_matview(NAME) RETURNS VOID
+SECURITY DEFINER
+LANGUAGE plpgsql AS '
+DECLARE
+    matview ALIAS FOR $1;
+    entry matviews%ROWTYPE;
+BEGIN
+
+    SELECT * INTO entry FROM matviews WHERE mv_name = matview;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION ''Materialized view % does not exist.'', matview;
+    END IF;
+
+    EXECUTE ''DROP TABLE '' || matview;
+    DELETE FROM matviews WHERE mv_name=matview;
+
+    RETURN;
+END
+';
