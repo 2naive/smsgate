@@ -29,6 +29,9 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             WComboBox* status;
             WTable* date;
             WPushButton* reportbtn;
+            WTable* controlBlock;
+            WLabel* next;
+            WLabel* prev;
 
             if ( ppage->isAdmin ) {
                 //Pid input field
@@ -58,6 +61,22 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             status->addItem(WString::fromUTF8("Неверный номер"));
             //Report button
             reportbtn = new WPushButton( WString::fromUTF8("Сгенерировать отчет") );
+            next = new WLabel( WString::fromUTF8(">>") );
+            next->clicked().connect( boost::bind(
+                                        &WScrollTable::nextPage,
+                                        ppage->statistics
+                                                ) );
+
+            prev = new WLabel( WString::fromUTF8("<<") );
+            prev->clicked().connect( boost::bind(
+                                        &WScrollTable::prevPage,
+                                        ppage->statistics
+                                                ) );
+            controlBlock = new WTable();
+            controlBlock->elementAt( 0, 0 )->addWidget( reportbtn );
+            controlBlock->elementAt( 0, 0 )->columnSpan();
+            controlBlock->elementAt( 1, 0 )->addWidget( prev );
+            controlBlock->elementAt( 1, 1 )->addWidget( next );
             reportbtn->clicked().connect(boost::bind(
                                              &PersonalPage::onReportBtnClicked,
                                              ppage,
@@ -78,7 +97,7 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             r.push_back( text );
             r.push_back( status );
             r.push_back( NULL );
-            r.push_back( reportbtn );
+            r.push_back( controlBlock );
 
             data.push_back( r );
         }
@@ -337,9 +356,12 @@ void WStatPageData::execute( int lnl, int lnr, RowList &data ) {
         for ( Result::const_iterator it = res.begin(); it != res.end(); it++ ) {
             string __pid = (*it)[4].as<string>();
             string __phone = (*it)[7].as<string>();
-            string __date = (*it)[5].as<string>();
+            long __date_num = (*it)[5].as<long>();
+            boost::gregorian::date orig( 1970, boost::gregorian::Jan, 1 );
+            boost::posix_time::ptime dt( orig, boost::posix_time::seconds( __date_num + 3*60*60 ) );
+            string __date = boost::posix_time::to_simple_string(dt);
             string __txt = (*it)[2].as<string>();
-            string __status = SMSMessage::Status::statusDescr( SMSMessage::Status( (*it)[6].as<int>() ) );
+            string __status = SMSMessage::Status::russianDescr( SMSMessage::Status( (*it)[6].as<int>() ) );
             string __price = "unknown";
 
             Row row;
@@ -547,6 +569,7 @@ void PersonalPage::buildPersonalPage( ) {
     statistics->buildHeader();
     statistics->buildData();
     statistics->buildFooter();
+//    statistics->setPageLimit( 2 );
     root()->addWidget( statistics );
 }
 

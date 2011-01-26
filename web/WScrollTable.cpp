@@ -9,14 +9,22 @@ WScrollTable::WScrollTable( Storage& _header, Storage& _data, Storage& _footer, 
     headerlen = 0;
     footerlen = 0;
     datalen = 0;
+
+    skipped = 0;
+
+    limit = 99;
 }
 
-void WScrollTable::buildData() {
+void WScrollTable::setPageLimit( int limit ) {
+    this->limit = limit - 1;
+}
+
+void WScrollTable::buildData( int offset ) {
     WDataSource< RowType >::RowList rows;
     WDataSource< RowType >::RowList::iterator it;
     int rownum;
     int colnum;
-    rows = data.getLineRange( 0, data.getTotalLines() - 1 );
+    rows = data.getLineRange( offset, (offset + limit) > (data.getTotalLines() - 1)? (data.getTotalLines() - 1): (offset + limit) );
     for ( rownum = header.getTotalLines(), it = rows.begin(); it != rows.end(); it++, rownum++ ) {
         RowType& row = *it;
         insertRow( rownum );
@@ -26,7 +34,11 @@ void WScrollTable::buildData() {
                 elementAt( rownum, colnum )->addWidget( row[ colnum ] );
         }
     }
-
+    if( rows.empty() && offset > limit ) {
+        rebuildData( skipped );
+    } else {
+        skipped = offset;
+    }
 }
 
 void WScrollTable::buildFooter() {
@@ -64,11 +76,11 @@ void WScrollTable::buildHeader() {
     }
 }
 
-void WScrollTable::rebuildData() {
+void WScrollTable::rebuildData( int offset ) {
     for ( int i = 0; i < datalen; i++ ) {
         this->deleteRow( headerlen );
     }
 
     datalen = 0;
-    buildData();
+    buildData( offset );
 }
