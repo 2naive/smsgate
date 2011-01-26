@@ -34,6 +34,8 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             if ( ppage->isAdmin ) {
                 //Pid input field
                 pid = new WLineEdit(); pid->setMaximumSize(  WLength( 1, WLength::Centimeter ), WLength::Auto  );
+            } else {
+                pid = NULL;
             }
             //Phone input field
             phone = new WLineEdit();
@@ -444,10 +446,10 @@ void PersonalPage::onReportBtnClicked(
 
     data.resetFilter();
 
-    if ( isAdmin && !pid->text().empty() )
+    if ( pid && isAdmin && !pid->text().empty() )
         data.setPidFilter( pid->text().toUTF8() );
 
-    if ( !isAdmin )
+    if ( pid && !isAdmin )
         data.setPidFilter( pId );
 
     if ( !phone->text().empty() )
