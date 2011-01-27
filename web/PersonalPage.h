@@ -126,6 +126,8 @@ private:
             WPushButton* reportbtn,
             WLabel* report_status );
     void onPageUpdate( WSpinBox* page );
+    void onPageInc( WSpinBox* page );
+    void onPageDec( WSpinBox* page );
 
     static PGSql& db;
     friend class WStatPageHeader;
