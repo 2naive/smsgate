@@ -234,7 +234,7 @@ void WStatPageData::prepareRequest( ) {
         std::ostringstream req;
         req     <<  "CREATE OR REPLACE TEMP VIEW " << view_name << " AS ";
         req     <<  "SELECT message_status.\"REQUESTID\", message_status.\"MESSAGEID\", \"TXT\", \"FROM\", \"PID\", smsrequest.\"WHEN\" AS REQUESTDATE, "
-                <<  "\"STATUS\", message_status.\"TO\", \"PARTS\", \"COUNTRY\", \"COUNTRYCODE\", \"OPERATOR\", \"OPERATORCODE\", \"REGION\", message_status.\"WHEN\" AS DELIVERYDATE, 0 "
+                <<  "\"STATUS\", message_status.\"TO\", \"PARTS\", \"COUNTRY\", \"COUNTRYCODE\", \"OPERATOR\", \"OPERATORCODE\", \"REGION\", message_status.\"WHEN\" AS DELIVERYDATE, \"PARTNERPRICE\" "
                 <<  "FROM smsrequest, message_status WHERE smsrequest.\"REQUESTID\"=message_status.\"REQUESTID\"  ";
         if ( pid_filter )
             req <<  "AND \"PID\"='" << tr->esc( pid_value ) << "' ";
@@ -365,6 +365,50 @@ int WStatPageData::getTotalLines() {
     return __total_lines;
 }
 
+void WStatPageData::evaluateSummary( double &price, int &total, int &delivered, int &rejected, int &undelivered ) {
+    PGSql& db = ppage->db;
+
+    price = 0;
+    total = 0;
+    delivered = 0;
+    rejected = 0;
+    undelivered = 0;
+    try {
+        PGSql::ConnectionHolder cHold( db );
+        ConnectionPTR conn = cHold.get();
+        TransactionPTR tr = db.openTransaction( conn, "WStatPageData::evaluateSummary ( summary results ) " );
+
+        std::ostringstream req;
+        req     <<  "select \"STATUS\", sum(\"PARTS\"), sum(\"PARTNERPRICE\") from " << res_name << " GROUP BY \"STATUS\";";
+
+        Result res = tr->exec( req.str() );
+        tr->commit();
+
+        for ( Result::const_iterator it = res.begin(); it != res.end(); it++ ) {
+            SMSMessage::Status status = SMSMessage::Status( (*it)[0].as<int>() );
+            if ( status != SMSMessage::Status::ST_REJECTED ) {
+                price += (*it)[2].as<double>();
+            }
+
+            if ( status == SMSMessage::Status::ST_REJECTED ) {
+                rejected += (*it)[1].as<int>();
+            }
+
+            if ( status == SMSMessage::Status::ST_DELIVERED ) {
+                delivered += (*it)[1].as<int>();
+            }
+
+            if ( status == SMSMessage::Status::ST_NOT_DELIVERED ) {
+                undelivered += (*it)[1].as<int>();
+            }
+
+            total += undelivered += (*it)[1].as<int>();
+        }
+
+    } catch ( ... ) {
+    }
+}
+
 void WStatPageData::execute( int lnl, int lnr, RowList &data ) {
     if ( !initialized ) {
         data.clear();
@@ -397,19 +441,11 @@ void WStatPageData::execute( int lnl, int lnr, RowList &data ) {
             string __date = boost::posix_time::to_simple_string(dt);
             string __txt = (*it)[2].as<string>();
             string __status = SMSMessage::Status::russianDescr( SMSMessage::Status( (*it)[6].as<int>() ) );
-            string __price = "1.21";
-            try {
-                PartnerInfo p = PartnerManager::get_mutable_instance().findById( __pid );
-                SMSMessage::PTR msg = SMSMessageManager::get_mutable_instance().loadMessage( msgid );
-                float price = p.tariff.costs( msg->getMsgClass().country, msg->getMsgClass().opcode ) * msg->getParts();
-                __price = boost::lexical_cast< string >( int(floor( price * 100 )) / 100) + string(".") +  boost::lexical_cast< string >( int(floor( price * 100 )) % 100 );
-            } catch ( std::exception& err ) {
-                Logger::get_mutable_instance().smslogwarn( err.what() );
-            }
-
+            float price = (*it)[15].as<double>();
             if ( SMSMessage::Status( (*it)[6].as<int>() ) == SMSMessage::Status::ST_REJECTED ) {
-                __price = "0.00";
+                price = 0;
             }
+            string __price = boost::lexical_cast< string >( int(floor( price * 100 )) / 100) + string(".") +  boost::lexical_cast< string >( int(floor( price * 100 )) % 100 );
 
             string __country = (*it)[9].as<string>();
             string __region = (*it)[13].as<string>();
@@ -625,7 +661,51 @@ void PersonalPage::onReportBtnClicked(
 
     reportbtn->enable();
     reportstatus->setText(WString::fromUTF8(string("Готово: ") + boost::lexical_cast<string>( statistics->getLastPage() + 1 ) + string(" страниц")));
+    if ( data.getTotalLines() ) {
+        reportstatus->setStyleClass("link");
+        reportstatus->clicked().connect( boost::bind( &PersonalPage::onSummaryShow, this ) );
+    } else {
+        reportstatus->setStyleClass("");
+    }
     onPageUpdate( status_page.second );
+}
+
+void PersonalPage::onSummaryShow() {
+    if ( !data.getTotalLines() ) {
+        return;
+    }
+
+    WDialog summary;
+    summary.setWindowTitle( WString::fromUTF8("Итоги") );
+    summary.setTitleBarEnabled( true );
+
+    WPushButton* closeBtn = new WPushButton( WString::fromUTF8("ОК") );
+    closeBtn->clicked().connect(boost::bind( &WDialog::accept, &summary ));
+
+    double price;
+    int total, delivered, rejected, undelivered;
+
+    WTable* report = new WTable;
+    report->setStyleClass("restable");
+    report->elementAt(0, 0)->addWidget( new WLabel( WString::fromUTF8("Всего сообщений") ) );
+    report->elementAt(1, 0)->addWidget( new WLabel( WString::fromUTF8("Доставлено") ) );
+    report->elementAt(2, 0)->addWidget( new WLabel( WString::fromUTF8("Отказ в передаче") ) );
+    report->elementAt(3, 0)->addWidget( new WLabel( WString::fromUTF8("Не доставлено") ) );
+    report->elementAt(4, 0)->addWidget( new WLabel( WString::fromUTF8("Общей стоимостью") ) );
+
+    data.evaluateSummary(price, total, delivered, rejected, undelivered);
+    char price_str[100];
+    sprintf( price_str, "%0.2f", price );
+    report->elementAt(0, 1)->addWidget( new WLabel( WString::fromUTF8( boost::lexical_cast<std::string>( total ) ) ) );
+    report->elementAt(1, 1)->addWidget( new WLabel( WString::fromUTF8( boost::lexical_cast<std::string>( delivered ) ) ) );
+    report->elementAt(2, 1)->addWidget( new WLabel( WString::fromUTF8( boost::lexical_cast<std::string>( rejected ) ) ) );
+    report->elementAt(3, 1)->addWidget( new WLabel( WString::fromUTF8( boost::lexical_cast<std::string>( undelivered ) ) ) );
+    report->elementAt(4, 1)->addWidget( new WLabel( WString::fromUTF8( std::string( price_str ) + " руб" ) ) );
+
+    summary.contents()->addWidget( report );
+    summary.contents()->addWidget( closeBtn );
+
+    summary.exec();
 }
 
 void PersonalPage::onPageUpdate( WSpinBox* page ) {

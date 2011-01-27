@@ -4,11 +4,12 @@
 
 namespace sms {
 
-    SMSMessage::SMSMessage( ID id, std::string ph, int parts ) {
+    SMSMessage::SMSMessage( ID id, std::string ph, int parts, double partner_price ) {
         phone = ph;
         this->parts = parts;
         msgClass = MessageClassifier::Instance()->getMsgClass( ph );
         msg_id = id;
+        price = partner_price;
         delivery_status = Status::ST_UNKNOWN;
     }
 
@@ -38,7 +39,7 @@ namespace sms {
         {
             std::ostringstream r;
 
-            r       << "SELECT \"STATUS\", \"TO\", \"GATEWAY\", \"PARTS\", \"WHEN\" FROM message_status "
+            r       << "SELECT \"STATUS\", \"TO\", \"GATEWAY\", \"PARTS\", \"PARTNERPRICE\", \"WHEN\" FROM message_status "
                     << "WHERE \"REQUESTID\"='" << msgid.req << "' "
                     << "AND \"MESSAGEID\"='" << msgid.msg_num << "'; ";
 
@@ -48,7 +49,7 @@ namespace sms {
             Result res = tr->exec( r.str() );
             tr->commit();
             if ( res.size() > 0 ) {
-                pmsg = new SMSMessage( msgid, res[0][1].as< std::string >(), res[0][3].as< int >() );
+                pmsg = new SMSMessage( msgid, res[0][1].as< std::string >(), res[0][3].as< int >(), res[0][4].as< double >() );
                 pmsg->delivery_status = res[0][0].as< int >();
 
             }  else {
@@ -95,13 +96,14 @@ namespace sms {
         std::ostringstream r;
 
         r       << "INSERT INTO message_status "
-                << "(\"REQUESTID\",\"MESSAGEID\",\"STATUS\",\"TO\", \"PARTS\", \"COUNTRY\", \"COUNTRYCODE\", \"OPERATOR\", \"OPERATORCODE\", \"REGION\", \"GATEWAY\", \"WHEN\") "
+                << "(\"REQUESTID\",\"MESSAGEID\",\"STATUS\",\"TO\", \"PARTS\", \"PARTNERPRICE\", \"COUNTRY\", \"COUNTRYCODE\", \"OPERATOR\", \"OPERATORCODE\", \"REGION\", \"GATEWAY\", \"WHEN\") "
                 << "VALUES('"
                 << msg->getID().req<< "','"
                 << msg->getID().msg_num<< "','"
                 << msg->getStatus()() << "','"
                 << msg->getPhone()<< "', '"
                 << msg->parts << "', '"
+                << msg->price << "', '"
                 << msg->getMsgClass().country << "', '"
                 << msg->getMsgClass().countrycode << "', '"
                 << msg->getMsgClass().opname << "', '"
@@ -150,7 +152,7 @@ namespace sms {
         tr->commit();
     }
 
-    void SMSMessageManager::createMessage( SMSMessage::ID msgid, std::string phone, int parts ) throw ( MessageAlreadyExistsError ) {
+    void SMSMessageManager::createMessage( SMSMessage::ID msgid, std::string phone, int parts, double price ) throw ( MessageAlreadyExistsError ) {
         boost::recursive_mutex::scoped_lock lck( msgdata_lock );
 
         if ( msg_data.get<tag_id>().find( msgid ) != msg_data.get<tag_id>().end() )
@@ -159,7 +161,7 @@ namespace sms {
         SMSMessageInfo* msginfo = new SMSMessageInfo();
         boost::shared_ptr< SMSMessageInfo > msginfoptr( msginfo );
 
-        SMSMessage* msgptr = new SMSMessage( msgid, phone, parts );
+        SMSMessage* msgptr = new SMSMessage( msgid, phone, parts, price );
         msginfoptr->msgid = msgid;
         msginfoptr->msgptr = boost::shared_ptr< SMSMessage>( msgptr );
         msginfoptr->msgptr->op_history.push_back( SMSMessage::SMSSyncOperation::create<SMSMessage::OP_AddMessageToDB>( msgid ) );

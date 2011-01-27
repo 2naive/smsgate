@@ -256,11 +256,12 @@ namespace sms {
         SMSMessage::ID msg_id;
         std::string phone;
         int parts;
+        double price;
         OpInfo msgClass;
         std::list< SMSSyncOperation > op_history;
 
         // We declare private constructor to prevent manual creating of SMSMessage instances
-        SMSMessage( ID id, std::string phone, int parts );
+        SMSMessage( ID id, std::string phone, int parts, double price );
         static SMSMessage* loadMsgFromDb( SMSMessage::ID msgid );
         void saveToDb( );
         void updateMessageToDb( );
@@ -318,7 +319,7 @@ namespace sms {
         SMSMessage::PTR loadMessage( SMSMessage::ID msgid ) throw ( MessageNotFoundError );
         void lockSMSMessage( SMSMessage::ID msgid );
         void unlockSMSMessage( SMSMessage::ID msgid );
-        void createMessage( SMSMessage::ID msgid, std::string phone, int parts ) throw ( MessageAlreadyExistsError );
+        void createMessage( SMSMessage::ID msgid, std::string phone, int parts, double price ) throw ( MessageAlreadyExistsError );
         void sync();
         void cleanup();
         bool setDirty( SMSMessage::ID, bool val );

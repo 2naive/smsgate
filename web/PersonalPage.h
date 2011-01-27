@@ -11,12 +11,11 @@
 #include <Wt/WVBoxLayout>
 #include <Wt/WHBoxLayout>
 #include <Wt/WPushButton>
-#include <Wt/WOverlayLoadingIndicator>
-#include <Wt/WDefaultLoadingIndicator>
 #include <Wt/WTable>
 #include <Wt/WDatePicker>
 #include <Wt/WComboBox>
 #include <Wt/WSpinBox>
+#include <Wt/WDialog>
 #include "WHintLineEdit.h"
 #include "WHintLinePassEdit.h"
 #include "WScrollTable.h"
@@ -76,6 +75,8 @@ public:
     void setCountryFilter( string country );
     void setStatusFilter( SMSMessage::Status status );
 
+    void evaluateSummary( double &price, int &total, int &delivered, int &rejected, int &undelivered );
+
     virtual int getTotalLines();
 private:
     virtual void execute( int lnl, int lnr, RowList &data );
@@ -128,6 +129,9 @@ private:
     void onPageUpdate( WSpinBox* page );
     void onPageInc( WSpinBox* page );
     void onPageDec( WSpinBox* page );
+
+    void onSummaryShow(  );
+
 
     static PGSql& db;
     friend class WStatPageHeader;
