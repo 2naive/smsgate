@@ -379,7 +379,7 @@ void WStatPageData::evaluateSummary( double &price, int &total, int &delivered, 
         TransactionPTR tr = db.openTransaction( conn, "WStatPageData::evaluateSummary ( summary results ) " );
 
         std::ostringstream req;
-        req     <<  "select \"STATUS\", sum(\"PARTS\"), sum(\"PARTNERPRICE\") from " << res_name << " GROUP BY \"STATUS\";";
+            req     <<  "select \"STATUS\", sum(\"PARTS\"), sum(\"PARTNERPRICE\") from " << res_name << " GROUP BY \"STATUS\";";
 
         Result res = tr->exec( req.str() );
         tr->commit();
@@ -402,7 +402,7 @@ void WStatPageData::evaluateSummary( double &price, int &total, int &delivered, 
                 undelivered += (*it)[1].as<int>();
             }
 
-            total += undelivered += (*it)[1].as<int>();
+            total += (*it)[1].as<int>();
         }
 
     } catch ( ... ) {
