@@ -81,23 +81,17 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             next = new WLabel( WString::fromUTF8(">>") );
             next->addStyleClass("link");
             next->clicked().connect( boost::bind(
-                                        &PersonalPage::onPageUpdate,
+                                        &PersonalPage::onPageInc,
                                         ppage,
-                                        page ) );
-            next->clicked().connect( boost::bind(
-                                        &WScrollTable::nextPage,
-                                        ppage->statistics
+                                        page
                                                 ) );
 
             prev = new WLabel( WString::fromUTF8("<<") );
             prev->addStyleClass("link");
             prev->clicked().connect( boost::bind(
-                                        &PersonalPage::onPageUpdate,
+                                        &PersonalPage::onPageDec,
                                         ppage,
-                                        page ) );
-            prev->clicked().connect( boost::bind(
-                                        &WScrollTable::prevPage,
-                                        ppage->statistics
+                                        page
                                                 ) );
             lnext = new WVBoxLayout();
             lnext->addWidget( next );
@@ -636,6 +630,17 @@ void PersonalPage::onPageUpdate( WSpinBox* page ) {
     page->setRange( 1, statistics->getLastPage() + 1 );
     page->setValue( statistics->getPage() + 1 );
 }
+
+void PersonalPage::onPageInc( WSpinBox* page ) {
+    page->setValue( page->value() + 1 );
+    onPageUpdate( page );
+}
+
+void PersonalPage::onPageDec( WSpinBox* page ) {
+    page->setValue( page->value() - 1 );
+    onPageUpdate( page );
+}
+
 
 void PersonalPage::buildPersonalPage( ) {
     setTitle( WString::fromUTF8("GreenSMS: Личный кабинет ") );
