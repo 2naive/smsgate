@@ -73,6 +73,7 @@ public:
     void setDateFromFilter( long date_from );
     void setDateToFilter( long date_to );
     void setTextFilter( string text );
+    void setCountryFilter( string country );
     void setStatusFilter( SMSMessage::Status status );
 
     virtual int getTotalLines();
@@ -86,6 +87,7 @@ private:
     bool date_from_filter; long date_from_value;
     bool date_to_filter; long date_to_value;
     bool text_filter; string text_value;
+    bool country_filter; string country_value;
     bool status_filter; SMSMessage::Status status_value;
 
     string view_name;
@@ -119,7 +121,7 @@ private:
             WLineEdit* phone,
             WDatePicker* date_from,
             WDatePicker* date_to,
-            WLineEdit* text,
+            std::pair<WLineEdit*, WLineEdit*>  text_country,
             std::pair<WComboBox*, WSpinBox*>  status_page,
             WPushButton* reportbtn,
             WLabel* report_status );

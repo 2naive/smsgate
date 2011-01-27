@@ -28,6 +28,7 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             WLineEdit* text;
             WComboBox* status;
             WTable* date;
+            WLineEdit* country;
             WPushButton* reportbtn;
             WTable* controlBlock;
             WLabel* next;
@@ -63,6 +64,8 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             status->addItem(WString::fromUTF8("Доставлено"));
             status->addItem(WString::fromUTF8("Не доставлено"));
             status->addItem(WString::fromUTF8("Неверный номер"));
+            //Country input field
+            country = new WLineEdit(); country->setMaximumSize(  WLength( 1, WLength::Centimeter ), WLength::Auto  );
             //Report button
             reportbtn = new WPushButton( WString::fromUTF8("Сгенерировать отчет") );
 
@@ -117,7 +120,7 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
                                              phone,
                                              date_from,
                                              date_to,
-                                             text,
+                                             std::make_pair(text, country),
                                              std::make_pair(status, page),
                                              reportbtn,
                                              report_status
@@ -129,7 +132,7 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             r.push_back( date );
             r.push_back( text );
             r.push_back( status );
-            r.push_back( NULL );
+            r.push_back( country );
             r.push_back( NULL );
             r.push_back( NULL );
             r.push_back( controlBlock );
@@ -247,6 +250,8 @@ void WStatPageData::prepareRequest( ) {
             req <<  "AND smsrequest.\"WHEN\"<'" << date_to_value << "' ";
         if ( text_filter )
             req << "AND \"TXT\" LIKE '%" << utils::escapeString( tr->esc( text_value ), "%_", "\\" ) << "%' ESCAPE E'\\\\' ";
+        if ( country_filter )
+            req <<  "AND \"COUNTRY\"='" << tr->esc(country_value) << "' ";
         if ( status_filter )
             req <<  "AND \"STATUS\"='" << status_value() << "' ";
         req << "ORDER BY smsrequest.\"WHEN\" DESC;";
@@ -318,6 +323,7 @@ void WStatPageData::resetFilter( ) {
     date_from_filter = false;
     date_to_filter = false;
     text_filter = false;
+    country_filter = false;
     status_filter = false;
 }
 
@@ -344,6 +350,11 @@ void WStatPageData::setDateToFilter( long date_to ) {
 void WStatPageData::setTextFilter( string text ) {
     text_filter = true;
     text_value = text;
+}
+
+void WStatPageData::setCountryFilter( string country ) {
+    country_filter = true;
+    country_value = country;
 }
 
 void WStatPageData::setStatusFilter( SMSMessage::Status status ) {
@@ -394,7 +405,7 @@ void WStatPageData::execute( int lnl, int lnr, RowList &data ) {
             try {
                 PartnerInfo p = PartnerManager::get_mutable_instance().findById( __pid );
                 SMSMessage::PTR msg = SMSMessageManager::get_mutable_instance().loadMessage( msgid );
-                float price = p.tariff.costs( msg->getMsgClass().country, msg->getMsgClass().opcode );
+                float price = p.tariff.costs( msg->getMsgClass().country, msg->getMsgClass().opcode ) * msg->getParts();
                 __price = boost::lexical_cast< string >( int(floor( price * 100 )) / 100) + string(".") +  boost::lexical_cast< string >( int(floor( price * 100 )) % 100 );
             } catch ( std::exception& err ) {
                 Logger::get_mutable_instance().smslogwarn( err.what() );
@@ -536,7 +547,7 @@ void PersonalPage::onReportBtnClicked(
         WLineEdit* phone,
         WDatePicker* date_from,
         WDatePicker* date_to,
-        WLineEdit* text,
+        std::pair<WLineEdit*, WLineEdit*>  text_country,
         std::pair<WComboBox*, WSpinBox*>  status_page,
         WPushButton* reportbtn,
         WLabel* reportstatus ) {
@@ -552,8 +563,11 @@ void PersonalPage::onReportBtnClicked(
     if ( !phone->text().empty() )
         data.setPhoneFilter( phone->text().toUTF8() );
 
-    if ( !text->text().empty() )
-        data.setTextFilter( text->text().toUTF8() );
+    if ( !text_country.first->text().empty() )
+        data.setTextFilter( text_country.first->text().toUTF8() );
+
+    if ( !text_country.second->text().empty() )
+        data.setCountryFilter( text_country.second->text().toUTF8() );
 
     std::string _ldate = date_from->date().toString("yyyy/MM/dd").toUTF8();
     if ( !_ldate.empty() ) {

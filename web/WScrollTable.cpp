@@ -12,7 +12,7 @@ WScrollTable::WScrollTable( Storage& _header, Storage& _data, Storage& _footer, 
 
     skipped = 0;
 
-    limit = 99;
+    limit = 100;
 }
 
 void WScrollTable::setPageLimit( int limit ) {

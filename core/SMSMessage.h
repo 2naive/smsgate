@@ -239,6 +239,7 @@ namespace sms {
         std::string getPhone() const;
         OpInfo getMsgClass() const;
         void setStatus( Status st );
+        int getParts() const { return parts; }
         friend class msg_compare;
         // SMSMessageManager needs access to private members such as construcotr
         friend class SMSMessageManager;
