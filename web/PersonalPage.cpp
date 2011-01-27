@@ -379,7 +379,7 @@ void WStatPageData::execute( int lnl, int lnr, RowList &data ) {
         TransactionPTR tr = db.openTransaction( conn, "WStatPageData::execute ( extract results ) " );
 
         std::ostringstream req;
-        req     <<  "SELECT * from " << res_name << " limit " << lnr - lnl + 1 << " offset " << lnl << ";";
+        req     <<  "SELECT * from " << res_name << " ORDER BY REQUESTDATE DESC limit " << lnr - lnl + 1 << " offset " << lnl << ";";
 
         Result res = tr->exec( req.str() );
         tr->commit();
