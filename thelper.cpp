@@ -151,7 +151,7 @@ int main( int argc, char** argv ) {
         try {
             costs = base.costs( cname, opcode );
         } catch ( ... ) {
-            costs = 1.0;
+            costs = 0.0;
         }
 
         cout << costs << endl;
