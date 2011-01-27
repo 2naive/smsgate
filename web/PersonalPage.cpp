@@ -17,6 +17,7 @@ int WStatPageHeader::getTotalLines() {
 void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
     data.clear();
     WLabel* report_status = new WLabel();
+    report_status->clicked().connect( boost::bind( &PersonalPage::onSummaryShow, ppage ) );
 
     for ( int line = lnl; line <= lnr; line++ ) {
         if ( line == 0 ) {
@@ -663,7 +664,6 @@ void PersonalPage::onReportBtnClicked(
     reportstatus->setText(WString::fromUTF8(string("Готово: ") + boost::lexical_cast<string>( statistics->getLastPage() + 1 ) + string(" страниц")));
     if ( data.getTotalLines() ) {
         reportstatus->setStyleClass("link");
-        reportstatus->clicked().connect( boost::bind( &PersonalPage::onSummaryShow, this ) );
     } else {
         reportstatus->setStyleClass("");
     }
@@ -679,33 +679,32 @@ void PersonalPage::onSummaryShow() {
     summary.setWindowTitle( WString::fromUTF8("Итоги") );
     summary.setTitleBarEnabled( true );
 
-    WPushButton* closeBtn = new WPushButton( WString::fromUTF8("ОК") );
-    closeBtn->clicked().connect(boost::bind( &WDialog::accept, &summary ));
-
     double price;
     int total, delivered, rejected, undelivered;
 
-    WTable* report = new WTable;
-    report->setStyleClass("restable");
-    report->elementAt(0, 0)->addWidget( new WLabel( WString::fromUTF8("Всего сообщений") ) );
-    report->elementAt(1, 0)->addWidget( new WLabel( WString::fromUTF8("Доставлено") ) );
-    report->elementAt(2, 0)->addWidget( new WLabel( WString::fromUTF8("Отказ в передаче") ) );
-    report->elementAt(3, 0)->addWidget( new WLabel( WString::fromUTF8("Не доставлено") ) );
-    report->elementAt(4, 0)->addWidget( new WLabel( WString::fromUTF8("Общей стоимостью") ) );
+    WTable report( summary.contents() );
+    report.setStyleClass("restable");
+    report.elementAt(0, 0)->addWidget( new WLabel( WString::fromUTF8("Всего сообщений") ) );
+    report.elementAt(1, 0)->addWidget( new WLabel( WString::fromUTF8("Доставлено") ) );
+    report.elementAt(2, 0)->addWidget( new WLabel( WString::fromUTF8("Отказ в передаче") ) );
+    report.elementAt(3, 0)->addWidget( new WLabel( WString::fromUTF8("Не доставлено") ) );
+    report.elementAt(4, 0)->addWidget( new WLabel( WString::fromUTF8("Общей стоимостью") ) );
 
     data.evaluateSummary(price, total, delivered, rejected, undelivered);
     char price_str[100];
     sprintf( price_str, "%0.2f", price );
-    report->elementAt(0, 1)->addWidget( new WLabel( WString::fromUTF8( boost::lexical_cast<std::string>( total ) ) ) );
-    report->elementAt(1, 1)->addWidget( new WLabel( WString::fromUTF8( boost::lexical_cast<std::string>( delivered ) ) ) );
-    report->elementAt(2, 1)->addWidget( new WLabel( WString::fromUTF8( boost::lexical_cast<std::string>( rejected ) ) ) );
-    report->elementAt(3, 1)->addWidget( new WLabel( WString::fromUTF8( boost::lexical_cast<std::string>( undelivered ) ) ) );
-    report->elementAt(4, 1)->addWidget( new WLabel( WString::fromUTF8( std::string( price_str ) + " руб" ) ) );
+    report.elementAt(0, 1)->addWidget( new WLabel( WString::fromUTF8( boost::lexical_cast<std::string>( total ) ) ) );
+    report.elementAt(1, 1)->addWidget( new WLabel( WString::fromUTF8( boost::lexical_cast<std::string>( delivered ) ) ) );
+    report.elementAt(2, 1)->addWidget( new WLabel( WString::fromUTF8( boost::lexical_cast<std::string>( rejected ) ) ) );
+    report.elementAt(3, 1)->addWidget( new WLabel( WString::fromUTF8( boost::lexical_cast<std::string>( undelivered ) ) ) );
+    report.elementAt(4, 1)->addWidget( new WLabel( WString::fromUTF8( std::string( price_str ) + " руб" ) ) );
 
-    summary.contents()->addWidget( report );
-    summary.contents()->addWidget( closeBtn );
+    WPushButton closeBtn( WString::fromUTF8("ОК"), summary.contents() );
+    closeBtn.clicked().connect(&summary, &WDialog::accept);
 
     summary.exec();
+
+
 }
 
 void PersonalPage::onPageUpdate( WSpinBox* page ) {
