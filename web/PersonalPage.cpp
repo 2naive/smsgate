@@ -48,7 +48,9 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             phone = new WLineEdit();
             //Date input field
             date_from = new WDatePicker(); date_from->setDate( WDate::currentDate().addDays( -7 ) );
+            date_from->calendar()->setSingleClickSelect( true );
             date_to = new WDatePicker(); date_to->setDate( WDate::currentDate() );
+            date_to->calendar()->setSingleClickSelect( true );
             date = new WTable();
             date->elementAt(0, 0)->addWidget( new WLabel( WString::fromUTF8("С") ) );
             date->elementAt(0, 1)->addWidget( date_from );
