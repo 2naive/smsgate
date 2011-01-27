@@ -134,7 +134,7 @@ namespace sms {
             }
 
             bool operator!=(const Status& r) const {
-                return ( priority(value) == priority(r.value));
+                return ( priority(value) != priority(r.value));
             }
 
         private:
