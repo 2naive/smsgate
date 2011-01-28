@@ -3,7 +3,18 @@
 #include "Logger.h"
 #include "Timer.h"
 
+#include <boost/lexical_cast.hpp>
+
 using namespace std;
+
+bool PartnerInfo::isAdmin() {
+    try {
+        return ( boost::lexical_cast<int>( this->pId ) < 100 );
+    } catch ( ... ) {
+        return false;
+    }
+}
+
 
 PartnerManager::PartnerManager() {
 
@@ -85,3 +96,4 @@ void PartnerManager::loadFromDb() {
     out << "parsed;";
     Logger::get_mutable_instance().smsloginfo( out.str() );
 }
+
