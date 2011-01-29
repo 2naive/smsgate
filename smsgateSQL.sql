@@ -184,3 +184,15 @@ BEGIN
     RETURN;
 END
 ';
+
+CREATE OR REPLACE FUNCTION ts2int(timestamp without time zone) RETURNS int AS
+$$
+select extract('epoch' from $1)::integer;
+$$ LANGUAGE SQL STRICT STABLE;
+
+CREATE OR REPLACE FUNCTION int2ts(integer) RETURNS timestamp AS
+$$
+SELECT ( TIMESTAMP WITH TIME ZONE 'epoch' + $1 * INTERVAL '1second')::timestamp without time zone;
+$$ LANGUAGE SQL STRICT STABLE;
+
+
