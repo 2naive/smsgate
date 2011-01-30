@@ -728,8 +728,6 @@ void PersonalPage::buildPersonalPage( ) {
     setCssTheme("polished");
 
     this->useStyleSheet( "/resources/css/PersonalPage.css" );
-    isAdmin = false;
-    authorized = false;
 
     statistics = new WScrollTable( header, data, footer );
     statistics->setStyleClass("restable");

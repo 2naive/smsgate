@@ -72,7 +72,7 @@ struct PartnerInfo {
         this->pPriority = pPriority;
     }
 
-    bool isAdmin() { return pId == "1"; }
+    bool isAdmin();
 };
 
 
