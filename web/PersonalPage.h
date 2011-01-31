@@ -113,13 +113,10 @@ private:
     WStatPageFooter footer;
 
     WScrollTable* statistics;
-    WLength lastColumnLength;
-
 
     WContainerWidget* buildLoginPage( const WEnvironment& env );
     void buildPersonalPage( );
     void onLogin();
-    void widthCorrect();
     void onReportBtnClicked(
             WLineEdit* pid,
             WLineEdit* phone,

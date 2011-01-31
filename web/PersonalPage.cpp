@@ -31,7 +31,9 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             WTable* date;
             WLineEdit* country;
             WPushButton* reportbtn;
-            WTable* controlBlock;
+            WContainerWidget* controlBlock;
+            WTable* controlBlockTable;
+            WLayout* controlBlockLayout;
             WLabel* next;
             WLabel* prev;
             WSpinBox* page;
@@ -60,7 +62,7 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             date->setStyleClass("datetable");
             //Message text field
             text = new WLineEdit();
-            text->setMinimumSize( WLength( 100, WLength::Percentage ), WLength::Auto );
+            text->setMinimumSize( WLength( 80, WLength::Percentage ), WLength::Auto );
             //Delivery status field
             status = new WComboBox();
             status->addItem(WString::fromUTF8("Любой"));
@@ -75,10 +77,6 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             page = new WSpinBox(); page->setRange( 1, 1 );
             page->setValue(1);
             page->setMaximumSize(  WLength( 1, WLength::Centimeter ), WLength::Auto  );
-            page->valueChanged().connect( boost::bind(
-                                             &PersonalPage::widthCorrect,
-                                             ppage
-                                                     ) );
             page->valueChanged().connect( boost::bind(
                                              &WScrollTable::exactPage,
                                              ppage->statistics,
@@ -107,13 +105,19 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             lpage = new WVBoxLayout();
             lpage->addWidget( page );
 
-            controlBlock = new WTable();
-            controlBlock->elementAt( 0, 0 )->addWidget( reportbtn );
-            controlBlock->elementAt( 0, 0 )->setColumnSpan( 3 );
-            controlBlock->elementAt( 1, 0 )->setLayout( lprev, AlignLeft );
-            controlBlock->elementAt( 1, 1 )->setLayout( lpage, AlignCenter );
-            controlBlock->elementAt( 1, 2 )->setLayout( lnext, AlignRight );
-            controlBlock->setStyleClass("datetable");
+            controlBlockTable = new WTable();
+            controlBlockTable->elementAt( 0, 0 )->addWidget( reportbtn );
+            controlBlockTable->elementAt( 0, 0 )->setColumnSpan( 3 );
+            controlBlockTable->elementAt( 1, 0 )->setLayout( lprev, AlignLeft );
+            controlBlockTable->elementAt( 1, 1 )->setLayout( lpage, AlignCenter );
+            controlBlockTable->elementAt( 1, 2 )->setLayout( lnext, AlignRight );
+            controlBlockTable->setStyleClass("datetable");
+
+            controlBlockLayout = new WVBoxLayout();
+            controlBlockLayout->addWidget( controlBlockTable );
+
+            controlBlock = new WContainerWidget();
+            controlBlock->setLayout( controlBlockLayout, AlignRight );
 
             reportbtn->clicked().connect(boost::bind(
                                              &PersonalPage::onReportBtnClicked,
@@ -686,9 +690,6 @@ void PersonalPage::onReportBtnClicked(
         reportstatus->setStyleClass("");
     }
 
-    lastColumnLength = reportstatus->width();
-    statistics->columnAt( statistics->columnCount() - 1 )->setWidth( lastColumnLength );
-
     onPageUpdate( status_page.second );
 }
 
@@ -742,10 +743,6 @@ void PersonalPage::onPageInc( WSpinBox* page ) {
 void PersonalPage::onPageDec( WSpinBox* page ) {
     page->setValue( page->value() - 1 );
     onPageUpdate( page );
-}
-
-void PersonalPage::widthCorrect( ) {
-    statistics->columnAt( statistics->columnCount() - 1 )->setWidth( lastColumnLength );
 }
 
 void PersonalPage::buildPersonalPage( ) {
