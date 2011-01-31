@@ -76,6 +76,10 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             page->setValue(1);
             page->setMaximumSize(  WLength( 1, WLength::Centimeter ), WLength::Auto  );
             page->valueChanged().connect( boost::bind(
+                                             &PersonalPage::widthCorrect,
+                                             ppage
+                                                     ) );
+            page->valueChanged().connect( boost::bind(
                                              &WScrollTable::exactPage,
                                              ppage->statistics,
                                              _1
@@ -728,7 +732,6 @@ void PersonalPage::onSummaryShow() {
 void PersonalPage::onPageUpdate( WSpinBox* page ) {
     page->setRange( 1, statistics->getLastPage() + 1 );
     page->setValue( statistics->getPage() + 1 );
-    statistics->columnAt( statistics->columnCount() - 1 )->setWidth( lastColumnLength );
 }
 
 void PersonalPage::onPageInc( WSpinBox* page ) {
@@ -741,6 +744,9 @@ void PersonalPage::onPageDec( WSpinBox* page ) {
     onPageUpdate( page );
 }
 
+void PersonalPage::widthCorrect( ) {
+    statistics->columnAt( statistics->columnCount() - 1 )->setWidth( lastColumnLength );
+}
 
 void PersonalPage::buildPersonalPage( ) {
     setTitle( WString::fromUTF8("GreenSMS: Личный кабинет ") );
