@@ -59,7 +59,7 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             date->elementAt(0, 1)->addWidget( date_from );
             date->elementAt(1, 0)->addWidget( new WLabel( WString::fromUTF8("По") ) );
             date->elementAt(1, 1)->addWidget( date_to );
-            date->setStyleClass("datetable");
+            date->addStyleClass("datetable");
             //Message text field
             text = new WLineEdit();
             text->setMinimumSize( WLength( 80, WLength::Percentage ), WLength::Auto );
