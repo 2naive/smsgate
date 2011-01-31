@@ -455,6 +455,9 @@ void WStatPageData::execute( int lnl, int lnr, RowList &data ) {
             if ( ppage->isAdmin )
                 row.push_back( new WLabel( WString::fromUTF8( __pid ) ) );
 
+            WLabel* txt_label = new WLabel( WString::fromUTF8( __txt ) );
+            txt_label->setWordWrap( true );
+
             WLabel* status_label = new WLabel( WString::fromUTF8( __status ) );
             if ( SMSMessage::Status( (*it)[6].as<int>() ) == SMSMessage::Status::ST_DELIVERED ) {
                 status_label->setStyleClass("rowOk");
@@ -467,7 +470,7 @@ void WStatPageData::execute( int lnl, int lnr, RowList &data ) {
 
             row.push_back( new WLabel( WString::fromUTF8( __phone ) ) );
             row.push_back( new WLabel( WString::fromUTF8( __date ) ) );
-            row.push_back( new WLabel( WString::fromUTF8( __txt ) ) );
+            row.push_back( txt_label );
             row.push_back( status_label );
             row.push_back( new WLabel( WString::fromUTF8( __country ) ) );
             row.push_back( new WLabel( WString::fromUTF8( __region ) ) );
