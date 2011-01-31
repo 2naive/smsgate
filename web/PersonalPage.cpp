@@ -60,7 +60,7 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             date->setStyleClass("datetable");
             //Message text field
             text = new WLineEdit();
-            text->setMinimumSize( WLength( 50, WLength::Percentage ), WLength::Auto );
+            text->setMinimumSize( WLength( 50, WLength::Centimeter ), WLength::Auto );
             //Delivery status field
             status = new WComboBox();
             status->addItem(WString::fromUTF8("Любой"));
