@@ -455,10 +455,20 @@ void WStatPageData::execute( int lnl, int lnr, RowList &data ) {
             if ( ppage->isAdmin )
                 row.push_back( new WLabel( WString::fromUTF8( __pid ) ) );
 
+            WLabel* status_label = new WLabel( WString::fromUTF8( __status ) );
+            if ( SMSMessage::Status( (*it)[6].as<int>() ) == SMSMessage::Status::ST_DELIVERED ) {
+                status_label->setStyleClass("rowOk");
+            } else
+            if ( SMSMessage::Status( (*it)[6].as<int>() )() < 0 ) {
+                status_label->setStyleClass("rowErr");
+            } else {
+                status_label->setStyleClass("rowWarn");
+            }
+
             row.push_back( new WLabel( WString::fromUTF8( __phone ) ) );
             row.push_back( new WLabel( WString::fromUTF8( __date ) ) );
             row.push_back( new WLabel( WString::fromUTF8( __txt ) ) );
-            row.push_back( new WLabel( WString::fromUTF8( __status ) ) );
+            row.push_back( status_label );
             row.push_back( new WLabel( WString::fromUTF8( __country ) ) );
             row.push_back( new WLabel( WString::fromUTF8( __region ) ) );
             row.push_back( new WLabel( WString::fromUTF8( __price ) ) );
@@ -730,7 +740,9 @@ void PersonalPage::buildPersonalPage( ) {
     this->useStyleSheet( "/resources/css/PersonalPage.css" );
 
     statistics = new WScrollTable( header, data, footer );
-    statistics->setStyleClass("restable");
+    statistics->setMinimumSize( WLength( 100, WLength::Percentage), WLength::Auto );
+    statistics->setMaximumSize( WLength( 100, WLength::Percentage), WLength::Auto );
+    statistics->addStyleClass("restable");
     statistics->buildHeader();
     statistics->buildData();
     statistics->buildFooter();
