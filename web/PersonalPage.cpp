@@ -681,7 +681,9 @@ void PersonalPage::onReportBtnClicked(
     } else {
         reportstatus->setStyleClass("");
     }
-    statistics->columnAt( statistics->columnCount() - 1 )->setWidth( reportstatus->width() );
+
+    lastColumnLength = reportstatus->width();
+    statistics->columnAt( statistics->columnCount() - 1 )->setWidth( lastColumnLength );
 
     onPageUpdate( status_page.second );
 }
@@ -726,6 +728,7 @@ void PersonalPage::onSummaryShow() {
 void PersonalPage::onPageUpdate( WSpinBox* page ) {
     page->setRange( 1, statistics->getLastPage() + 1 );
     page->setValue( statistics->getPage() + 1 );
+    statistics->columnAt( statistics->columnCount() - 1 )->setWidth( lastColumnLength );
 }
 
 void PersonalPage::onPageInc( WSpinBox* page ) {
