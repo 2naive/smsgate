@@ -110,6 +110,8 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             controlBlock->elementAt( 1, 1 )->setLayout( lpage, AlignCenter );
             controlBlock->elementAt( 1, 2 )->setLayout( lnext, AlignRight );
             controlBlock->setStyleClass("datetable");
+            controlBlock->setMaximumSize( WLength( 5, WLength::Percentage), WLength::Auto );
+            controlBlock->setMinimumSize( WLength( 5, WLength::Percentage), WLength::Auto );
             reportbtn->clicked().connect(boost::bind(
                                              &PersonalPage::onReportBtnClicked,
                                              ppage,
