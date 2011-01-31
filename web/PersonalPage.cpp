@@ -681,8 +681,7 @@ void PersonalPage::onReportBtnClicked(
     } else {
         reportstatus->setStyleClass("");
     }
-    reportstatus->setMinimumSize( reportstatus->width(), WLength::Auto );
-    reportstatus->setMaximumSize( reportstatus->width(), WLength::Auto );
+    statistics->columnAt( statistics->columnCount() - 1 )->setWidth( reportstatus->width() );
 
     onPageUpdate( status_page.second );
 }
