@@ -466,7 +466,7 @@ void WStatPageData::execute( int lnl, int lnr, RowList &data ) {
 
             WLabel* txt_label = new WLabel( WString::fromUTF8( __txt ) );
             txt_label->setWordWrap( true );
-
+            txt_label->setStyleClass("ww");
             WLabel* status_label = new WLabel( WString::fromUTF8( __status ) );
             if ( SMSMessage::Status( (*it)[6].as<int>() ) == SMSMessage::Status::ST_DELIVERED ) {
                 status_label->setStyleClass("rowOk");
