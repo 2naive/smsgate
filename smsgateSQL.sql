@@ -125,6 +125,28 @@ CREATE TABLE partners (
     priority    INTEGER DEFAULT 0
 );
 
+CREATE TABLE mccmnc (
+    mcc         INTEGER NOT NULL,
+    mnc         INTEGER NOT NULL,
+    company     TEXT DEFAULT '',
+    name        TEXT DEFAULT ''
+);
+CREATE INDEX mccmnc_pk on mccmnc( mcc, mnc);
+
+CREATE TABLE countries (
+    mcc         INTEGER PRIMARY KEY,
+    code        TEXT NOT NULL,
+    name        TEXT NOT NULL,
+    preffix     INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE preffix_map (
+    preffix     INTEGER PRIMARY KEY,
+    mcc         INTEGER NOT NULL,
+    mnc         INTEGER NOT NULL,
+    region      TEXT DEFAULT ''
+);
+
 CREATE TABLE matviews (
   mv_name NAME NOT NULL PRIMARY KEY
   , v_name NAME NOT NULL
