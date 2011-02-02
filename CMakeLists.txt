@@ -19,6 +19,9 @@ set( smsgate_SRCS ${smsgate_SRCS} web/MonitoringHandler.h    web/MonitoringHandl
 set( smsgate_SRCS ${smsgate_SRCS} web/NumberInfoPage.h       web/NumberInfoPage.cpp )
 set( smsgate_SRCS ${smsgate_SRCS} web/PersonalCabinet.h      web/PersonalCabinet.cpp )
 set( smsgate_SRCS ${smsgate_SRCS} web/PersonalPage.h         web/PersonalPage.cpp )
+set( smsgate_SRCS ${smsgate_SRCS} web/TariffEditor.h         web/TariffEditor.cpp )
+set( smsgate_SRCS ${smsgate_SRCS} web/LoginBlock.h           web/LoginBlock.cpp )
+set( smsgate_SRCS ${smsgate_SRCS} web/StatisticsBlock.h      web/StatisticsBlock.cpp )
 
 set( smsgate_SRCS ${smsgate_SRCS} web/WScrollTable.h         web/WScrollTable.cpp )
 set( smsgate_SRCS ${smsgate_SRCS} web/WHintLinePassEdit.h )
