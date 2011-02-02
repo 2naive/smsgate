@@ -16,8 +16,10 @@ WApplication *createPersonalPage(const WEnvironment& env) {
 PersonalPage::PersonalPage( const WEnvironment& env ):
     WApplication( env )
 {
-
+    setTitle( WString::fromUTF8("GreenSMS: Личный кабинет ") );
+    setCssTheme("polished");
     this->useStyleSheet( "/resources/css/PersonalPage.css" );
+
     authorized = false;
     isAdmin = false;
 
@@ -57,9 +59,6 @@ WContainerWidget* PersonalPage::buildTariffEditor( ) {
 }
 
 void PersonalPage::buildPersonalPage( ) {
-    setTitle( WString::fromUTF8("GreenSMS: Личный кабинет ") );
-    setCssTheme("polished");
-    this->useStyleSheet( "/resources/css/PersonalPage.css" );
 
     WTabWidget* wt = new WTabWidget();
     wt->addTab( buildStatisticsBlock(), WString::fromUTF8("Статистика") );
