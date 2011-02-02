@@ -63,7 +63,7 @@ void NumberInfoPage::onPhonePrintInfo() {
 
     std::ostringstream out;
     out.precision(2);
-    sms::OpInfo msg = sms::MessageClassifier::Instance()->getMsgClass( phoneInput->text().toUTF8() );
+    sms::OpInfo msg = sms::MessageClassifier::get_mutable_instance().getMsgClass( phoneInput->text().toUTF8() );
 
     out << "Код страны: " <<  msg.countrycode << std::endl;
     out << "Страна: " <<  msg.country << std::endl;

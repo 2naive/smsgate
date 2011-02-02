@@ -352,7 +352,7 @@ namespace sms {
             to_vec::iterator it;
             int i = 0;
             for (it = to.begin(), i = 0; it != to.end(); it++, i++) {
-                (*it) = MessageClassifier::Instance()->applyReplace( *it );
+                (*it) = MessageClassifier::get_mutable_instance().applyReplace( *it );
                 std::ostringstream out;
                 out << "Number " << to_orig[ i ] << " converted to " << *it;
                 if ( to_orig[ i ] != *it )

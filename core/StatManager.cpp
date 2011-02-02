@@ -443,7 +443,7 @@ namespace sms {
 
     void StatManager::onCountryInfoUpdate() {
         TCountryInfoTable p;
-        MessageClassifier::CountryOperatorT cnamelist = MessageClassifier::Instance()->getCOMap();
+        MessageClassifier::CountryOperatorT cnamelist = MessageClassifier::get_mutable_instance().getCOMap();
 
         int cpos;
         int gpos;

@@ -1,37 +1,54 @@
 #ifndef MESSAGECLASSIFIER_H
 #define MESSAGECLASSIFIER_H
 
+#include <boost/serialization/singleton.hpp>
+
 #include "ConfigManager.h"
+#include "PGSql.h"
+
 #include <set>
+#include <map>
 
 namespace sms {
     struct OpInfo;
 
-    class MessageClassifier
-    {
+    struct CountryOperatorInfo {
+        int mcc;
+        int mnc;
+        std::string cCode;
+        std::string cName;
+        std::string cPreffix;
+        std::string opCompany;
+        std::string opName;
+    };
+
+
+    class MessageClassifier: public boost::serialization::singleton< MessageClassifier > {
     public:
 
         typedef std::multimap< std::string, OpInfo > DictT;
         typedef std::map< std::string, std::pair< std::string, std::string > > ReplaceT;
         typedef std::map< std::string, std::set< std::string > > CountryOperatorT;
+
+        typedef std::map< int, CountryOperatorInfo > OperatorT;
+        typedef std::map< int, OperatorT > CountryOperatorMapT;
+
         MessageClassifier();
-        static MessageClassifier* Instance() {
-            if (!pInstance_)
-                pInstance_ = new MessageClassifier;
-            return pInstance_;
-        }
 
         OpInfo getMsgClass( std::string phone );
         std::string applyReplace( std::string phone );
         CountryOperatorT getCOMap();
 
+        CountryOperatorMapT getCOMap_v2();
+
     private:
         DictT dict;
         ReplaceT replaces;
-        static MessageClassifier* pInstance_;
+        CountryOperatorMapT comap;
 
         void loadOpcodes();
         void loadReplacesMap();
+        void loadCountryOperatorMap();
     };
 
     struct OpInfo {               

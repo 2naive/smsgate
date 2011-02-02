@@ -7,7 +7,7 @@ namespace sms {
     SMSMessage::SMSMessage( ID id, std::string ph, int parts, double partner_price ) {
         phone = ph;
         this->parts = parts;
-        msgClass = MessageClassifier::Instance()->getMsgClass( ph );
+        msgClass = MessageClassifier::get_mutable_instance().getMsgClass( ph );
         msg_id = id;
         price = partner_price;
         delivery_status = Status::ST_UNKNOWN;

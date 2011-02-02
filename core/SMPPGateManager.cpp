@@ -310,7 +310,7 @@ namespace sms {
 
         std::map< string, std::pair< double, double > > gatesPoints;
         std::vector< string > gs;
-        sms::OpInfo msg = sms::MessageClassifier::Instance()->getMsgClass( req->to[ msgid.msg_num ] );
+        sms::OpInfo msg = sms::MessageClassifier::get_mutable_instance().getMsgClass( req->to[ msgid.msg_num ] );
         sms::StatManager::TCountryInfoTable tcd = sms::StatManager::Instance()->getCountryInfoLastUpdate();
 
         for ( std::list< string >::iterator it = gates.begin(); it != gates.end(); it++ ) {

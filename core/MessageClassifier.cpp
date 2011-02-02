@@ -8,7 +8,6 @@
 
 namespace sms {
 
-    MessageClassifier* MessageClassifier::pInstance_;
 
     OpInfo::OpInfo() {}
     OpInfo::OpInfo(  int countrycode,
@@ -26,6 +25,8 @@ namespace sms {
     MessageClassifier::MessageClassifier() {
         loadOpcodes();
         loadReplacesMap();
+
+        loadCountryOperatorMap();
     }
 
     void MessageClassifier::loadOpcodes() {
@@ -89,6 +90,36 @@ namespace sms {
 
     }
 
+    void MessageClassifier::loadCountryOperatorMap() {
+        comap.clear();
+        {
+            std::ostringstream r;
+
+            r       << "select countries.mcc, mnc, preffix, code, countries.name, company, mccmnc.name "
+                    << "from countries, mccmnc where mccmnc.mcc = countries.mcc order by mcc, mnc;";
+
+            PGSql& db = PGSqlConnPoolSystem::get_mutable_instance().getdb();
+
+            PGSql::ConnectionHolder cHold( db );
+            ConnectionPTR conn = cHold.get();
+            TransactionPTR tr = db.openTransaction( conn, "MessageClassifier::loadCountryOperatorMap()" );
+            Result res = tr->exec( r.str() );
+            tr->commit();
+            for ( Result::const_iterator dbr = res.begin(); dbr != res.end(); dbr++ ) {
+                CountryOperatorInfo coinfo;
+                coinfo.mcc = (*dbr)[0].as< int >();
+                coinfo.mnc = (*dbr)[1].as< int >();
+                coinfo.cPreffix = (*dbr)[2].as< std::string >();
+                coinfo.cCode= (*dbr)[3].as< std::string >();
+                coinfo.cName = (*dbr)[4].as< std::string >();
+                coinfo.opCompany = (*dbr)[5].as< std::string >();
+                coinfo.opName = (*dbr)[6].as< std::string >();
+
+                comap[ coinfo.mcc ][ coinfo.mnc ] = coinfo;
+            }
+        }
+    }
+
     std::string MessageClassifier::applyReplace( std::string phone ) {
         for ( int i = phone.length(); i > 0 ; i-- ) {
             std::string s = phone.substr(0, i );
@@ -141,6 +172,10 @@ namespace sms {
             res[ inf.country ].insert( inf.opname );
         }
         return res;
+    }
+
+    MessageClassifier::CountryOperatorMapT MessageClassifier::getCOMap_v2() {
+        return comap;
     }
 
 }

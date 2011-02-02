@@ -3,6 +3,10 @@
 
 #include <Wt/WContainerWidget>
 
+#include <map>
+#include <set>
+#include <string>
+
 class TariffEditor: public Wt::WContainerWidget {
 public:
     TariffEditor( WContainerWidget* parent = 0 );
