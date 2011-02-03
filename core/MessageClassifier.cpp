@@ -95,8 +95,7 @@ namespace sms {
         {
             std::ostringstream r;
 
-            r       << "select countries.mcc, mnc, preffix, code, countries.name, company, mccmnc.name "
-                    << "from countries, mccmnc where mccmnc.mcc = countries.mcc order by mcc, mnc;";
+            r       << "select mcc, preffix, LOWER(code), name from countries;";
 
             PGSql& db = PGSqlConnPoolSystem::get_mutable_instance().getdb();
 
@@ -106,16 +105,36 @@ namespace sms {
             Result res = tr->exec( r.str() );
             tr->commit();
             for ( Result::const_iterator dbr = res.begin(); dbr != res.end(); dbr++ ) {
-                CountryOperatorInfo coinfo;
+                CountryInfo coinfo;
+                coinfo.mcc = (*dbr)[0].as< int >();
+                coinfo.cPreffix = (*dbr)[1].as< std::string >();
+                coinfo.cCode= (*dbr)[2].as< std::string >();
+                coinfo.cName = (*dbr)[3].as< std::string >();
+
+                comap[ coinfo.mcc ] = coinfo;
+            }
+        }
+
+        {
+            std::ostringstream r;
+
+            r       << "select mcc, mnc, name, company from mccmnc;";
+
+            PGSql& db = PGSqlConnPoolSystem::get_mutable_instance().getdb();
+
+            PGSql::ConnectionHolder cHold( db );
+            ConnectionPTR conn = cHold.get();
+            TransactionPTR tr = db.openTransaction( conn, "MessageClassifier::loadCountryOperatorMap()" );
+            Result res = tr->exec( r.str() );
+            tr->commit();
+            for ( Result::const_iterator dbr = res.begin(); dbr != res.end(); dbr++ ) {
+                OperatorInfo coinfo;
                 coinfo.mcc = (*dbr)[0].as< int >();
                 coinfo.mnc = (*dbr)[1].as< int >();
-                coinfo.cPreffix = (*dbr)[2].as< std::string >();
-                coinfo.cCode= (*dbr)[3].as< std::string >();
-                coinfo.cName = (*dbr)[4].as< std::string >();
-                coinfo.opCompany = (*dbr)[5].as< std::string >();
-                coinfo.opName = (*dbr)[6].as< std::string >();
+                coinfo.opName = (*dbr)[2].as< std::string >();
+                coinfo.opCompany = (*dbr)[3].as< std::string >();
 
-                comap[ coinfo.mcc ][ coinfo.mnc ] = coinfo;
+                comap[ coinfo.mcc ].operators[ coinfo.mnc ] = coinfo;
             }
         }
     }

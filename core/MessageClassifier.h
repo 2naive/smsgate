@@ -12,26 +12,32 @@
 namespace sms {
     struct OpInfo;
 
-    struct CountryOperatorInfo {
-        int mcc;
-        int mnc;
-        std::string cCode;
-        std::string cName;
-        std::string cPreffix;
-        std::string opCompany;
-        std::string opName;
-    };
 
 
     class MessageClassifier: public boost::serialization::singleton< MessageClassifier > {
     public:
+        struct OperatorInfo {
+            int mcc;
+            int mnc;
+            std::string opCompany;
+            std::string opName;
+        };
+
+        struct CountryInfo {
+            int mcc;
+            std::string cCode;
+            std::string cName;
+            std::string cPreffix;
+
+            typedef std::map< int, OperatorInfo > OperatorMapT;
+            OperatorMapT operators;
+        };
 
         typedef std::multimap< std::string, OpInfo > DictT;
         typedef std::map< std::string, std::pair< std::string, std::string > > ReplaceT;
         typedef std::map< std::string, std::set< std::string > > CountryOperatorT;
 
-        typedef std::map< int, CountryOperatorInfo > OperatorT;
-        typedef std::map< int, OperatorT > CountryOperatorMapT;
+        typedef std::map< int, CountryInfo > CountryOperatorMapT;
 
         MessageClassifier();
 
