@@ -8,22 +8,7 @@
 #include <iostream>
 #include <fstream>
 
-#include <Wt/WStandardItemModel>
-#include <Wt/WStandardItem>
-#include <Wt/WBorderLayout>
-#include <Wt/WVBoxLayout>
-#include <Wt/WGridLayout>
-#include <Wt/WContainerWidget>
-#include <Wt/WLabel>
-#include <Wt/WDialog>
-#include <Wt/WTable>
-#include <Wt/WPushButton>
-#include <Wt/WSpinBox>
-#include <Wt/WDoubleValidator>
-#include <Wt/WIntValidator>
-#include <Wt/WApplication>
-#include <Wt/WFileUpload>
-#include <Wt/WProgressBar>
+
 
 using namespace Wt;
 using namespace std;
@@ -297,45 +282,188 @@ string TariffEditor::double2string( double v ) {
 
 void TariffEditor::importFromCsv() {
     WDialog import( WString::fromUTF8( "Испорт из CSV" ) );
+    importCtx.importDlg = &import;
 
-    WLabel* netcode_helper = new WLabel( WString::fromUTF8( "Номер столбца с MCC/MNC" ) );
-    WLabel* price_helper = new WLabel( WString::fromUTF8( "Номер столбца с ценой" ) );
+    importCtx.fake = new WContainerWidget( importCtx.importDlg->contents() );
+    importCtx.fake->hide();
 
-    WSpinBox* netcode = new WSpinBox();
-    netcode->setMinimum( 1 );
-    netcode->setSingleStep( 1 );
-    netcode->setValidator( new WIntValidator( 1, 1000 ) );
+    importCtx.upload = new WFileUpload( );
+    importCtx.upload->uploaded().connect( boost::bind( &TariffEditor::importFileDone, this ) );
+    importCtx.upload->fileTooLarge().connect( boost::bind( &TariffEditor::importFileTooLargeError, this ) );
 
-    WSpinBox* price = new WSpinBox();
-    price->setMinimum( 1 );
-    price->setSingleStep( 1 );
-    price->setValidator( new WIntValidator() );
+    importCtx.uploadBtn = new WPushButton( WString::fromUTF8( "Загрузить" ) );
+    importCtx.uploadBtn->clicked().connect( boost::bind( &TariffEditor::importUploadRequest, this ) );
 
-    WProgressBar* pbar = new WProgressBar();
+    importCtx.cancelBtn = new WPushButton( WString::fromUTF8( "Отмена" ) );
+    importCtx.cancelBtn->clicked().connect( &import, &WDialog::reject );
 
-    WFileUpload* upload = new WFileUpload();
-    upload->uploaded().connect( &import, &WDialog::accept );
-    upload->fileTooLarge().connect(boost::bind( &WDialog::reject, &import) );
-    upload->setProgressBar( pbar );
+    importCtx.root = new WContainerWidget();
 
-    WPushButton* uploadBtn = new WPushButton( WString::fromUTF8( "Загрузить" ) );
-    uploadBtn->clicked().connect( upload, &WFileUpload::upload );
+    importCtx.spacer = new WTable();
 
-    WContainerWidget* root = new WContainerWidget();
+    importCtx.spacer->elementAt( 0, 0 )->addWidget( importCtx.upload );
+    importCtx.spacer->elementAt( 0, 1 )->addWidget( importCtx.uploadBtn );
 
-    WGridLayout* spacer = new WGridLayout();
+    importCtx.spacer->elementAt( 1, 0 )->addWidget( importCtx.cancelBtn );
 
-    spacer->addWidget( netcode_helper, 0, 0, 0, 0, Wt::AlignCenter );
-    spacer->addWidget( netcode, 0, 1, 0, 0, Wt::AlignCenter );
+    importCtx.root->addWidget( importCtx.spacer );
 
-    spacer->addWidget( price_helper, 1, 0, 0, 0, Wt::AlignCenter );
-    spacer->addWidget( price, 1, 1, 0, 0, Wt::AlignCenter );
-
-    spacer->addWidget( upload, 2, 0, 0, 0, Wt::AlignCenter );
-    spacer->addWidget( uploadBtn, 2, 1, 0, 0, Wt::AlignCenter );
-
-    root->setLayout( spacer );
-    import.contents()->addWidget( root );
+    import.contents()->addWidget( importCtx.root );
 
     import.exec();
+}
+
+void TariffEditor::importFileTooLargeError() {
+    importCtx.importDlg->setCaption( WString::fromUTF8( "Испорт из CSV: ошибка ( слишком большой файл )" ) );
+}
+
+void TariffEditor::importFileDone() {
+
+    if ( importCtx.upload->empty() ) {
+        importCtx.importDlg->setCaption( WString::fromUTF8( "Испорт из CSV: ошибка ( выберите файл )" ) );
+        return;
+    }
+
+    importCtx.fake->addWidget( importCtx.upload );
+    importCtx.fake->addWidget( importCtx.cancelBtn );
+
+    importCtx.spacer->deleteRow( 0 );
+    importCtx.spacer->deleteRow( 0 );
+
+    importCtx.netcode_helper = new WLabel( WString::fromUTF8( "Номер столбца с MCC/MNC" ) );
+    importCtx.price_helper = new WLabel( WString::fromUTF8( "Номер столбца с ценой" ) );
+    importCtx.fieldsep_hepler = new WLabel( WString::fromUTF8( "Разделитель полей" ) );
+    importCtx.textsep_helper = new WLabel( WString::fromUTF8( "Ограничитель строк" ) );
+
+    importCtx.netcode = new WSpinBox();
+    importCtx.netcode->setValue( 1 );
+    importCtx.netcode->setMinimum( 1 );
+    importCtx.netcode->setSingleStep( 1 );
+    importCtx.netcode->setValidator( new WIntValidator( 1, 1000 ) );
+
+    importCtx.price = new WSpinBox();
+    importCtx.price->setValue( 1 );
+    importCtx.price->setMinimum( 1 );
+    importCtx.price->setSingleStep( 1 );
+    importCtx.price->setValidator( new WIntValidator( 1, 1000 ) );
+
+    importCtx.fieldsep = new WLineEdit( ";" );
+    importCtx.fieldsep->setMaxLength( 1 );
+
+    importCtx.textsep = new WLineEdit( "\"" );
+    importCtx.textsep->setMaxLength( 1 );
+
+    WPushButton* nextBtn = new WPushButton( WString::fromUTF8( "Далее" ) );
+    nextBtn->clicked().connect( this, &TariffEditor::importParseCsv );
+
+    importCtx.spacer->elementAt( 0, 0 )->addWidget( importCtx.netcode_helper );
+    importCtx.spacer->elementAt( 0, 1 )->addWidget( importCtx.netcode );
+
+    importCtx.spacer->elementAt( 1, 0 )->addWidget( importCtx.price_helper );
+    importCtx.spacer->elementAt( 1, 1 )->addWidget( importCtx.price );
+
+    importCtx.spacer->elementAt( 2, 0 )->addWidget( importCtx.fieldsep_hepler );
+    importCtx.spacer->elementAt( 2, 1 )->addWidget( importCtx.fieldsep );
+
+    importCtx.spacer->elementAt( 3, 0 )->addWidget( importCtx.textsep_helper );
+    importCtx.spacer->elementAt( 3, 1 )->addWidget( importCtx.textsep );
+
+    importCtx.spacer->elementAt( 4, 0 )->addWidget( importCtx.cancelBtn );
+    importCtx.spacer->elementAt( 4, 1 )->addWidget( nextBtn );
+}
+
+void TariffEditor::importUploadRequest() {
+    if ( importCtx.upload->canUpload() ) {
+        importCtx.upload->upload();
+    } else {
+        importCtx.importDlg->setCaption( WString::fromUTF8( "Импорт из CSV: ошибка ( невозможно отправить )" ) );
+    }
+}
+
+void TariffEditor::importParseCsv() {
+    ifstream in( importCtx.upload->spoolFileName().c_str() );
+
+    importCtx.fake->addWidget( importCtx.cancelBtn );
+
+    int col_mccmnc = importCtx.netcode->value();
+    int col_price = importCtx.price->value();
+
+    importCtx.spacer->deleteRow( 0 );
+    importCtx.spacer->deleteRow( 0 );
+    importCtx.spacer->deleteRow( 0 );
+    importCtx.spacer->deleteRow( 0 );
+    importCtx.spacer->deleteRow( 0 );
+
+    char sep = importCtx.fieldsep->text().toUTF8().c_str()[0];
+    char quotes = importCtx.textsep->text().toUTF8().c_str()[0];
+
+    WTextArea* output = new WTextArea();
+    importCtx.spacer->elementAt( 0, 0 )->addWidget( output );
+    importCtx.spacer->elementAt( 0, 0 )->setColumnSpan( 2 );
+    importCtx.spacer->elementAt( 1, 0 )->addWidget( importCtx.cancelBtn );
+
+    Tariff t( Tariff::buildEmpty( "TEST" ) );
+    importCtx.tariff = &t;
+
+    while ( !in.eof() && !in.fail() ) {
+        int blocks_found = 0;
+        bool parsing_text = false;
+        vector< string > row;
+        row.push_back("");
+        string line;
+        getline( in, line );
+
+        for ( int i = 0; i < line.size(); i++ ) {
+            char ch = line[i];
+            if ( ( ch == sep ) && !parsing_text ) {
+                blocks_found++;
+                row.push_back("");
+                continue;
+            }
+            if ( ch == quotes ) {
+                parsing_text != parsing_text;
+                continue;
+            }
+            row[ blocks_found ] += ch;
+        }
+
+        if ( row.size() < std::max( col_mccmnc, col_price ) ) {
+            continue;
+        }
+
+        if ( row[ col_mccmnc ].size() < 3 ) {
+            continue;
+        }
+
+        int mcc;
+        int mnc;
+        try {
+            mcc = boost::lexical_cast< int >( row[ col_mccmnc ].substr( 0, 3 ) );
+            mnc = sdouble2double( row[ col_mccmnc ].substr( 3, row[ col_mccmnc ].length()-3 ), -1 );
+        } catch ( ... ) {
+            continue;
+        }
+
+        double price;
+        try {
+            price = boost::lexical_cast< int >( row[ col_price ] );
+        } catch ( ... ) {
+            continue;
+        }
+
+        if ( mcc == -1 ) {
+            t.addFilterCountry( boost::lexical_cast< string >( mcc ), price );
+        } else {
+            t.addFilterCountryOperator( boost::lexical_cast< string >( mcc ), boost::lexical_cast< string >( mnc ), price );
+        }
+
+        output->setText( output->text() + boost::lexical_cast< string >( mcc ) + string("\t") );
+        if ( mnc != -1 ) {
+            output->setText( output->text() + boost::lexical_cast< string >( mnc ) + string("\t") );
+        } else {
+            output->setText( output->text() + string("\t\t") );
+        }
+        output->setText( output->text() + double2string( price ) + string("\t") );
+        output->setText( output->text() + string("\n") );
+    }
 }
