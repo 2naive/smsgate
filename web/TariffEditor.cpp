@@ -461,7 +461,7 @@ void TariffEditor::importParseCsv() {
         if ( mnc != -1 ) {
             output->setText( output->text() + boost::lexical_cast< string >( mnc ) + string("\t") );
         } else {
-            output->setText( output->text() + string("\t\t") );
+            output->setText( output->text() + string("\t") );
         }
         output->setText( output->text() + double2string( price ) + string("\t") );
         output->setText( output->text() + string("\n") );
