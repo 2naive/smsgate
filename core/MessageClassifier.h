@@ -21,6 +21,16 @@ namespace sms {
             int mnc;
             std::string opCompany;
             std::string opName;
+
+            std::string getName() {
+                if ( opName.empty() )
+                    return opCompany;
+
+                if ( opCompany.empty() )
+                    return opName;
+
+                return opName + std::string("(") + opCompany + std::string(")");
+            }
         };
 
         struct CountryInfo {

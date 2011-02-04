@@ -1,15 +1,18 @@
 #include "TariffEditor.h"
 #include "MessageClassifier.h"
+#include "utils.h"
 
 #include <string>
 #include <algorithm>
 #include <boost/bind.hpp>
 #include <iostream>
+#include <fstream>
 
 #include <Wt/WStandardItemModel>
 #include <Wt/WStandardItem>
 #include <Wt/WBorderLayout>
 #include <Wt/WVBoxLayout>
+#include <Wt/WGridLayout>
 #include <Wt/WContainerWidget>
 #include <Wt/WLabel>
 #include <Wt/WDialog>
@@ -17,7 +20,10 @@
 #include <Wt/WPushButton>
 #include <Wt/WSpinBox>
 #include <Wt/WDoubleValidator>
+#include <Wt/WIntValidator>
 #include <Wt/WApplication>
+#include <Wt/WFileUpload>
+#include <Wt/WProgressBar>
 
 using namespace Wt;
 using namespace std;
@@ -31,12 +37,16 @@ TariffEditor::TariffEditor( WContainerWidget* parent ): WContainerWidget( parent
     model_ = buildModel();
     treeView_ = buildTreeView( model_ );
 
-    csv_link = new WLabel( "Export to Excel" );
-    csv_link->clicked().connect( this, &TariffEditor::exportToCsv );
+    exportBtn = new WPushButton( WString::fromUTF8( "Export to Excel" ) );
+    exportBtn->clicked().connect( this, &TariffEditor::exportToCsv );
+
+    importBtn = new WPushButton( WString::fromUTF8( "Import from CSV" ) );
+    importBtn->clicked().connect( this, &TariffEditor::importFromCsv);
 
     WBorderLayout* root = new WBorderLayout();
     root->addWidget( treeView_, WBorderLayout::West );
-    root->addWidget( csv_link, WBorderLayout::South );
+    root->addWidget( exportBtn, WBorderLayout::South );
+    root->addWidget( importBtn, WBorderLayout::North );
 
     setLayout( root );
     resizeTreeView( treeView_ );
@@ -85,8 +95,6 @@ WStandardItemModel* TariffEditor::buildModel() {
 
         data->appendRow( row );
     }
-
-
 
     return data;
 }
@@ -198,12 +206,136 @@ void TariffEditor::changeItemTextRecursive( Wt::WModelIndex index, int column, W
 void TariffEditor::exportToCsv() {
     Wt::WFileResource* csv = new WFileResource( this );
 
-    csv->setFileName( "/etc/resolv.conf" );
+    csv->setFileName( "/tmp/123.csv" );
     csv->setMimeType( "text/txt" );
-    csv->suggestFileName(" resolvconf.txt ");
+    csv->suggestFileName( "report.csv" );
 
-//    WStandardItem* root = model_->itemFromIndex( index.parent() );
-//    WStandardItem *country = new WStandardItem( string( "resources/flags/" ) + cinfo.cCode + ".png", WString::fromUTF8( cinfo.cName ) );
+    sms::MessageClassifier::CountryOperatorMapT comap = sms::MessageClassifier::get_mutable_instance().getCOMap_v2();
+    ofstream fout( "/tmp/123.csv" );
+
+    WStandardItem* item = model_->invisibleRootItem();
+
+    recursivePrintCsv( fout, comap, item );
+
+    fout.close();
 
     WApplication::instance()->redirect( csv->generateUrl() );
+}
+
+void TariffEditor::recursivePrintCsv( std::ostream& out, sms::MessageClassifier::CountryOperatorMapT& map, Wt::WStandardItem* item ) {
+    for ( int i = 0; i < item->rowCount(); i++ ) {
+        string mccmnc = item->child( i, 1 )->text().toUTF8();
+        vector< string > to_vec;
+        double mcc;
+        double mnc;
+        string price;
+        sms::utils::Tokenize( mccmnc, to_vec, ":" );
+        bool isCountry = (to_vec.size() == 1);
+
+        mcc = sdouble2double( to_vec[0], -1 );
+        if ( mcc == -1 ) continue;
+
+        price = sdouble2string( item->child( i, 2 )->text().toUTF8() );
+
+        if ( isCountry ) {
+            sms::MessageClassifier::CountryInfo ci = map[ mcc ];
+            out << "\"" << ci.cName << "\"" << ";";     // Country name
+            out << ";";                                 // Network name
+            out << mcc << ";";                          // MCC
+            out << ";";                                 // MNC
+            out << price << ";";                        // Price
+            out << endl;
+
+            if ( !item->child( i, 0 )->hasChildren() )
+                continue;
+
+            recursivePrintCsv( out, map, item->child( i, 0 ) );
+            continue;
+        }
+
+        // Is Network
+        mnc = sdouble2double( to_vec[1], -1 );
+
+        sms::MessageClassifier::CountryInfo ci = map[ mcc ];
+        sms::MessageClassifier::OperatorInfo oi = map[ mcc ].operators[ mnc ];
+        out << "\"" << ci.cName << "\"" << ";";     // Country name
+        out << "\"" << oi.getName() << "\"" << ";"; // Network name
+        out << mcc << ";";                          // MCC
+        out << mnc << ";";                          // MNC
+        out << price << ";";                        // Price
+        out << endl;
+
+    }
+}
+
+string TariffEditor::sdouble2string( string v, string defval ) {
+    double val;
+    try {
+        val = boost::lexical_cast< double >( v );
+    } catch ( ... ) {
+        return defval;
+    }
+    return double2string( val );
+}
+
+double TariffEditor::sdouble2double( string v, double defval ) {
+    double val;
+    try {
+        val = boost::lexical_cast< double >( v );
+    } catch ( ... ) {
+        val =  defval;
+    }
+    return val;
+}
+
+string TariffEditor::double2string( double v ) {
+    char buf[100];
+    sprintf( buf, "%0.4f", v );
+
+    return buf;
+}
+
+void TariffEditor::importFromCsv() {
+    WDialog import( WString::fromUTF8( "Испорт из CSV" ) );
+
+    WLabel* netcode_helper = new WLabel( WString::fromUTF8( "Номер столбца с MCC/MNC" ) );
+    WLabel* price_helper = new WLabel( WString::fromUTF8( "Номер столбца с ценой" ) );
+
+    WSpinBox* netcode = new WSpinBox();
+    netcode->setMinimum( 1 );
+    netcode->setSingleStep( 1 );
+    netcode->setValidator( new WIntValidator( 1, 1000 ) );
+
+    WSpinBox* price = new WSpinBox();
+    price->setMinimum( 1 );
+    price->setSingleStep( 1 );
+    price->setValidator( new WIntValidator() );
+
+    WProgressBar* pbar = new WProgressBar();
+
+    WFileUpload* upload = new WFileUpload();
+    upload->uploaded().connect( &import, &WDialog::accept );
+    upload->fileTooLarge().connect(boost::bind( &WDialog::reject, &import) );
+    upload->setProgressBar( pbar );
+
+    WPushButton* uploadBtn = new WPushButton( WString::fromUTF8( "Загрузить" ) );
+    uploadBtn->clicked().connect( upload, &WFileUpload::upload );
+
+    WContainerWidget* root = new WContainerWidget();
+
+    WGridLayout* spacer = new WGridLayout();
+
+    spacer->addWidget( netcode_helper, 0, 0, 0, 0, Wt::AlignCenter );
+    spacer->addWidget( netcode, 0, 1, 0, 0, Wt::AlignCenter );
+
+    spacer->addWidget( price_helper, 1, 0, 0, 0, Wt::AlignCenter );
+    spacer->addWidget( price, 1, 1, 0, 0, Wt::AlignCenter );
+
+    spacer->addWidget( upload, 2, 0, 0, 0, Wt::AlignCenter );
+    spacer->addWidget( uploadBtn, 2, 1, 0, 0, Wt::AlignCenter );
+
+    root->setLayout( spacer );
+    import.contents()->addWidget( root );
+
+    import.exec();
 }

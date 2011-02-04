@@ -1,6 +1,8 @@
 #ifndef TARIFFEDITOR_H
 #define TARIFFEDITOR_H
 
+#include "MessageClassifier.h"
+
 #include <Wt/WContainerWidget>
 #include <Wt/WStandardItemModel>
 #include <Wt/WTreeView>
@@ -9,6 +11,7 @@
 
 #include <vector>
 #include <string>
+#include <ostream>
 
 class TariffEditor: public Wt::WContainerWidget {
 public:
@@ -16,7 +19,8 @@ public:
 private:
     Wt::WStandardItemModel* model_;
     Wt::WTreeView* treeView_;
-    Wt::WLabel* csv_link;
+    Wt::WPushButton* exportBtn;
+    Wt::WPushButton* importBtn;
 
     std::vector< int > columns_width;
     int elements_per_page;
@@ -31,6 +35,13 @@ private:
     void changeItemTextRecursive( Wt::WModelIndex, int column, Wt::WSpinBox* );
 
     void exportToCsv();
+    void recursivePrintCsv( std::ostream& out, sms::MessageClassifier::CountryOperatorMapT&, Wt::WStandardItem* item );
+
+    void importFromCsv();
+
+    std::string sdouble2string( std::string v, std::string def_val = "" );
+    double sdouble2double( std::string v, double defval );
+    std::string double2string( double v );
 };
 
 #endif // TARIFFEDITOR_H
