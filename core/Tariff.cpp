@@ -238,12 +238,12 @@ void Tariff::rebuildBases() {
     }
 }
 
-PGSql& TariffManager::db = PGSqlConnPoolStats::get_mutable_instance().getdb();
+//PGSql& TariffManager::db = PGSqlConnPoolStats::get_mutable_instance().getdb();
 
-TariffManager::TariffManager() {
+//TariffManager::TariffManager() {
 
-}
+//}
 
-void TariffManager::loadTariffListFromDB() {
+//void TariffManager::loadTariffListFromDB() {
 
-}
+//}
