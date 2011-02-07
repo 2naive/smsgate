@@ -9,12 +9,15 @@
 #include <boost/serialization/nvp.hpp>
 
 #include "MessageClassifier.h"
+#include "PGSql.h"
 
 class Tariff {
 public:
     typedef std::string ID;
     typedef std::pair< ID, int > TariffDescriptor;
-    enum Type {
+    typedef boost::shared_ptr< const Tariff > constPTR;
+    typedef boost::shared_ptr< Tariff > PTR;
+    enum CommandType {
         ROOT,
         MULTIMPLEXION,
         ADDICTION,
@@ -65,6 +68,41 @@ private:
     bool searchForCountryOperatorPrice( std::string cname, std::string opcode, float& res ) const;
     void rebuildBases();
     const Tariff& tariffByID( ID id ) const;
+    friend class TariffManager;
 };
+
+//class Tariff {
+//public:
+//    typedef std::string ID;
+//    typedef boost::shared_ptr< const Tariff > constPTR;
+//    typedef boost::shared_ptr< Tariff > PTR;
+
+//private:
+//    std::string buildRule;
+
+//    Tariff();
+//    Tariff( const Tariff& );
+//    Tariff& operator = ( const Tariff& );
+
+//    std::string serialize(  );
+//    void deserialize( std::string );
+
+//    friend class TariffManager;
+//};
+
+//class TariffManager: public boost::serialization::singleton< TariffManager > {
+//public:
+//    typedef std::map< std::string, Tariff > TariffMapT;
+
+//    Tariff::PTR cloneTariff( Tariff::ID orig_name, Tariff::ID new_name );
+//    Tariff::PTR emptyTariff( Tariff::ID new_name );
+//    TariffManager();
+//private:
+//    PGSql& db;
+//    TariffMapT tmap;
+
+//    void loadTariffListFromDB();
+//    void saveTariffToDB( Tariff::ID );
+//};
 
 #endif // TARIFF_H

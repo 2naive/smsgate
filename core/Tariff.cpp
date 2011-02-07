@@ -237,3 +237,13 @@ void Tariff::rebuildBases() {
         tlist.insert( std::make_pair(id, buildFromFile( id_fname ) ) );
     }
 }
+
+PGSql& TariffManager::db = PGSqlConnPoolStats::get_mutable_instance().getdb();
+
+TariffManager::TariffManager() {
+
+}
+
+void TariffManager::loadTariffListFromDB() {
+
+}
