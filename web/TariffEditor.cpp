@@ -19,7 +19,8 @@ TariffEditor::TariffEditor( WContainerWidget* parent ): WContainerWidget( parent
     columns_width.push_back(70);
     elements_per_page = 20;
 
-    model_ = buildModel();
+    model_ = new WStandardItemModel();
+    buildModel( model_ );
     treeView_ = buildTreeView( model_ );
 
     exportBtn = new WPushButton( WString::fromUTF8( "Export to Excel" ) );
@@ -37,10 +38,12 @@ TariffEditor::TariffEditor( WContainerWidget* parent ): WContainerWidget( parent
     resizeTreeView( treeView_ );
 }
 
-WStandardItemModel* TariffEditor::buildModel() {
+void TariffEditor::buildModel( WStandardItemModel* data, Tariff* tariff ) {
     sms::MessageClassifier::CountryOperatorMapT comap = sms::MessageClassifier::get_mutable_instance().getCOMap_v2();
 
-    WStandardItemModel* data = new WStandardItemModel( 0, columns_width.size() );
+    data->clear();
+    data->insertColumns(0, 3);
+
     data->setHeaderData(0, Horizontal, WString::fromUTF8("Страна/Оператор"));
     data->setHeaderData(1, Horizontal, WString::fromUTF8("MCC/MNC"));
     data->setHeaderData(2, Horizontal, WString::fromUTF8("Цена"));
@@ -56,7 +59,13 @@ WStandardItemModel* TariffEditor::buildModel() {
         mcc->setText( WString::fromUTF8( boost::lexical_cast< string >( cinfo.mcc ) ) );
         row.push_back( mcc );
 
-        WStandardItem* price = new WStandardItem( WString::fromUTF8( "Не задано" ) );
+        string price_text = "Не задано";
+        if ( tariff )
+        try {
+            price_text = double2string( tariff->costs( boost::lexical_cast< string >( mcc ) ) );
+        } catch ( ... ) {}
+
+        WStandardItem* price = new WStandardItem( WString::fromUTF8( price_text ) );;
 
         row.push_back( price );
 
@@ -72,7 +81,16 @@ WStandardItemModel* TariffEditor::buildModel() {
             code->setText( WString::fromUTF8( boost::lexical_cast< string >( info.mcc ) + string(":") + boost::lexical_cast< string >( info.mnc ) ) );
             subrow.push_back( code );
 
-            WStandardItem* subprice = new WStandardItem( WString::fromUTF8( "Не задано" ) );
+            string price_text = "Не задано";
+            if ( tariff )
+            try {
+                price_text = double2string( tariff->costs( boost::lexical_cast< string >( info.mcc ), boost::lexical_cast< string >( info.mnc ) ) );
+            } catch ( ... ) {
+                continue;
+            }
+
+            WStandardItem* subprice = new WStandardItem( WString::fromUTF8( price_text ) );
+
             subrow.push_back( subprice );
 
             country->appendRow( subrow );
@@ -80,8 +98,6 @@ WStandardItemModel* TariffEditor::buildModel() {
 
         data->appendRow( row );
     }
-
-    return data;
 }
 
 WTreeView* TariffEditor::buildTreeView( Wt::WStandardItemModel * model ) {
@@ -398,12 +414,17 @@ void TariffEditor::importParseCsv() {
     char quotes = importCtx.textsep->text().toUTF8().c_str()[0];
 
     WTextArea* output = new WTextArea();
+    output->setMinimumSize( WLength( 10, WLength::Centimeter ), WLength( 15, WLength::Centimeter ) );
+
+    WPushButton* finishBtn = new WPushButton( WString::fromUTF8( "Готово" ) );
+    finishBtn->clicked().connect( this, &TariffEditor::importCsvFinish );
+
     importCtx.spacer->elementAt( 0, 0 )->addWidget( output );
     importCtx.spacer->elementAt( 0, 0 )->setColumnSpan( 2 );
     importCtx.spacer->elementAt( 1, 0 )->addWidget( importCtx.cancelBtn );
+    importCtx.spacer->elementAt( 1, 1 )->addWidget( finishBtn );
 
-    Tariff t( Tariff::buildEmpty( "TEST" ) );
-    importCtx.tariff = &t;
+    importCtx.tariff = new Tariff( Tariff::buildEmpty( "TEST" ) );
 
     while ( !in.eof() && !in.fail() ) {
         int blocks_found = 0;
@@ -452,9 +473,9 @@ void TariffEditor::importParseCsv() {
         }
 
         if ( mcc == -1 ) {
-            t.addFilterCountry( boost::lexical_cast< string >( mcc ), price );
+            importCtx.tariff->addFilterCountry( boost::lexical_cast< string >( mcc ), price );
         } else {
-            t.addFilterCountryOperator( boost::lexical_cast< string >( mcc ), boost::lexical_cast< string >( mnc ), price );
+            importCtx.tariff->addFilterCountryOperator( boost::lexical_cast< string >( mcc ), boost::lexical_cast< string >( mnc ), price );
         }
 
         output->setText( output->text() + boost::lexical_cast< string >( mcc ) + string("\t") );
@@ -466,4 +487,11 @@ void TariffEditor::importParseCsv() {
         output->setText( output->text() + double2string( price ) + string("\t") );
         output->setText( output->text() + string("\n") );
     }
+}
+
+void TariffEditor::importCsvFinish() {
+    model_->clear();
+    buildModel( model_, importCtx.tariff );
+
+    importCtx.importDlg->accept();
 }

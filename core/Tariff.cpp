@@ -157,8 +157,10 @@ float Tariff::costs( sms::OpInfo& op ) const {
 
 float Tariff::costs( std::string cname, std::string opcode ) const {
     float res;
-    if ( searchForCountryOperatorPrice( cname, opcode, res ) )
-        return res;
+    if ( !opcode.empty() ) {
+        if ( searchForCountryOperatorPrice( cname, opcode, res ) )
+            return res;
+    }
 
     if ( searchForCountryPrice( cname, res ) )
         return res;

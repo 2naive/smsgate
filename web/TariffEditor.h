@@ -62,7 +62,7 @@ private:
     int elements_per_page;
 
 
-    Wt::WStandardItemModel* buildModel();
+    void buildModel( Wt::WStandardItemModel*, Tariff* tariff = NULL);
     Wt::WTreeView* buildTreeView( Wt::WStandardItemModel* );
     void resizeTreeView( Wt::WTreeView* );
     void onPriceEdit( Wt::WModelIndex, Wt::WMouseEvent );
@@ -78,6 +78,7 @@ private:
     void importFileDone();
     void importUploadRequest();
     void importParseCsv();
+    void importCsvFinish();
 
     std::string sdouble2string( std::string v, std::string def_val = "" );
     double sdouble2double( std::string v, double defval );

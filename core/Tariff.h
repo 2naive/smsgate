@@ -37,7 +37,7 @@ public:
     void addFilterCountry( std::string cname, float price );
     void addFilterCountryOperator( std::string cname, std::string opcode, float price );
     float costs( sms::OpInfo& op ) const;
-    float costs( std::string cname, std::string opcode ) const;
+    float costs( std::string cname, std::string opcode = "" ) const;
 
     template<class Archive>
         void serialize(Archive & ar, const unsigned int) {
@@ -66,5 +66,29 @@ private:
     void rebuildBases();
     const Tariff& tariffByID( ID id ) const;
 };
+
+//class TariffManager: public boost::serialization::singleton< TariffManager > {
+//public:
+
+//    TariffManager();
+//    PartnerInfo findByName( string pName ) throw ( PartnerNotFoundError );
+//    PartnerInfo findById( string id ) throw ( PartnerNotFoundError );
+
+//    void loadFromDb();
+
+//private:
+//    typedef boost::multi_index::multi_index_container<
+//                PartnerInfo,
+//                indexed_by<
+//                    sequenced<>,
+//                    ordered_unique< member<PartnerInfo, string, &PartnerInfo::pName> >,
+//                    ordered_unique< member<PartnerInfo, string, &PartnerInfo::pId> >
+//                >
+//            > pBox;
+//    pBox pbox;
+//    boost::recursive_mutex pmlock;
+//    int tid;
+
+//};
 
 #endif // TARIFF_H
