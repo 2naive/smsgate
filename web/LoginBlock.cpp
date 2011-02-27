@@ -29,8 +29,8 @@ LoginBlock::LoginBlock( WContainerWidget* parent ):
     failedMsgLabel->setStyleClass( "failed" );
     failedMsgLabel->setHidden( true );
 
-
     WImage *okBtn = new WImage( "resources/ok.png" );
+    okBtn->setStyleClass( "link" );
     okBtn->setMaximumSize( WLength::Auto, WLength( 20, WLength::Pixel ) );
     okBtn->clicked().connect(SLOT(this, LoginBlock::onLoginEvent));
 
