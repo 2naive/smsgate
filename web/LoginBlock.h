@@ -6,6 +6,7 @@
 #include <Wt/WContainerWidget>
 #include <Wt/WLabel>
 #include <Wt/WPushButton>
+#include <Wt/WImage>
 
 #include "WHintLineEdit.h"
 #include "WHintLinePassEdit.h"
@@ -16,10 +17,8 @@ public:
     Wt::Signal<std::string, bool>& onLogin() { return onLogin_; };
 private:
     Wt::WLabel* failedMsgLabel;
-    Wt::WLabel* greetMsgLabel;
     WHintLineEdit* loginBox;
     WHintLinePassEdit* passBox;
-    Wt::WPushButton* loginBtn;
     Wt::Signal<std::string, bool> onLogin_;
 
     bool authorized;

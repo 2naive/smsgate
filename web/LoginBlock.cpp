@@ -1,7 +1,10 @@
 #include "LoginBlock.h"
 #include "PartnerManager.h"
 
-#include <Wt/WVBoxLayout>
+#include <Wt/WHBoxLayout>
+#include <Wt/WGridLayout>
+
+#include <Wt/WImage>
 
 using namespace Wt;
 using namespace std;
@@ -13,35 +16,39 @@ LoginBlock::LoginBlock( WContainerWidget* parent ):
 {
 
     WString failedMsg = WString::fromUTF8( "Логин или пароль неверны" );
-    WString greetMsg = WString::fromUTF8( "Представьтесь, пожалуйста" );
     WString unameMsg = WString::fromUTF8( "Ваш логин" );
     WString passMsg = WString::fromUTF8( "Ваш пароль" );
-    WString loginMsg = WString::fromUTF8( "Вход" );
 
     failedMsgLabel = new WLabel( failedMsg );
-    greetMsgLabel = new WLabel( greetMsg );
     loginBox = new WHintLineEdit( unameMsg );
+    loginBox->setMinimumSize( WLength( 100, WLength::Pixel ), WLength::Auto );
     passBox = new WHintLinePassEdit( passMsg );
-    loginBtn = new WPushButton( loginMsg );
+    passBox->setMinimumSize( WLength( 100, WLength::Pixel ), WLength::Auto );
 
     failedMsgLabel->setStyleClass( "failed" );
     failedMsgLabel->setHidden( true );
 
-    loginBox->enterPressed().connect(SLOT(passBox, WHintLinePassEdit::setFocus));
-
     passBox->enterPressed().connect(SLOT(this, LoginBlock::onLoginEvent));
 
-    loginBtn->setMaximumSize( WLength( 50, WLength::Percentage ), WLength::Auto );
-    loginBtn->clicked().connect(SLOT(this, LoginBlock::onLoginEvent));
-
-    WVBoxLayout *wLoginGrp = new WVBoxLayout();
-    wLoginGrp->addWidget( greetMsgLabel );
+    WHBoxLayout *wLoginGrp = new WHBoxLayout();
     wLoginGrp->addWidget( loginBox );
     wLoginGrp->addWidget( passBox );
     wLoginGrp->addWidget( failedMsgLabel );
-    wLoginGrp->addWidget( loginBtn );
 
-    setLayout( wLoginGrp, AlignMiddle | AlignCenter );
+//    WContainerWidget* loginPassBlock = new WContainerWidget();
+//    loginPassBlock->setLayout( wLoginGrp );
+
+    WImage* logo = new WImage( "resources/Greendsms.png" );
+    logo->setMaximumSize( WLength::Auto, WLength( 60, WLength::Pixel ));
+
+    WImage* underDev = new WImage( "resources/devel.png" );
+
+    WGridLayout *pageGroup = new WGridLayout();
+    pageGroup->addWidget( logo, 0, 0, 0, 0 );
+    pageGroup->addLayout( wLoginGrp, 0, 2, 0, 0 );
+    pageGroup->addWidget( underDev, 1, 1, 0, 0 );
+
+    setLayout( pageGroup, AlignMiddle | AlignLeft );
 }
 
 void LoginBlock::onLoginEvent() {
