@@ -15,31 +15,36 @@ LoginBlock::LoginBlock( WContainerWidget* parent ):
     isAdmin( false )
 {
 
-    WString failedMsg = WString::fromUTF8( "Логин или пароль неверны" );
-    WString unameMsg = WString::fromUTF8( "Ваш логин" );
-    WString passMsg = WString::fromUTF8( "Ваш пароль" );
+    WString failedMsg = WString::fromUTF8( "Login failed" );
+    WString unameMsg = WString::fromUTF8( "login" );
+    WString passMsg = WString::fromUTF8( "password" );
 
     failedMsgLabel = new WLabel( failedMsg );
     loginBox = new WHintLineEdit( unameMsg );
     loginBox->setMinimumSize( WLength( 100, WLength::Pixel ), WLength::Auto );
     passBox = new WHintLinePassEdit( passMsg );
     passBox->setMinimumSize( WLength( 100, WLength::Pixel ), WLength::Auto );
+    passBox->enterPressed().connect(SLOT(this, LoginBlock::onLoginEvent));
 
     failedMsgLabel->setStyleClass( "failed" );
     failedMsgLabel->setHidden( true );
 
-    passBox->enterPressed().connect(SLOT(this, LoginBlock::onLoginEvent));
 
-    WHBoxLayout *wLoginGrp = new WHBoxLayout();
-    wLoginGrp->addWidget( loginBox );
-    wLoginGrp->addWidget( passBox );
-    wLoginGrp->addWidget( failedMsgLabel );
+    WImage *okBtn = new WImage( "resources/ok.png" );
+    okBtn->setMaximumSize( WLength::Auto, WLength( 20, WLength::Pixel ) );
+    okBtn->clicked().connect(SLOT(this, LoginBlock::onLoginEvent));
+
+    WGridLayout *wLoginGrp = new WGridLayout();
+    wLoginGrp->addWidget( loginBox, 0, 0, 0, 0 );
+    wLoginGrp->addWidget( passBox, 0, 1, 0, 0 );
+    wLoginGrp->addWidget( okBtn, 0, 2, 0, 0 );
+    wLoginGrp->addWidget( failedMsgLabel, 1, 0, 0, 2 );
 
 //    WContainerWidget* loginPassBlock = new WContainerWidget();
 //    loginPassBlock->setLayout( wLoginGrp );
 
     WImage* logo = new WImage( "resources/Greendsms.png" );
-    logo->setMaximumSize( WLength::Auto, WLength( 60, WLength::Pixel ));
+    logo->setMaximumSize( WLength::Auto, WLength( 2.5, WLength::Centimeter ));
 
     WImage* underDev = new WImage( "resources/devel.png" );
 
@@ -48,7 +53,7 @@ LoginBlock::LoginBlock( WContainerWidget* parent ):
     pageGroup->addLayout( wLoginGrp, 0, 2, 0, 0 );
     pageGroup->addWidget( underDev, 1, 1, 0, 0 );
 
-    setLayout( pageGroup, AlignMiddle | AlignLeft );
+    setLayout( pageGroup, AlignMiddle | AlignCenter );
 }
 
 void LoginBlock::onLoginEvent() {
