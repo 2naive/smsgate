@@ -44,8 +44,8 @@ LoginBlock::LoginBlock( WContainerWidget* parent ):
     wLoginGrp->addWidget( okBtn, 0, 2, 0, 0 );
     wLoginGrp->addWidget( failedMsgLabel, 1, 0, 0, 2 );
 
-    WContainerWidget* loginPassBlock = new WContainerWidget();
-    loginPassBlock->setLayout( wLoginGrp, AlignBottom );
+//    WContainerWidget* loginPassBlock = new WContainerWidget();
+//    loginPassBlock->setLayout( wLoginGrp, AlignBottom );
 
     WImage* logo = new WImage( "resources/Greendsms.png" );
     logo->setMaximumSize( WLength::Auto, WLength( 60, WLength::Pixel ));
@@ -54,7 +54,7 @@ LoginBlock::LoginBlock( WContainerWidget* parent ):
 
     WGridLayout *pageGroup = new WGridLayout();
     pageGroup->addWidget( logo, 0, 0, 0, 0 );
-    pageGroup->addWidget( loginPassBlock, 0, 2, 0, 0 );
+    pageGroup->addLayout( wLoginGrp, 0, 2, 0, 0, AlignBottom );
     pageGroup->addWidget( underDev, 1, 1, 0, 0 );
 
     setLayout( pageGroup, AlignMiddle | AlignCenter );
