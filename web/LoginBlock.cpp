@@ -19,6 +19,8 @@ LoginBlock::LoginBlock( WContainerWidget* parent ):
     WString unameMsg = WString::fromUTF8( "login" );
     WString passMsg = WString::fromUTF8( "password" );
 
+    WString contacts = WString::fromUTF8( "sms@greensms.ru    +7 (495) 973 13 05" );
+
     failedMsgLabel = new WLabel( failedMsg );
 
     loginBox = new WHintLineEdit( unameMsg );
@@ -38,6 +40,9 @@ LoginBlock::LoginBlock( WContainerWidget* parent ):
     okBtn->setMaximumSize( WLength::Auto, WLength( 20, WLength::Pixel ) );
     okBtn->clicked().connect(SLOT(this, LoginBlock::onLoginEvent));
 
+    WLabel* cinfo = new WLabel( contacts );
+    cinfo->setStyleClass( "contacts" );
+
     WGridLayout *wLoginGrp = new WGridLayout();
     wLoginGrp->addWidget( loginBox, 0, 0, 0, 0 );
     wLoginGrp->addWidget( passBox, 0, 1, 0, 0 );
@@ -56,6 +61,7 @@ LoginBlock::LoginBlock( WContainerWidget* parent ):
     pageGroup->addWidget( logo, 0, 0, 0, 0 );
     pageGroup->addLayout( wLoginGrp, 0, 2, 0, 0, AlignBottom );
     pageGroup->addWidget( underDev, 1, 1, 0, 0 );
+    pageGroup->addWidget( cinfo, 2, 1, 0, 0, AlignMiddle | AlignCenter );
 
     setLayout( pageGroup, AlignMiddle | AlignCenter );
 }
