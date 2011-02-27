@@ -44,13 +44,13 @@ LoginBlock::LoginBlock( WContainerWidget* parent ):
 //    loginPassBlock->setLayout( wLoginGrp );
 
     WImage* logo = new WImage( "resources/Greendsms.png" );
-    logo->setMaximumSize( WLength::Auto, WLength( 2, WLength::Centimeter ));
+    logo->setMaximumSize( WLength::Auto, WLength( 60, WLength::Pixel ));
 
     WImage* underDev = new WImage( "resources/devel.png" );
 
     WGridLayout *pageGroup = new WGridLayout();
     pageGroup->addWidget( logo, 0, 0, 0, 0 );
-    pageGroup->addLayout( wLoginGrp, 0, 2, 0, 0 );
+    pageGroup->addLayout( wLoginGrp, 0, 2, 0, 0, AlignBottom );
     pageGroup->addWidget( underDev, 1, 1, 0, 0 );
 
     setLayout( pageGroup, AlignMiddle | AlignCenter );
