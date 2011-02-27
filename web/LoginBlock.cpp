@@ -44,7 +44,7 @@ LoginBlock::LoginBlock( WContainerWidget* parent ):
 //    loginPassBlock->setLayout( wLoginGrp );
 
     WImage* logo = new WImage( "resources/Greendsms.png" );
-    logo->setMaximumSize( WLength::Auto, WLength( 2.5, WLength::Centimeter ));
+    logo->setMaximumSize( WLength::Auto, WLength( 2, WLength::Centimeter ));
 
     WImage* underDev = new WImage( "resources/devel.png" );
 
