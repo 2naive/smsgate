@@ -58,6 +58,7 @@ LoginBlock::LoginBlock( WContainerWidget* parent ):
     pageGroup->addLayout( wLoginGrp, 0, 2, 0, 0, AlignBottom );
     pageGroup->addWidget( underDev, 1, 1, 0, 0 );
 
+    setPadding( WLength( 5, WLength::Pixel ) );
     setLayout( pageGroup, AlignMiddle | AlignCenter );
 }
 
