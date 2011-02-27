@@ -63,7 +63,6 @@ void LoginBlock::onLoginEvent() {
         pId = p.pId;
         isAdmin = p.isAdmin();
     } catch ( ... ) {
-        return;
     }
 
     if ( !authorized ) {
