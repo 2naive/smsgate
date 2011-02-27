@@ -20,11 +20,16 @@ LoginBlock::LoginBlock( WContainerWidget* parent ):
     WString passMsg = WString::fromUTF8( "password" );
 
     failedMsgLabel = new WLabel( failedMsg );
+
     loginBox = new WHintLineEdit( unameMsg );
     loginBox->setMinimumSize( WLength( 100, WLength::Pixel ), WLength::Auto );
+    loginBox->setMargin( WLength( 5, WLength::Pixel ) );
+
+
     passBox = new WHintLinePassEdit( passMsg );
     passBox->setMinimumSize( WLength( 100, WLength::Pixel ), WLength::Auto );
     passBox->enterPressed().connect(SLOT(this, LoginBlock::onLoginEvent));
+    passBox->setMargin( WLength( 5, WLength::Pixel ) );
 
     failedMsgLabel->setStyleClass( "failed" );
     failedMsgLabel->setHidden( true );
@@ -53,7 +58,6 @@ LoginBlock::LoginBlock( WContainerWidget* parent ):
     pageGroup->addLayout( wLoginGrp, 0, 2, 0, 0, AlignBottom );
     pageGroup->addWidget( underDev, 1, 1, 0, 0 );
 
-    setMargin( WLength( 5, WLength::Pixel ) );
     setLayout( pageGroup, AlignMiddle | AlignCenter );
 }
 
