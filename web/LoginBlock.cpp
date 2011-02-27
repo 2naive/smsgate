@@ -23,13 +23,12 @@ LoginBlock::LoginBlock( WContainerWidget* parent ):
 
     loginBox = new WHintLineEdit( unameMsg );
     loginBox->setMinimumSize( WLength( 100, WLength::Pixel ), WLength::Auto );
-    loginBox->setMargin( WLength( 5, WLength::Pixel ) );
-
+//    loginBox->setMargin( WLength( 5, WLength::Pixel ) );
 
     passBox = new WHintLinePassEdit( passMsg );
     passBox->setMinimumSize( WLength( 100, WLength::Pixel ), WLength::Auto );
     passBox->enterPressed().connect(SLOT(this, LoginBlock::onLoginEvent));
-    passBox->setMargin( WLength( 5, WLength::Pixel ) );
+//    passBox->setMargin( WLength( 5, WLength::Pixel ) );
 
     failedMsgLabel->setStyleClass( "failed" );
     failedMsgLabel->setHidden( true );
@@ -45,8 +44,8 @@ LoginBlock::LoginBlock( WContainerWidget* parent ):
     wLoginGrp->addWidget( okBtn, 0, 2, 0, 0 );
     wLoginGrp->addWidget( failedMsgLabel, 1, 0, 0, 2 );
 
-//    WContainerWidget* loginPassBlock = new WContainerWidget();
-//    loginPassBlock->setLayout( wLoginGrp );
+    WContainerWidget* loginPassBlock = new WContainerWidget();
+    loginPassBlock->setLayout( wLoginGrp, AlignBottom );
 
     WImage* logo = new WImage( "resources/Greendsms.png" );
     logo->setMaximumSize( WLength::Auto, WLength( 60, WLength::Pixel ));
@@ -55,11 +54,9 @@ LoginBlock::LoginBlock( WContainerWidget* parent ):
 
     WGridLayout *pageGroup = new WGridLayout();
     pageGroup->addWidget( logo, 0, 0, 0, 0 );
-    pageGroup->addLayout( wLoginGrp, 0, 2, 0, 0, AlignBottom );
+    pageGroup->addWidget( loginPassBlock, 0, 2, 0, 0 );
     pageGroup->addWidget( underDev, 1, 1, 0, 0 );
 
-    setPadding( WLength( 5, WLength::Pixel ) );
-    setMargin( WLength( 5, WLength::Pixel ) );
     setLayout( pageGroup, AlignMiddle | AlignCenter );
 }
 
