@@ -1,5 +1,7 @@
 #include "SMPPGateFilterParser.h"
 
+#include <iostream>
+
 using namespace sms;
 using namespace std;
 
@@ -13,10 +15,19 @@ int main() {
     args[ "OPERATORCODE" ] = string("mts");
     args[ "FROM" ] = string("1312");
 
-    SMPPGateFilterParser parser;
-    SMPPGateFilterParser::ResT res = parser.parseStr( "COUNTRY IN [\"af\";\"us\";\"au\";\"ru\";]" );
+    while ( !cin.eof() ) {
+        char line[1024];
+        cin.getline( line, 1024 );
 
-    bool match = res.filter.check( args );
+        SMPPGateFilterParser parser;
+        SMPPGateFilterParser::ResT res = parser.parseStr( line );
 
-    return match;
+        if ( res.ok ) {
+            cout << "Parsed OK" << endl;
+        } else {
+            cout << "Error at [" << res.where << "]" << endl;
+        }
+    }
+
+    return 0;
 }

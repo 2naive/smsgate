@@ -44,6 +44,7 @@ set( smsgate_SRCS ${smsgate_SRCS} core/ConfigManager.h       core/ConfigManager.
 set( smsgate_SRCS ${smsgate_SRCS} core/DataSource.h )
 set( smsgate_SRCS ${smsgate_SRCS} core/DeliveryHandler.h     core/DeliveryHandler.cpp )
 set( smsgate_SRCS ${smsgate_SRCS} core/DLRHandler.h          core/DLRHandler.cpp )
+set( smsgate_SRCS ${smsgate_SRCS} core/EventHandler.h )
 set( smsgate_SRCS ${smsgate_SRCS} core/HttpClient.h          core/HttpClient.cpp )
 set( smsgate_SRCS ${smsgate_SRCS} core/GateManager.h         core/GateManager.cpp )
 #set( smsgate_SRCS ${smsgate_SRCS} core/KSHandler.h           core/KSHandler.cpp )
