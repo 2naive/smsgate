@@ -71,38 +71,22 @@ private:
     friend class TariffManager;
 };
 
-//class Tariff {
-//public:
-//    typedef std::string ID;
-//    typedef boost::shared_ptr< const Tariff > constPTR;
-//    typedef boost::shared_ptr< Tariff > PTR;
+class Tariff_v2 {
 
-//private:
-//    std::string buildRule;
+    struct TariffOperatorInfo {
+        std::list< std::pair > options;
+    };
 
-//    Tariff();
-//    Tariff( const Tariff& );
-//    Tariff& operator = ( const Tariff& );
+    struct TariffCountryInfo {
+        std::list< std::pair > options;
+        std::map< std::string, TariffOperatorInfo > operators;
+    };
 
-//    std::string serialize(  );
-//    void deserialize( std::string );
+    struct TariffInfo {
+        std::list< std::pair > options;
+        std::map< std::string, TariffCountryInfo > countries;
+    };
 
-//    friend class TariffManager;
-//};
-
-//class TariffManager: public boost::serialization::singleton< TariffManager > {
-//public:
-//    typedef std::map< std::string, Tariff > TariffMapT;
-
-//    Tariff::PTR cloneTariff( Tariff::ID orig_name, Tariff::ID new_name );
-//    Tariff::PTR emptyTariff( Tariff::ID new_name );
-//    TariffManager();
-//private:
-//    PGSql& db;
-//    TariffMapT tmap;
-
-//    void loadTariffListFromDB();
-//    void saveTariffToDB( Tariff::ID );
-//};
+};
 
 #endif // TARIFF_H
