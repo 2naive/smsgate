@@ -208,7 +208,7 @@ namespace sms {
             string num = req->to[ msg->getID().msg_num ];
 
             if ( gName == "mt_skyline" ) req->from = "1312";
-            if ( msg->getMsgClass().opcode == "kz:401:02" ) req->from = msg->getPhone();
+            if ( msg->getMsgClass().opcode == "kz:401:02" ) req->from = "74959731305";
 
             bool isTrial = false;
             try {
