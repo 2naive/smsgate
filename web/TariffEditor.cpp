@@ -461,8 +461,8 @@ void TariffEditor::importParseCsv() {
 
     importCtx.fake->addWidget( importCtx.cancelBtn );
 
-    int col_mccmnc = importCtx.netcode->value();
-    int col_price = importCtx.price->value();
+    int col_mccmnc = importCtx.netcode->value()-1;
+    int col_price = importCtx.price->value()-1;
 
     importCtx.spacer->deleteRow( 0 );
     importCtx.spacer->deleteRow( 0 );
@@ -502,13 +502,13 @@ void TariffEditor::importParseCsv() {
                 continue;
             }
             if ( ch == quotes ) {
-                parsing_text != parsing_text;
+                parsing_text = !parsing_text;
                 continue;
             }
             row[ blocks_found ] += ch;
         }
 
-        if ( row.size() < std::max( col_mccmnc, col_price ) ) {
+        if ( row.size() <= std::max( col_mccmnc, col_price ) ) {
             continue;
         }
 
@@ -527,7 +527,11 @@ void TariffEditor::importParseCsv() {
 
         double price;
         try {
-            price = boost::lexical_cast< int >( row[ col_price ] );
+            std::string price_str = row[ col_price ];
+            if ( price_str.find( ',' ) != price_str.npos ) {
+                price_str[ price_str.find( ',' ) ] = '.';
+            }
+            price = boost::lexical_cast< double >( price_str );
         } catch ( ... ) {
             continue;
         }
