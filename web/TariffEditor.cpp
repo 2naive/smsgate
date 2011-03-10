@@ -474,7 +474,7 @@ void TariffEditor::importParseCsv() {
     char quotes = importCtx.textsep->text().toUTF8().c_str()[0];
 
     WTextArea* output = new WTextArea();
-    output->setMinimumSize( WLength( 10, WLength::Centimeter ), WLength( 15, WLength::Centimeter ) );
+    output->setMinimumSize( WLength( 10, WLength::Centimeter ), WLength( 10, WLength::Centimeter ) );
 
     WPushButton* finishBtn = new WPushButton( WString::fromUTF8( "Готово" ) );
     finishBtn->clicked().connect( this, &TariffEditor::importCsvFinish );
