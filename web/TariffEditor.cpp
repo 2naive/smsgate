@@ -165,7 +165,7 @@ WTreeView* TariffEditor::buildTreeView( Wt::WStandardItemModel * model ) {
     tw->setAlternatingRowColors( true );
     tw->sortByColumn( 0, AscendingOrder );
 
-//    tw->clicked().connect( this, &TariffEditor::onPriceEdit );
+    tw->clicked().connect( this, &TariffEditor::onPriceEdit );
     tw->clicked().connect( this, &TariffEditor::tariffInfoUpdate );
 
     return tw;
