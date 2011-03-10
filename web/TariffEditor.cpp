@@ -496,6 +496,13 @@ void TariffEditor::importParseCsv() {
 
         for ( int i = 0; i < line.size(); i++ ) {
             char ch = line[i];
+
+            if ( ch == 13 )
+                continue;
+
+            if ( ch == 10 )
+                continue;
+
             if ( ( ch == sep ) && !parsing_text ) {
                 blocks_found++;
                 row.push_back("");
