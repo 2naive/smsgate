@@ -50,14 +50,13 @@ void Tariff::addFilterCountryOperator( std::string cname, std::string opcode, do
 }
 
 double Tariff::costs( std::string cname ) {
-    if ( tariff.countries.find( cname ) == tariff.countries.end() )
-        return INVALID_VALUE;
 
-    if ( tariff.countries[ cname ].options.find( "price" ) == tariff.countries[ cname ].options.end() )
+    if ( hasOption( "price", cname ) == false ) {
         return INVALID_VALUE;
+    }
 
     try {
-        return boost::lexical_cast< double >( tariff.countries[ cname ].options[ "price" ] );
+        return boost::lexical_cast< double >( getOption( "price", cname ) );
     } catch ( ... ) {
         return INVALID_VALUE;
     }
@@ -66,22 +65,110 @@ double Tariff::costs( std::string cname ) {
 
 double Tariff::costs( std::string cname, std::string opcode ) {
 
-    if ( tariff.countries.find( cname ) == tariff.countries.end() )
+    if ( hasOption( "price", cname, opcode ) == false ) {
         return INVALID_VALUE;
-
-    if ( tariff.countries[ cname ].operators.find( opcode ) == tariff.countries[ cname ].operators.end() )
-        return costs( cname );
-
-    if ( tariff.countries[ cname ].operators[ opcode ].options.find( "price" ) == tariff.countries[ cname ].operators[ opcode ].options.end() )
-        return costs( cname );
+    }
 
     try {
-        return boost::lexical_cast< double >( tariff.countries[ cname ].operators[ opcode ].options[ "price" ] );
+        return boost::lexical_cast< double >( getOption( "price", cname, opcode ) );
     } catch ( ... ) {
-        return costs( cname );
+        return INVALID_VALUE;
     }
 
 }
+
+boost::logic::tribool Tariff::hasOption( std::string name ) {
+    if ( tariff.options.find( name ) != tariff.options.end() )
+        return true;
+
+    return false;
+}
+
+boost::logic::tribool Tariff::hasOption( std::string name, std::string country ) {
+    if ( tariff.countries.find( country ) != tariff.countries.end() )
+        if ( tariff.countries[ country ].options.find( name ) != tariff.countries[ country ].options.end() )
+            return true;
+
+    boost::logic::tribool r = hasOption( name );
+    if ( r == true )
+        return boost::logic::indeterminate;
+
+    return r;
+}
+
+boost::logic::tribool Tariff::hasOption( std::string name, std::string country, std::string oper ) {
+    if ( tariff.countries.find( country ) != tariff.countries.end() )
+        if ( tariff.countries[ country ].operators.find( oper ) != tariff.countries[ country ].operators.end() )
+            if (
+                    tariff.countries[ country ].operators[ oper ].options.find( name ) !=
+                    tariff.countries[ country ].operators[ oper ].options.end()
+                )
+                return true;
+
+    boost::logic::tribool r = hasOption( name, country );
+    if ( r == true )
+        return boost::logic::indeterminate;
+
+    return r;
+}
+
+std::string Tariff::getOption( std::string name ) {
+    if ( hasOption( name ) == true )
+        return tariff.options[ name ];
+
+    return "";
+}
+
+std::string Tariff::getOption( std::string name, std::string country ) {
+    if ( hasOption( name, country ) == true )
+        return tariff.countries[ country ].options[ name ];
+
+    if ( hasOption( name ) == true )
+        return tariff.options[ name ];
+
+    return "";
+}
+
+std::string Tariff::getOption( std::string name, std::string country, std::string oper ) {
+    if ( hasOption( name, country, oper ) == true )
+        return tariff.countries[ country ].operators[oper].options[ name ];
+
+    if ( hasOption( name, country ) == true )
+        return tariff.countries[ country ].options[ name ];
+
+    if ( hasOption( name ) == true )
+        return tariff.options[ name ];
+
+    return "";
+}
+
+void Tariff::setOption( std::string name, std::string value ) {
+    tariff.options[ name ] = value;
+}
+
+void Tariff::setOption( std::string name, std::string country, std::string value ) {
+    tariff.countries[country].options[ name ] = value;
+}
+
+void Tariff::setOption( std::string name, std::string country, std::string oper, std::string value ) {
+    tariff.countries[country].operators[oper].options[ name ] = value;
+}
+
+void Tariff::removeOption( std::string name ) {
+    if ( hasOption( name ) == true )
+        tariff.options.erase( name );
+}
+
+void Tariff::removeOption( std::string name, std::string country ) {
+    if ( hasOption( name, country ) == true )
+        tariff.countries[ country ].options.erase( name );
+}
+
+void Tariff::removeOption( std::string name, std::string country, std::string oper ) {
+    if ( hasOption( name, country, oper ) == true )
+        tariff.countries[ country ].operators[ oper ].options.erase( name );
+}
+
 
 TariffManager::TariffManager(): db( PGSqlConnPoolSystem::get_mutable_instance().getdb() ) {
     updateTimerID = Timer::Instance()->addPeriodicEvent( boost::bind( &TariffManager::updateTariffList, this ), 60 );

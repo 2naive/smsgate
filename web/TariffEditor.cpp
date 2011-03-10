@@ -38,6 +38,7 @@ TariffEditor::TariffEditor( WContainerWidget* parent ): WContainerWidget( parent
     removeBtn->clicked().connect( this, &TariffEditor::onTariffRemove );
 
     nameBox = new WLineEdit();
+    nameBox->setMinimumSize( WLength( 4, WLength::Centimeter ), WLength::Auto );
 
     WPushButton* saveBtn = new WPushButton( WString::fromUTF8( "Сохранить" ) );
     saveBtn->clicked().connect( this, &TariffEditor::onTariffSave );
@@ -45,7 +46,22 @@ TariffEditor::TariffEditor( WContainerWidget* parent ): WContainerWidget( parent
     WPushButton* clearBtn = new WPushButton( WString::fromUTF8( "Очистить" ) );
     clearBtn->clicked().connect( this, &TariffEditor::onTariffClear );
 
-    WGridLayout* loadSaveLayout = new WGridLayout;
+    WPushButton* updateBtn = new WPushButton( WString::fromUTF8( "Обновить" ) );
+    updateBtn->clicked().connect( this, &TariffEditor::onTariffUpdate );
+
+    deliveryPayment = new WCheckBox( WString::fromUTF8( "Оплата за доставленные" ) );
+    deliveryPayment->checked().connect( boost::bind( &TariffEditor::tariffOptionChanged, this, "DeliveryPayment", true ) );
+    deliveryPayment->unChecked().connect( boost::bind( &TariffEditor::tariffOptionChanged, this, "DeliveryPayment", false ) );
+
+    countryAsMax = new WCheckBox( WString::fromUTF8( "Страна как максимум" ) );
+    countryAsMax->checked().connect( boost::bind( &TariffEditor::tariffOptionChanged, this, "CountryAsMax", true ) );
+    countryAsMax->unChecked().connect( boost::bind( &TariffEditor::tariffOptionChanged, this, "CountryAsMax", false ) );
+
+    countryAsAvg = new WCheckBox( WString::fromUTF8( "Страна как среднее" ) );
+    countryAsMax->checked().connect( boost::bind( &TariffEditor::tariffOptionChanged, this, "CountryAsAvg", true ) );
+    countryAsMax->unChecked().connect( boost::bind( &TariffEditor::tariffOptionChanged, this, "CountryAsAvg", false ) );
+
+    WGridLayout* loadSaveLayout = new WGridLayout();
     loadSaveLayout->addWidget( tlistBox, 0, 0 );
     loadSaveLayout->addWidget( loadBtn, 0, 1 );
     loadSaveLayout->addWidget( removeBtn, 0, 2 );
@@ -58,9 +74,18 @@ TariffEditor::TariffEditor( WContainerWidget* parent ): WContainerWidget( parent
     WGroupBox* loadSaveBox = new WGroupBox( WString::fromUTF8( "Загрузить/Сохранить" ) );
     loadSaveBox->setLayout( loadSaveLayout, AlignCenter | AlignMiddle );
 
+    WGridLayout* tariffOptionsLayout = new WGridLayout();
+    tariffOptionsLayout->addWidget( deliveryPayment, 0, 0 );
+    tariffOptionsLayout->addWidget( countryAsMax, 1, 0 );
+    tariffOptionsLayout->addWidget( countryAsAvg, 2, 0 );
+
+    WGroupBox* tariffOptionsBox = new WGroupBox( WString::fromUTF8( "Тарифные опции" ) );
+    tariffOptionsBox->setLayout( tariffOptionsLayout, AlignCenter | AlignMiddle);
+
     WBorderLayout* root = new WBorderLayout();
     root->addWidget( treeView_, WBorderLayout::West );
-    root->addWidget( loadSaveBox, WBorderLayout::Center );
+    root->addWidget( tariffOptionsBox, WBorderLayout::Center );
+    root->addWidget( loadSaveBox, WBorderLayout::East );
 
     setLayout( root );
     resizeTreeView( treeView_ );
@@ -136,7 +161,8 @@ WTreeView* TariffEditor::buildTreeView( Wt::WStandardItemModel * model ) {
     tw->setAlternatingRowColors( true );
     tw->sortByColumn( 0, AscendingOrder );
 
-    tw->clicked().connect( this, &TariffEditor::onPriceEdit );
+//    tw->clicked().connect( this, &TariffEditor::onPriceEdit );
+    tw->clicked().connect( this, &TariffEditor::tariffInfoUpdate );
 
     return tw;
 }
@@ -528,8 +554,7 @@ void TariffEditor::onTariffLoad() {
     std::string name = tlistBox->currentText().toUTF8();
     tariff = TariffManager::get_mutable_instance().loadTariff( name );
 
-    model_->clear();
-    buildModel( model_, tariff );
+    onTariffUpdate();
 
     nameBox->setText( WString::fromUTF8( name ) );
 }
@@ -544,6 +569,10 @@ void TariffEditor::onTariffRemove() {
 void TariffEditor::onTariffClear() {
     tariff = Tariff();
 
+    onTariffUpdate();
+}
+
+void TariffEditor::onTariffUpdate() {
     model_->clear();
     buildModel( model_, tariff );
 }
@@ -565,3 +594,92 @@ void TariffEditor::tlistRebuild() {
     }
 }
 
+void TariffEditor::tariffOptionChanged( std::string name, bool set ) {
+    Wt::WModelIndexSet selected = treeView_->selectedIndexes();
+
+    if ( selected.empty() ) {
+        if ( set )
+            tariff.setOption( name, "1" );
+        else
+            tariff.removeOption( name );
+        return;
+    }
+
+    for ( Wt::WModelIndexSet::iterator it = selected.begin(); it != selected.end(); it++ ) {
+        Wt::WModelIndex index = *it;
+
+        WStandardItem* root = model_->itemFromIndex( index.parent() );
+        WStandardItem* item = root->child( index.row(), 1 );
+
+        std::string mccmnc = item->text().toUTF8();
+
+        std::string mcc = mccmnc.substr( 0, 3 );
+        std::string mnc;
+        if ( mccmnc.length() >= 4 )
+            mnc = mccmnc.substr( 4, mccmnc.length()-4 );
+
+        if ( mnc.empty() ) {
+            if ( set )
+                tariff.setOption( name, mcc, "1" );
+            else
+                tariff.removeOption( name, mcc );
+            continue;
+        }
+
+        if ( set )
+            tariff.setOption( name, mcc, mnc, "1" );
+        else
+            tariff.removeOption( name, mcc, mnc );
+    }
+}
+
+void TariffEditor::tariffInfoUpdate() {
+    Wt::WModelIndexSet selected = treeView_->selectedIndexes();
+
+    if ( selected.empty() ) {
+        updateCheckBox( deliveryPayment, tariff.hasOption( "DeliveryPayment" ) );
+        updateCheckBox( countryAsMax, tariff.hasOption( "CountryAsMax" ) );
+        updateCheckBox( countryAsAvg, tariff.hasOption( "CountryAsAvg" ) );
+
+        return;
+    }
+
+    if ( selected.size() == 1 )
+    for ( Wt::WModelIndexSet::iterator it = selected.begin(); it != selected.end(); it++ ) {
+        Wt::WModelIndex index = *it;
+
+        WStandardItem* root = model_->itemFromIndex( index.parent() );
+        WStandardItem* item = root->child( index.row(), 1 );
+
+        std::string mccmnc = item->text().toUTF8();
+
+        std::string mcc = mccmnc.substr( 0, 3 );
+        std::string mnc;
+        if ( mccmnc.length() >= 4 )
+            mnc = mccmnc.substr( 4, mccmnc.length()-4 );
+
+        if ( mnc.empty() ) {
+            updateCheckBox( deliveryPayment, tariff.hasOption( "DeliveryPayment", mcc ) );
+            updateCheckBox( countryAsMax, tariff.hasOption( "CountryAsMax", mcc ) );
+            updateCheckBox( countryAsAvg, tariff.hasOption( "CountryAsAvg", mcc ) );
+            return;
+        }
+
+        updateCheckBox( deliveryPayment, tariff.hasOption( "DeliveryPayment", mcc, mnc ) );
+        updateCheckBox( countryAsMax, tariff.hasOption( "CountryAsMax", mcc, mnc ) );
+        updateCheckBox( countryAsAvg, tariff.hasOption( "CountryAsAvg", mcc, mnc ) );
+
+        return;
+    }
+}
+
+void TariffEditor::updateCheckBox( Wt::WCheckBox* box, boost::logic::tribool val ) {
+
+    if ( val )
+        box->setCheckState( Checked );
+    else if ( !val )
+        box->setCheckState( Unchecked );
+    else
+        box->setCheckState( PartiallyChecked );
+
+}

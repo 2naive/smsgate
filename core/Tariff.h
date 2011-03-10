@@ -8,12 +8,19 @@
 #include <boost/serialization/singleton.hpp>
 #include <boost/serialization/nvp.hpp>
 
+#include <boost/logic/tribool.hpp>
+
 #include "MessageClassifier.h"
 #include "PGSql.h"
 
 class Tariff {
 public:
     static const double INVALID_VALUE = -1.0;
+    enum OptionLevel {
+        OPT_GLOBAL,
+        OPT_COUNTRY,
+        OPT_OPERATOR
+    };
 
     Tariff( );
     Tariff( std::string name );
@@ -66,6 +73,22 @@ public:
     void addFilterCountryOperator( std::string cname, std::string opcode, float price );
     float costs( sms::OpInfo& op ) const;
     float costs( std::string cname, std::string opcode = "" ) const;
+
+    boost::logic::tribool hasOption( std::string name );
+    boost::logic::tribool hasOption( std::string name, std::string country );
+    boost::logic::tribool hasOption( std::string name, std::string country, std::string oper );
+
+    std::string getOption( std::string name );
+    std::string getOption( std::string name, std::string country );
+    std::string getOption( std::string name, std::string country, std::string oper );
+
+    void setOption( std::string name, std::string value );
+    void setOption( std::string name, std::string country, std::string value );
+    void setOption( std::string name, std::string country, std::string oper, std::string value );
+
+    void removeOption( std::string name );
+    void removeOption( std::string name, std::string country );
+    void removeOption( std::string name, std::string country, std::string oper );
 
     template<class Archive>
         void serialize(Archive & ar, const unsigned int) {

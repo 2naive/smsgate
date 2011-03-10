@@ -11,6 +11,7 @@
 #include <Wt/WGridLayout>
 #include <Wt/WContainerWidget>
 #include <Wt/WComboBox>
+#include <Wt/WCheckBox>
 #include <Wt/WLabel>
 #include <Wt/WDialog>
 #include <Wt/WTable>
@@ -42,6 +43,9 @@ private:
     Wt::WPushButton* importBtn;
     Wt::WComboBox* tlistBox;
     Wt::WLineEdit* nameBox;
+    Wt::WCheckBox* deliveryPayment;
+    Wt::WCheckBox* countryAsMax;
+    Wt::WCheckBox* countryAsAvg;
 
     struct import_controls {
         Wt::WLabel* netcode_helper;
@@ -88,7 +92,12 @@ private:
     void onTariffRemove();
     void onTariffSave();
     void onTariffClear();
+    void onTariffUpdate();
     void tlistRebuild();
+
+    void tariffOptionChanged( std::string, bool );
+    void tariffInfoUpdate();
+    void updateCheckBox( Wt::WCheckBox* box, boost::logic::tribool val );
 
     std::string sdouble2string( std::string v, std::string def_val = "" );
     double sdouble2double( std::string v, double defval );
