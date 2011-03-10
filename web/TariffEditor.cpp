@@ -32,10 +32,12 @@ TariffEditor::TariffEditor( WContainerWidget* parent ): WContainerWidget( parent
     tlistRebuild();
 
     WPushButton* loadBtn = new WPushButton( WString::fromUTF8( "Загрузить" ) );
+    loadBtn->setMinimumSize( WLength( 3, WLength::Centimeter ), WLength::Auto );
     loadBtn->clicked().connect( this, &TariffEditor::tariffInfoUpdate );
     loadBtn->clicked().connect( this, &TariffEditor::onTariffLoad );
 
     WPushButton* removeBtn = new WPushButton( WString::fromUTF8( "Удалить" ) );
+    removeBtn->setMinimumSize( WLength( 3, WLength::Centimeter ), WLength::Auto );
     removeBtn->clicked().connect( this, &TariffEditor::onTariffRemove );
 
     nameBox = new WLineEdit();
