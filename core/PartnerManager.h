@@ -50,7 +50,7 @@ struct PartnerInfo {
                 int pLimit,
                 bool pPostPay,
                 bool pIsTrial,
-                int pPriority ): tariff( Tariff::buildEmpty( pId ) ) {
+                int pPriority ) {
         this->pName = pName;
         this->pPass = pPass;
         this->pId = pId;
@@ -59,7 +59,7 @@ struct PartnerInfo {
         this->phone = phone;
         this->text = text;
         try {
-            this->tariff = Tariff::buildFromFile( tariff );
+            this->tariff = TariffManager::get_mutable_instance().loadTariff( tariff );
         } catch ( std::exception& err ) {
             Logger::get_mutable_instance().smslogerr( err.what() );
         }

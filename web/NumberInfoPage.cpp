@@ -81,7 +81,7 @@ void NumberInfoPage::onPhonePrintInfo() {
             sms::CountryInfo msgci;
             double c;
             try {
-                c = it->second.getTariff().costs( msg);
+                c = it->second.getTariff().costs( msg.country, msg.opcode );
             } catch ( ... ) {
                 c = -1;
             }

@@ -344,7 +344,7 @@ namespace sms {
             double c;
             try {
                 SMPPGateManager::SMPPGatesMap gm = SMPPGateManager::Instance()->getGates();
-                c = gm[ gname ].getTariff().costs( msg );
+                c = gm[ gname ].getTariff().costs( msg.country, msg.opcode );
             } catch (...) {
                 c = 10;
             }
