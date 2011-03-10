@@ -32,6 +32,7 @@ TariffEditor::TariffEditor( WContainerWidget* parent ): WContainerWidget( parent
     tlistRebuild();
 
     WPushButton* loadBtn = new WPushButton( WString::fromUTF8( "Загрузить" ) );
+    loadBtn->clicked().connect( this, &TariffEditor::tariffInfoUpdate );
     loadBtn->clicked().connect( this, &TariffEditor::onTariffLoad );
 
     WPushButton* removeBtn = new WPushButton( WString::fromUTF8( "Удалить" ) );
@@ -44,9 +45,11 @@ TariffEditor::TariffEditor( WContainerWidget* parent ): WContainerWidget( parent
     saveBtn->clicked().connect( this, &TariffEditor::onTariffSave );
 
     WPushButton* clearBtn = new WPushButton( WString::fromUTF8( "Очистить" ) );
+    clearBtn->clicked().connect( this, &TariffEditor::tariffInfoUpdate );
     clearBtn->clicked().connect( this, &TariffEditor::onTariffClear );
 
     WPushButton* updateBtn = new WPushButton( WString::fromUTF8( "Обновить" ) );
+    updateBtn->clicked().connect( this, &TariffEditor::tariffInfoUpdate );
     updateBtn->clicked().connect( this, &TariffEditor::onTariffUpdate );
 
     deliveryPayment = new WCheckBox( WString::fromUTF8( "Оплата за доставленные" ) );
@@ -58,8 +61,8 @@ TariffEditor::TariffEditor( WContainerWidget* parent ): WContainerWidget( parent
     countryAsMax->unChecked().connect( boost::bind( &TariffEditor::tariffOptionChanged, this, "CountryAsMax", false ) );
 
     countryAsAvg = new WCheckBox( WString::fromUTF8( "Страна как среднее" ) );
-    countryAsMax->checked().connect( boost::bind( &TariffEditor::tariffOptionChanged, this, "CountryAsAvg", true ) );
-    countryAsMax->unChecked().connect( boost::bind( &TariffEditor::tariffOptionChanged, this, "CountryAsAvg", false ) );
+    countryAsAvg->checked().connect( boost::bind( &TariffEditor::tariffOptionChanged, this, "CountryAsAvg", true ) );
+    countryAsAvg->unChecked().connect( boost::bind( &TariffEditor::tariffOptionChanged, this, "CountryAsAvg", false ) );
 
     WGridLayout* loadSaveLayout = new WGridLayout();
     loadSaveLayout->addWidget( tlistBox, 0, 0 );
@@ -70,6 +73,7 @@ TariffEditor::TariffEditor( WContainerWidget* parent ): WContainerWidget( parent
     loadSaveLayout->addWidget( clearBtn, 1, 2 );
     loadSaveLayout->addWidget( exportBtn, 2, 0 );
     loadSaveLayout->addWidget( importBtn, 2, 1 );
+    loadSaveLayout->addWidget( updateBtn, 2, 2 );
 
     WGroupBox* loadSaveBox = new WGroupBox( WString::fromUTF8( "Загрузить/Сохранить" ) );
     loadSaveBox->setLayout( loadSaveLayout, AlignCenter | AlignMiddle );
