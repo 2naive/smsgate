@@ -10,6 +10,7 @@
 #include <Wt/WVBoxLayout>
 #include <Wt/WGridLayout>
 #include <Wt/WContainerWidget>
+#include <Wt/WComboBox>
 #include <Wt/WLabel>
 #include <Wt/WDialog>
 #include <Wt/WTable>
@@ -25,6 +26,8 @@
 #include <Wt/WFileResource>
 #include <Wt/WTextArea>
 
+#include <Wt/WGroupBox>
+
 #include <vector>
 #include <string>
 #include <ostream>
@@ -37,6 +40,8 @@ private:
     Wt::WTreeView* treeView_;
     Wt::WPushButton* exportBtn;
     Wt::WPushButton* importBtn;
+    Wt::WComboBox* tlistBox;
+    Wt::WLineEdit* nameBox;
 
     struct import_controls {
         Wt::WLabel* netcode_helper;
@@ -55,14 +60,13 @@ private:
         WContainerWidget* root;
         WContainerWidget* fake;
         Wt::WPushButton* cancelBtn;
-        Tariff* tariff;
     } importCtx;
 
     std::vector< int > columns_width;
     int elements_per_page;
+    Tariff tariff;
 
-
-    void buildModel( Wt::WStandardItemModel*, Tariff* tariff = NULL);
+    void buildModel( Wt::WStandardItemModel*, Tariff& tariff );
     Wt::WTreeView* buildTreeView( Wt::WStandardItemModel* );
     void resizeTreeView( Wt::WTreeView* );
     void onPriceEdit( Wt::WModelIndex, Wt::WMouseEvent );
@@ -79,6 +83,12 @@ private:
     void importUploadRequest();
     void importParseCsv();
     void importCsvFinish();
+
+    void onTariffLoad();
+    void onTariffRemove();
+    void onTariffSave();
+    void onTariffClear();
+    void tlistRebuild();
 
     std::string sdouble2string( std::string v, std::string def_val = "" );
     double sdouble2double( std::string v, double defval );

@@ -9,7 +9,6 @@
 #include <fstream>
 
 
-
 using namespace Wt;
 using namespace std;
 
@@ -20,25 +19,54 @@ TariffEditor::TariffEditor( WContainerWidget* parent ): WContainerWidget( parent
     elements_per_page = 20;
 
     model_ = new WStandardItemModel();
-    buildModel( model_ );
+    buildModel( model_, tariff );
     treeView_ = buildTreeView( model_ );
 
-    exportBtn = new WPushButton( WString::fromUTF8( "Export to Excel" ) );
+    exportBtn = new WPushButton( WString::fromUTF8( "Экспорт" ) );
     exportBtn->clicked().connect( this, &TariffEditor::exportToCsv );
 
-    importBtn = new WPushButton( WString::fromUTF8( "Import from CSV" ) );
+    importBtn = new WPushButton( WString::fromUTF8( "Импорт" ) );
     importBtn->clicked().connect( this, &TariffEditor::importFromCsv);
+
+    tlistBox = new WComboBox();
+    tlistRebuild();
+
+    WPushButton* loadBtn = new WPushButton( WString::fromUTF8( "Загрузить" ) );
+    loadBtn->clicked().connect( this, &TariffEditor::onTariffLoad );
+
+    WPushButton* removeBtn = new WPushButton( WString::fromUTF8( "Удалить" ) );
+    removeBtn->clicked().connect( this, &TariffEditor::onTariffRemove );
+
+    nameBox = new WLineEdit();
+
+    WPushButton* saveBtn = new WPushButton( WString::fromUTF8( "Сохранить" ) );
+    saveBtn->clicked().connect( this, &TariffEditor::onTariffSave );
+
+    WPushButton* clearBtn = new WPushButton( WString::fromUTF8( "Очистить" ) );
+    clearBtn->clicked().connect( this, &TariffEditor::onTariffClear );
+
+    WGridLayout* loadSaveLayout = new WGridLayout;
+    loadSaveLayout->addWidget( tlistBox, 0, 0 );
+    loadSaveLayout->addWidget( loadBtn, 0, 1 );
+    loadSaveLayout->addWidget( removeBtn, 0, 2 );
+    loadSaveLayout->addWidget( nameBox, 1, 0 );
+    loadSaveLayout->addWidget( saveBtn, 1, 1 );
+    loadSaveLayout->addWidget( clearBtn, 1, 2 );
+    loadSaveLayout->addWidget( exportBtn, 2, 0 );
+    loadSaveLayout->addWidget( importBtn, 2, 1 );
+
+    WGroupBox* loadSaveBox = new WGroupBox( WString::fromUTF8( "Загрузить/Сохранить" ) );
+    loadSaveBox->setLayout( loadSaveLayout, AlignCenter | AlignMiddle );
 
     WBorderLayout* root = new WBorderLayout();
     root->addWidget( treeView_, WBorderLayout::West );
-    root->addWidget( exportBtn, WBorderLayout::South );
-    root->addWidget( importBtn, WBorderLayout::North );
+    root->addWidget( loadSaveBox, WBorderLayout::Center );
 
     setLayout( root );
     resizeTreeView( treeView_ );
 }
 
-void TariffEditor::buildModel( WStandardItemModel* data, Tariff* tariff ) {
+void TariffEditor::buildModel( WStandardItemModel* data, Tariff& tariff ) {
     sms::MessageClassifier::CountryOperatorMapT comap = sms::MessageClassifier::get_mutable_instance().getCOMap_v2();
 
     data->clear();
@@ -60,9 +88,10 @@ void TariffEditor::buildModel( WStandardItemModel* data, Tariff* tariff ) {
         row.push_back( mcc );
 
         string price_text = "Не задано";
-        if ( tariff )
         try {
-            price_text = double2string( tariff->costs( boost::lexical_cast< string >( mcc ) ) );
+            double price = tariff.costs( boost::lexical_cast< string >( cinfo.mcc ) );
+            if ( price != Tariff::INVALID_VALUE )
+                price_text = double2string( price );
         } catch ( ... ) {}
 
         WStandardItem* price = new WStandardItem( WString::fromUTF8( price_text ) );;
@@ -82,11 +111,10 @@ void TariffEditor::buildModel( WStandardItemModel* data, Tariff* tariff ) {
             subrow.push_back( code );
 
             string price_text = "Не задано";
-            if ( tariff )
-            try {
-                price_text = double2string( tariff->costs( boost::lexical_cast< string >( info.mcc ), boost::lexical_cast< string >( info.mnc ) ) );
-            } catch ( ... ) {
-                continue;
+            {
+                double price = tariff.costs( boost::lexical_cast< string >( info.mcc ), boost::lexical_cast< string >( info.mnc ) );
+                if ( price != Tariff::INVALID_VALUE )
+                    price_text = double2string( price );
             }
 
             WStandardItem* subprice = new WStandardItem( WString::fromUTF8( price_text ) );
@@ -424,7 +452,7 @@ void TariffEditor::importParseCsv() {
     importCtx.spacer->elementAt( 1, 0 )->addWidget( importCtx.cancelBtn );
     importCtx.spacer->elementAt( 1, 1 )->addWidget( finishBtn );
 
-    importCtx.tariff = new Tariff( Tariff::buildEmpty( "TEST" ) );
+    tariff = Tariff();
 
     while ( !in.eof() && !in.fail() ) {
         int blocks_found = 0;
@@ -473,9 +501,9 @@ void TariffEditor::importParseCsv() {
         }
 
         if ( mcc == -1 ) {
-            importCtx.tariff->addFilterCountry( boost::lexical_cast< string >( mcc ), price );
+            tariff.addFilterCountry( boost::lexical_cast< string >( mcc ), price );
         } else {
-            importCtx.tariff->addFilterCountryOperator( boost::lexical_cast< string >( mcc ), boost::lexical_cast< string >( mnc ), price );
+            tariff.addFilterCountryOperator( boost::lexical_cast< string >( mcc ), boost::lexical_cast< string >( mnc ), price );
         }
 
         output->setText( output->text() + boost::lexical_cast< string >( mcc ) + string("\t") );
@@ -491,7 +519,49 @@ void TariffEditor::importParseCsv() {
 
 void TariffEditor::importCsvFinish() {
     model_->clear();
-    buildModel( model_, importCtx.tariff );
+    buildModel( model_, tariff );
 
     importCtx.importDlg->accept();
 }
+
+void TariffEditor::onTariffLoad() {
+    std::string name = tlistBox->currentText().toUTF8();
+    tariff = TariffManager::get_mutable_instance().loadTariff( name );
+
+    model_->clear();
+    buildModel( model_, tariff );
+
+    nameBox->setText( WString::fromUTF8( name ) );
+}
+
+void TariffEditor::onTariffRemove() {
+    std::string name = tlistBox->currentText().toUTF8();
+    TariffManager::get_mutable_instance().removeTariff( name );
+
+    tlistRebuild();
+}
+
+void TariffEditor::onTariffClear() {
+    tariff = Tariff();
+
+    model_->clear();
+    buildModel( model_, tariff );
+}
+
+void TariffEditor::onTariffSave() {
+    std::string name = nameBox->text().toUTF8();
+    tariff.setName( name );
+    TariffManager::get_mutable_instance().saveTariff( name, tariff );
+
+    tlistRebuild();
+}
+
+void TariffEditor::tlistRebuild() {
+    tlistBox->clear();
+    std::list< std::string > tlist = TariffManager::get_mutable_instance().tariffs_list();
+
+    for ( std::list< std::string >::iterator it = tlist.begin(); it != tlist.end(); it++ ) {
+        tlistBox->addItem( WString::fromUTF8( *it ) );
+    }
+}
+

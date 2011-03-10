@@ -27,6 +27,9 @@ public:
     double costs( std::string op );
     double costs( std::string cname, std::string opcode );
 
+    void setName( std::string n ) { tariff.name = n; }
+    std::string getName( ) { return tariff.name; };
+
     struct TariffOperatorInfo {
         std::map< std::string, std::string > options;
 
@@ -51,6 +54,13 @@ public:
         std::string name;
         std::map< std::string, std::string > options;
         std::map< std::string, TariffCountryInfo > countries;
+        template<class Archive>
+            void serialize(Archive & ar, const unsigned int) {
+                ar & BOOST_SERIALIZATION_NVP(name);
+                ar & BOOST_SERIALIZATION_NVP(options);
+                ar & BOOST_SERIALIZATION_NVP(countries);
+            }
+    };
 
     void addFilterCountry( std::string cname, float price );
     void addFilterCountryOperator( std::string cname, std::string opcode, float price );
@@ -77,6 +87,7 @@ public:
     void updateTariffList();
     Tariff loadTariff( std::string name );
     void saveTariff( std::string name, Tariff t );
+    void removeTariff( std::string name );
     TariffListT tariffs_list();
 
 private:

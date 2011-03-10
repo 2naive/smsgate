@@ -23,7 +23,7 @@ Tariff::Tariff( std::string name, std::string source ) {
     std::istringstream ifs( source );
     try {
         boost::archive::xml_iarchive ia( ifs );
-        ia >> BOOST_SERIALIZATION_NVP( *this );
+        ia >> BOOST_SERIALIZATION_NVP( tariff );
 
     } catch ( std::exception& err ) {
         throw std::runtime_error( string( "Cannot deserialize tariff[" ) + name + string( "]: " ) + err.what() );
@@ -34,7 +34,7 @@ std::string Tariff::serialize() {
     std::ostringstream ofs;
     try {
         boost::archive::xml_oarchive oa(ofs);
-        oa << BOOST_SERIALIZATION_NVP( *this );
+        oa << BOOST_SERIALIZATION_NVP( tariff );
     } catch (...) {
         throw std::runtime_error( "Cannot serialize tariff" );;
     }
@@ -135,7 +135,7 @@ void TariffManager::saveTariff( std::string name, Tariff t ) {
 
         PGSql::ConnectionHolder cHold( db );
         ConnectionPTR conn = cHold.get();
-        TransactionPTR tr = db.openTransaction( conn, "TariffManager::updateTariffList" );
+        TransactionPTR tr = db.openTransaction( conn, "TariffManager::saveTariff" );
 
         if ( tmap.find( name ) == tmap.end() ) {
             r       << "INSERT into tariffs values ("
@@ -160,6 +160,32 @@ void TariffManager::saveTariff( std::string name, Tariff t ) {
 
     updateTariffList();
 }
+
+void TariffManager::removeTariff( std::string name ) {
+    std::ostringstream out;
+    try {
+        std::ostringstream r;
+
+        PGSql::ConnectionHolder cHold( db );
+        ConnectionPTR conn = cHold.get();
+        TransactionPTR tr = db.openTransaction( conn, "TariffManager::saveTariff" );
+
+        r       << "DELETE from tariffs where name='" << tr->esc( name ) << "';";
+
+        Result res = tr->exec( r.str() );
+        tr->commit();
+
+    } catch ( PGSqlError& err ) {
+        out << "Error while saving tariff: " << err.what();
+        Logger::get_mutable_instance().smslogerr( out.str() );
+    } catch ( PGBrokenConnection& err ) {
+        out << "Connection Error while saving tariff: " << err.what();
+        Logger::get_mutable_instance().smslogerr( out.str() );
+    }
+
+    updateTariffList();
+}
+
 
 TariffManager::TariffListT TariffManager::tariffs_list() {
     return tlist;
