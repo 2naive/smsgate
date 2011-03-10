@@ -1,7 +1,8 @@
 #include "Tariff.h"
+#include "Timer.h"
 
 #include <iostream>
-#include <fstream>
+#include <sstream>
 
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
@@ -10,232 +11,182 @@
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/vector.hpp>
 
-Tariff::Tariff( const ID _name, int tt ): TariffType( tt ), name( _name ) {
+Tariff::Tariff( ) {}
+
+Tariff::Tariff( std::string name ) {
+    tariff.name = name;
 }
 
-Tariff::Tariff() {
-}
+Tariff::Tariff( std::string name, std::string source ) {
+    tariff.name = name;
 
-Tariff Tariff::buildEmpty( ID name ) {
-    Tariff t;
-    t.name = name;
-    t.TariffType = Tariff::ROOT;
-
-    return t;
-}
-
-Tariff Tariff::buildInherit( Tariff::ID name, const std::string& filename ) {
-    Tariff t;
-    t.name = name;
-    t.TariffType = Tariff::MULTIMPLEXION;
-
-    Tariff base = Tariff::buildFromFile( filename );
-
-    t.bases.push_back( std::make_pair( base.name, filename ) );
-    t.tlist.insert( std::make_pair( base.name, base ) );
-    t.arguments.push_back( base.name );
-    t.arguments.push_back( filename );
-    t.arguments.push_back( "1.0" );
-
-    return t;
-}
-
-Tariff Tariff::buildInheritMultiplex( Tariff::ID name, const std::string& filename, float mult ) {
-    Tariff t;
-    t.name = name;
-    t.TariffType = Tariff::MULTIMPLEXION;
-
-    Tariff base = Tariff::buildFromFile( filename );
-
-    t.bases.push_back( std::make_pair( base.name, filename ) );
-    t.tlist.insert( std::make_pair( base.name, base ) );
-    t.arguments.push_back( base.name );
-    t.arguments.push_back( filename );
-    t.arguments.push_back( boost::lexical_cast< std::string > ( mult ) );
-
-    return t;
-}
-
-Tariff Tariff::buildInheritAdd( Tariff::ID name, const std::string& filename, float mult ) {
-    Tariff t;
-    t.name = name;
-    t.TariffType = Tariff::ADDICTION;
-
-    Tariff base = Tariff::buildFromFile( filename );
-
-    t.bases.push_back( std::make_pair( base.name, filename ) );
-    t.tlist.insert( std::make_pair( base.name, base ) );
-    t.arguments.push_back( base.name );
-    t.arguments.push_back( filename );
-    t.arguments.push_back( boost::lexical_cast< std::string > ( mult ) );
-
-    return t;
-}
-
-Tariff Tariff::buildInheritMin( ID name, const std::string& filename1, const std::string& filename2 ) {
-    Tariff t;
-    t.name = name;
-    t.TariffType = Tariff::MINIMAL;
-
-    Tariff base1 = Tariff::buildFromFile( filename1 );
-    Tariff base2 = Tariff::buildFromFile( filename2 );
-
-    t.bases.push_back( std::make_pair( base1.name, filename1 ) );
-    t.bases.push_back( std::make_pair( base2.name, filename2 ) );
-
-    t.tlist.insert( std::make_pair( base1.name, base1 ) );
-    t.tlist.insert( std::make_pair( base2.name, base2 ) );
-
-    t.arguments.push_back( base1.name );
-    t.arguments.push_back( filename1 );
-    t.arguments.push_back( base2.name );
-    t.arguments.push_back( filename2 );
-
-    return t;
-}
-
-Tariff Tariff::buildInheritMax( ID name, const std::string& filename1, const std::string& filename2 ) {
-    Tariff t;
-    t.name = name;
-    t.TariffType = Tariff::MAXIMAL;
-
-    Tariff base1 = Tariff::buildFromFile( filename1 );
-    Tariff base2 = Tariff::buildFromFile( filename2 );
-
-    t.bases.push_back( std::make_pair( base1.name, filename1 ) );
-    t.bases.push_back( std::make_pair( base2.name, filename2 ) );
-
-    t.tlist.insert( std::make_pair( base1.name, base1 ) );
-    t.tlist.insert( std::make_pair( base2.name, base2 ) );
-
-    t.arguments.push_back( base1.name );
-    t.arguments.push_back( filename1 );
-    t.arguments.push_back( base2.name );
-    t.arguments.push_back( filename2 );
-
-    return t;
-}
-
-void Tariff::addFilterCountry( std::string cname, float price ) {
-    CFilterList.push_back( std::make_pair( cname, price ) );
-}
-
-void Tariff::addFilterCountryOperator( std::string cname, std::string opcode, float price ) {
-    COFilterList.push_back( std::make_pair( std::make_pair( cname, opcode ), price ) );
-}
-
-Tariff Tariff::buildFromFile( const std::string& filename ) {
-    std::ifstream ifs( filename.c_str() );
-    if ( !ifs.good() )
-        throw std::runtime_error( string( "Cannot open tariff file: " ) + filename );;
+    std::istringstream ifs( source );
     try {
-        Tariff t;
         boost::archive::xml_iarchive ia( ifs );
-        ia >> BOOST_SERIALIZATION_NVP( t );
-        t.rebuildBases();
+        ia >> BOOST_SERIALIZATION_NVP( tariff );
 
-        return t;
     } catch ( std::exception& err ) {
-        throw std::runtime_error( string( "Cannot deserialize tariff[" ) + filename + string( "]: " ) + err.what() );
+        throw std::runtime_error( string( "Cannot deserialize tariff[" ) + name + string( "]: " ) + err.what() );
     }
 }
 
-void Tariff::saveToFile( const std::string& filename ) {
-    std::ofstream ofs( filename.c_str() );
+std::string Tariff::serialize() {
+    std::ostringstream ofs;
     try {
         boost::archive::xml_oarchive oa(ofs);
-        oa << BOOST_SERIALIZATION_NVP( this );
+        oa << BOOST_SERIALIZATION_NVP( tariff );
     } catch (...) {
         throw std::runtime_error( "Cannot serialize tariff" );;
     }
+    return ofs.str();
 }
 
-
-float Tariff::costs( sms::OpInfo& op ) const {
-    return costs( op.country, op.opcode );
+void Tariff::addFilterCountry( std::string cname, double price ) {
+    tariff.countries[ cname ].options[ "price" ] = boost::lexical_cast< std::string >( price );
 }
 
-float Tariff::costs( std::string cname, std::string opcode ) const {
-    float res;
-    if ( !opcode.empty() ) {
-        if ( searchForCountryOperatorPrice( cname, opcode, res ) )
-            return res;
-    }
-
-    if ( searchForCountryPrice( cname, res ) )
-        return res;
-
-    if ( arguments.size() < 3 ) {
-        throw std::runtime_error( "Invalid number of tariff arguments" );
-    }
-
-    switch ( TariffType ) {
-
-    case Tariff::ROOT:
-        throw std::runtime_error( "Entry not found in tariff" );
-        break;
-
-    case Tariff::MULTIMPLEXION:
-        return tariffByID( arguments[ 0 ] ).costs( cname, opcode )*boost::lexical_cast< float >( arguments[ 2 ] );
-        break;
-
-    case Tariff::ADDICTION:
-        return tariffByID( arguments[ 0 ] ).costs( cname, opcode ) + boost::lexical_cast< float >( arguments[ 2 ] );
-        break;
-
-    case Tariff::MINIMAL:
-        return std::min( tariffByID( arguments[ 0 ] ).costs( cname, opcode ), tariffByID( arguments[ 2 ] ).costs( cname, opcode ) );
-        break;
-
-    case Tariff::MAXIMAL:
-        return std::max( tariffByID( arguments[ 0 ] ).costs( cname, opcode ), tariffByID( arguments[ 2 ] ).costs( cname, opcode ) );
-        break;
-
-    }
+void Tariff::addFilterCountryOperator( std::string cname, std::string opcode, double price ) {
+    tariff.countries[ cname ].operators[ opcode ].options[ "price" ] = boost::lexical_cast< std::string >( price );
 }
 
-bool Tariff::searchForCountryPrice( std::string cname, float& res ) const {
-    std::list< std::pair< std::string, float > >::const_iterator it;
-    for ( it = CFilterList.begin(); it != CFilterList.end(); it++ ) {
-        std::string _cname = it->first;
-        float _res = it->second;
+double Tariff::costs( std::string cname ) {
+    if ( tariff.countries.find( cname ) == tariff.countries.end() )
+        return INVALID_VALUE;
 
-        if ( _cname == cname ) {
-            res = _res;
-            return true;
+    if ( tariff.countries[ cname ].options.find( "price" ) == tariff.countries[ cname ].options.end() )
+        return INVALID_VALUE;
+
+    try {
+        return boost::lexical_cast< double >( tariff.countries[ cname ].options[ "price" ] );
+    } catch ( ... ) {
+        return INVALID_VALUE;
+    }
+
+}
+
+double Tariff::costs( std::string cname, std::string opcode ) {
+
+    if ( tariff.countries.find( cname ) == tariff.countries.end() )
+        return INVALID_VALUE;
+
+    if ( tariff.countries[ cname ].operators.find( opcode ) == tariff.countries[ cname ].operators.end() )
+        return costs( cname );
+
+    if ( tariff.countries[ cname ].operators[ opcode ].options.find( "price" ) == tariff.countries[ cname ].operators[ opcode ].options.end() )
+        return costs( cname );
+
+    try {
+        return boost::lexical_cast< double >( tariff.countries[ cname ].operators[ opcode ].options[ "price" ] );
+    } catch ( ... ) {
+        return costs( cname );
+    }
+
+}
+
+TariffManager::TariffManager(): db( PGSqlConnPoolSystem::get_mutable_instance().getdb() ) {
+    updateTimerID = Timer::Instance()->addPeriodicEvent( boost::bind( &TariffManager::updateTariffList, this ), 60 );
+    updateTariffList();
+}
+
+TariffManager::~TariffManager() {
+    Timer::Instance()->cancelEvent( updateTimerID );
+}
+
+Tariff TariffManager::loadTariff(std::string name) {
+    return tmap[ name ];
+}
+
+void TariffManager::updateTariffList() {
+    TariffListT _tlist;
+    TariffMapT _tmap;
+    std::ostringstream out;
+    try {
+        std::ostringstream r;
+
+        PGSql::ConnectionHolder cHold( db );
+        ConnectionPTR conn = cHold.get();
+        TransactionPTR tr = db.openTransaction( conn, "TariffManager::updateTariffList" );
+
+        r       << "SELECT name, description from tariffs;";
+
+        Result res = tr->exec( r.str() );
+        tr->commit();
+        for ( Result::const_iterator dbr = res.begin(); dbr != res.end(); dbr++ ) {
+            _tlist.push_back( (*dbr)[0].as<std::string>() );
+            _tmap.insert( std::make_pair( (*dbr)[0].as<std::string>(), Tariff( (*dbr)[0].as<std::string>(), (*dbr)[1].as<std::string>() ) ) );
         }
+
+        tlist = _tlist;
+        tmap = _tmap;
+
+    } catch ( PGSqlError& err ) {
+        out << "Error while loading tariff: " << err.what();
+        Logger::get_mutable_instance().smslogerr( out.str() );
+    } catch ( PGBrokenConnection& err ) {
+        out << "Connection Error while loading tariff: " << err.what();
+        Logger::get_mutable_instance().smslogerr( out.str() );
     }
-    return false;
 }
 
-bool Tariff::searchForCountryOperatorPrice( std::string cname, std::string opcode, float& res ) const {
-    std::list< std::pair< std::pair< std::string, std::string >, float > >::const_iterator it;
-    for ( it = COFilterList.begin(); it != COFilterList.end(); it++ ) {
-        std::string _cname = it->first.first;
-        std::string _opcode = it->first.second;
-        float _res = it->second;
+void TariffManager::saveTariff( std::string name, Tariff t ) {
+    std::ostringstream out;
+    try {
+        std::ostringstream r;
 
-        if ( ( _cname == cname ) && ( _opcode == opcode ) ) {
-            res = _res;
-            return true;
+        PGSql::ConnectionHolder cHold( db );
+        ConnectionPTR conn = cHold.get();
+        TransactionPTR tr = db.openTransaction( conn, "TariffManager::saveTariff" );
+
+        if ( tmap.find( name ) == tmap.end() ) {
+            r       << "INSERT into tariffs values ("
+                    << "'" << tr->esc( name ) << "', "
+                    << "'" << tr->esc( t.serialize() ) << "');";
+        } else {
+            r       << "UPDATE tariffs "
+                    << "set description='" << tr->esc( t.serialize() ) << "' "
+                    << "WHERE name='" << tr->esc( name ) << "';";
         }
+
+        Result res = tr->exec( r.str() );
+        tr->commit();
+
+    } catch ( PGSqlError& err ) {
+        out << "Error while saving tariff: " << err.what();
+        Logger::get_mutable_instance().smslogerr( out.str() );
+    } catch ( PGBrokenConnection& err ) {
+        out << "Connection Error while saving tariff: " << err.what();
+        Logger::get_mutable_instance().smslogerr( out.str() );
     }
-    return false;
+
+    updateTariffList();
 }
 
-const Tariff& Tariff::tariffByID( ID id ) const {
-    if ( tlist.find( id ) == tlist.end() )
-        throw std::runtime_error( "Entry not found in tariff" );
+void TariffManager::removeTariff( std::string name ) {
+    std::ostringstream out;
+    try {
+        std::ostringstream r;
 
-    return tlist.find( id )->second;
+        PGSql::ConnectionHolder cHold( db );
+        ConnectionPTR conn = cHold.get();
+        TransactionPTR tr = db.openTransaction( conn, "TariffManager::saveTariff" );
+
+        r       << "DELETE from tariffs where name='" << tr->esc( name ) << "';";
+
+        Result res = tr->exec( r.str() );
+        tr->commit();
+
+    } catch ( PGSqlError& err ) {
+        out << "Error while saving tariff: " << err.what();
+        Logger::get_mutable_instance().smslogerr( out.str() );
+    } catch ( PGBrokenConnection& err ) {
+        out << "Connection Error while saving tariff: " << err.what();
+        Logger::get_mutable_instance().smslogerr( out.str() );
+    }
+
+    updateTariffList();
 }
 
-void Tariff::rebuildBases() {
-    std::list< std::pair< ID, std::string > >::iterator it;
-    for ( it = bases.begin(); it != bases.end(); it++ ) {
-        ID id = it->first;
-        std::string id_fname = it->second;
 
-        tlist.insert( std::make_pair(id, buildFromFile( id_fname ) ) );
-    }
+TariffManager::TariffListT TariffManager::tariffs_list() {
+    return tlist;
 }

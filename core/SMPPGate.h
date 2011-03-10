@@ -42,7 +42,7 @@ namespace sms {
         bool setBusy( bool what ) { _busy = what; }
         string gateRule() { return _gateRule; }
         bool optionExists( string oName ) { return ( _gateProperties.find( oName ) != _gateProperties.end() ); }
-        const Tariff& getTariff() { return tariff; }
+        Tariff& getTariff() { return tariff; }
         template < class T >
         T getOption( string oName );
         map< string, string > gateProperties() { return _gateProperties; }

@@ -147,6 +147,11 @@ CREATE TABLE preffix_map (
     region      TEXT DEFAULT ''
 );
 
+CREATE TABLE tariffs (
+    name        TEXT PRIMARY KEY,
+    description TEXT DEFAULT ''
+);
+
 CREATE TABLE matviews (
   mv_name NAME NOT NULL PRIMARY KEY
   , v_name NAME NOT NULL

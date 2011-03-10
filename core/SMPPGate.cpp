@@ -11,11 +11,11 @@
 
 namespace sms {
 
-    SMPPGate::SMPPGate( string gName, string uName, string uPass, int gPort, int gPriority, bool gEnabled, string gRule, string gOptions ): tariff( Tariff::buildEmpty( gName ) ) {
+    SMPPGate::SMPPGate( string gName, string uName, string uPass, int gPort, int gPriority, bool gEnabled, string gRule, string gOptions ) {
         reinit( gName, uName, uPass, gPort, gPriority, gEnabled, gRule, gOptions );
     }
 
-    SMPPGate::SMPPGate(): tariff( Tariff::buildEmpty( "" ) ) {
+    SMPPGate::SMPPGate() {
         this->_enabled = true;
         _suspended = false;
         _busy = false;
@@ -32,7 +32,6 @@ namespace sms {
         utils::splitArgs( gOptions, this->_gateProperties );
         _suspended = false;
         _busy = false;
-        tariff = Tariff::buildEmpty( gName );
 
         int limit = -1;
         int interval = 10;
@@ -44,7 +43,7 @@ namespace sms {
 
         if ( optionExists( "Tariff" ) ) {
             try {
-                this->tariff = Tariff::buildFromFile( getOption<std::string>("Tariff") );
+                this->tariff = TariffManager::get_mutable_instance().loadTariff( getOption<std::string>("Tariff") );
             } catch ( std::exception& err ) {
                 Logger::get_mutable_instance().smslogerr( err.what() );
             }
@@ -62,7 +61,6 @@ namespace sms {
         this->_gateProperties = gOptions;
         _suspended = false;
         _busy = false;
-        tariff = Tariff::buildEmpty( gName );
 
         int limit = -1;
         int interval = 10;
@@ -74,7 +72,7 @@ namespace sms {
 
         if ( optionExists( "Tariff" ) ) {
             try {
-                this->tariff = Tariff::buildFromFile( getOption<std::string>("Tariff") );
+                this->tariff = TariffManager::get_mutable_instance().loadTariff( getOption<std::string>("Tariff") );
             } catch ( std::exception& err ) {
                 Logger::get_mutable_instance().smslogerr( err.what() );
             }

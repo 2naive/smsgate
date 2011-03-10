@@ -77,8 +77,8 @@ endif ( ${CMAKE_SYSTEM_NAME} MATCHES FreeBSD )
 add_executable(smsgate ${smsgate_SRCS} smsgate.cpp)
 target_link_libraries(smsgate ${smsgate_linked_libs})
 
-add_executable(thelper ${thelper_SRCS} thelper.cpp)
-target_link_libraries(thelper ${smsgate_linked_libs})
+#add_executable(thelper ${thelper_SRCS} thelper.cpp)
+#target_link_libraries(thelper ${smsgate_linked_libs})
 
 add_executable(ghelper ${ghelper_SRCS} ghelper.cpp)
 target_link_libraries(ghelper ${smsgate_linked_libs})

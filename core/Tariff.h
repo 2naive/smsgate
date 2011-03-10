@@ -9,30 +9,58 @@
 #include <boost/serialization/nvp.hpp>
 
 #include "MessageClassifier.h"
+#include "PGSql.h"
 
 class Tariff {
 public:
-    typedef std::string ID;
-    typedef std::pair< ID, int > TariffDescriptor;
-    enum Type {
-        ROOT,
-        MULTIMPLEXION,
-        ADDICTION,
-        MINIMAL,
-        MAXIMAL
+    static const double INVALID_VALUE = -1.0;
+
+    Tariff( );
+    Tariff( std::string name );
+    Tariff( std::string name, std::string source );
+
+    std::string serialize();
+
+    void addFilterCountry( std::string cname, double price );
+    void addFilterCountryOperator( std::string cname, std::string opcode, double price );
+
+    double costs( std::string op );
+    double costs( std::string cname, std::string opcode );
+
+    void setName( std::string n ) { tariff.name = n; }
+    std::string getName( ) { return tariff.name; };
+
+    struct TariffOperatorInfo {
+        std::map< std::string, std::string > options;
+
+        template<class Archive>
+            void serialize(Archive & ar, const unsigned int) {
+                ar & BOOST_SERIALIZATION_NVP(options);
+            }
     };
 
-    static Tariff buildFromFile( const std::string& filename );
-    void saveToFile( const std::string& filename );
+    struct TariffCountryInfo {
+        std::map< std::string, std::string > options;
+        std::map< std::string, TariffOperatorInfo > operators;
 
-    static Tariff buildEmpty( ID name );
-    static Tariff buildInherit( ID name, const std::string& filename );
-    static Tariff buildInheritMultiplex( ID name, const std::string& filename, float mult );
-    static Tariff buildInheritAdd( ID name, const std::string& filename, float add );
-    static Tariff buildInheritMin( ID name, const std::string& filename1, const std::string& filename2 );
-    static Tariff buildInheritMax( ID name, const std::string& filename1, const std::string& filename2 );
+        template<class Archive>
+            void serialize(Archive & ar, const unsigned int) {
+                ar & BOOST_SERIALIZATION_NVP(options);
+                ar & BOOST_SERIALIZATION_NVP(operators);
+            }
+    };
 
-    static Tariff buildClone( ID name, const Tariff& base );
+    struct TariffInfo {
+        std::string name;
+        std::map< std::string, std::string > options;
+        std::map< std::string, TariffCountryInfo > countries;
+        template<class Archive>
+            void serialize(Archive & ar, const unsigned int) {
+                ar & BOOST_SERIALIZATION_NVP(name);
+                ar & BOOST_SERIALIZATION_NVP(options);
+                ar & BOOST_SERIALIZATION_NVP(countries);
+            }
+    };
 
     void addFilterCountry( std::string cname, float price );
     void addFilterCountryOperator( std::string cname, std::string opcode, float price );
@@ -41,54 +69,33 @@ public:
 
     template<class Archive>
         void serialize(Archive & ar, const unsigned int) {
-            ar & BOOST_SERIALIZATION_NVP(TariffType);
-            ar & BOOST_SERIALIZATION_NVP(name);
-            ar & BOOST_SERIALIZATION_NVP(bases);
-            ar & BOOST_SERIALIZATION_NVP(arguments);
-            ar & BOOST_SERIALIZATION_NVP(COFilterList);
-            ar & BOOST_SERIALIZATION_NVP(CFilterList);
+            ar & BOOST_SERIALIZATION_NVP( tariff );
         }
 
 private:
-    int TariffType;
-    ID name;
-    std::list< std::pair< ID, std::string > > bases;
-    std::vector< std::string > arguments;
-    std::list< std::pair< std::pair< std::string, std::string >, float > > COFilterList;
-    std::list< std::pair< std::string, float > > CFilterList;
-
-    std::map< ID, Tariff > tlist;
-
-    Tariff();
-    Tariff( ID name, int tarifftype );
-    bool searchForCountryPrice( std::string cname, float& res ) const;
-    bool searchForCountryOperatorPrice( std::string cname, std::string opcode, float& res ) const;
-    void rebuildBases();
-    const Tariff& tariffByID( ID id ) const;
+    TariffInfo tariff;
 };
 
-//class TariffManager: public boost::serialization::singleton< TariffManager > {
-//public:
+class TariffManager: public boost::serialization::singleton< TariffManager > {
+public:
+    typedef std::map< std::string, Tariff > TariffMapT;
+    typedef std::list< std::string > TariffListT;
 
-//    TariffManager();
-//    PartnerInfo findByName( string pName ) throw ( PartnerNotFoundError );
-//    PartnerInfo findById( string id ) throw ( PartnerNotFoundError );
+    TariffManager();
+    ~TariffManager();
 
-//    void loadFromDb();
+    void updateTariffList();
+    Tariff loadTariff( std::string name );
+    void saveTariff( std::string name, Tariff t );
+    void removeTariff( std::string name );
+    TariffListT tariffs_list();
 
-//private:
-//    typedef boost::multi_index::multi_index_container<
-//                PartnerInfo,
-//                indexed_by<
-//                    sequenced<>,
-//                    ordered_unique< member<PartnerInfo, string, &PartnerInfo::pName> >,
-//                    ordered_unique< member<PartnerInfo, string, &PartnerInfo::pId> >
-//                >
-//            > pBox;
-//    pBox pbox;
-//    boost::recursive_mutex pmlock;
-//    int tid;
+private:
+    TariffListT tlist;
+    TariffMapT tmap;
+    int updateTimerID;
 
-//};
+    PGSql& db;
+};
 
 #endif // TARIFF_H
