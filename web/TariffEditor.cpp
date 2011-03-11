@@ -54,17 +54,14 @@ TariffEditor::TariffEditor( WContainerWidget* parent ): WContainerWidget( parent
     updateBtn->clicked().connect( this, &TariffEditor::tariffInfoUpdate );
     updateBtn->clicked().connect( this, &TariffEditor::onTariffUpdate );
 
-    deliveryPayment = new WCheckBox( WString::fromUTF8( "Оплата за доставленные" ) );
-    deliveryPayment->checked().connect( boost::bind( &TariffEditor::tariffOptionChanged, this, "DeliveryPayment", true ) );
-    deliveryPayment->unChecked().connect( boost::bind( &TariffEditor::tariffOptionChanged, this, "DeliveryPayment", false ) );
+    deliveryPayment = new WCheckBox( WString::fromUTF8( "Оплата за доставленные" ) ); deliveryPayment->setTristate();
+    deliveryPayment->changed().connect( boost::bind( &TariffEditor::tariffOptionChanged, this, "DeliveryPayment", deliveryPayment ) );
 
-    countryAsMax = new WCheckBox( WString::fromUTF8( "Страна как максимум" ) );
-    countryAsMax->checked().connect( boost::bind( &TariffEditor::tariffOptionChanged, this, "CountryAsMax", true ) );
-    countryAsMax->unChecked().connect( boost::bind( &TariffEditor::tariffOptionChanged, this, "CountryAsMax", false ) );
+    countryAsMax = new WCheckBox( WString::fromUTF8( "Страна как максимум" ) ); countryAsMax->setTristate();
+    countryAsMax->changed().connect( boost::bind( &TariffEditor::tariffOptionChanged, this, "CountryAsMax", countryAsMax ) );
 
-    countryAsAvg = new WCheckBox( WString::fromUTF8( "Страна как среднее" ) );
-    countryAsAvg->checked().connect( boost::bind( &TariffEditor::tariffOptionChanged, this, "CountryAsAvg", true ) );
-    countryAsAvg->unChecked().connect( boost::bind( &TariffEditor::tariffOptionChanged, this, "CountryAsAvg", false ) );
+    countryAsAvg = new WCheckBox( WString::fromUTF8( "Страна как среднее" ) ); countryAsAvg->setTristate();
+    countryAsAvg->changed().connect( boost::bind( &TariffEditor::tariffOptionChanged, this, "CountryAsAvg", countryAsAvg ) );
 
     WGridLayout* loadSaveLayout = new WGridLayout();
     loadSaveLayout->addWidget( tlistBox, 0, 0 );
@@ -611,14 +608,23 @@ void TariffEditor::tlistRebuild() {
     }
 }
 
-void TariffEditor::tariffOptionChanged( std::string name, bool set ) {
+void TariffEditor::tariffOptionChanged( std::string name, WCheckBox* set ) {
     Wt::WModelIndexSet selected = treeView_->selectedIndexes();
+    if ( set->checkState() == PartiallyChecked )
+        set->setChecked();
+    WApplication::instance()->processEvents();
 
     if ( selected.empty() ) {
-        if ( set )
+        if ( set->checkState() == Checked )
             tariff.setOption( name, "1" );
-        else
+
+        if ( set->checkState() == Unchecked )
             tariff.removeOption( name );
+
+        if ( set->checkState() == PartiallyChecked )
+            tariff.removeOption( name );
+
+        tariffInfoUpdate();
         return;
     }
 
@@ -636,18 +642,30 @@ void TariffEditor::tariffOptionChanged( std::string name, bool set ) {
             mnc = mccmnc.substr( 4, mccmnc.length()-4 );
 
         if ( mnc.empty() ) {
-            if ( set )
+            if ( set->checkState() == Checked )
                 tariff.setOption( name, mcc, "1" );
-            else
+
+            if ( set->checkState() == Unchecked )
                 tariff.removeOption( name, mcc );
-            continue;
+
+            if ( set->checkState() == PartiallyChecked )
+                tariff.removeOption( name, mcc );
+
+        } else {
+
+            if ( set->checkState() == Checked )
+                tariff.setOption( name, mcc, mnc, "1" );
+
+            if ( set->checkState() == Unchecked )
+                tariff.removeOption( name, mcc, mnc );
+
+            if ( set->checkState() == PartiallyChecked )
+                tariff.removeOption( name, mcc, mnc );
         }
 
-        if ( set )
-            tariff.setOption( name, mcc, mnc, "1" );
-        else
-            tariff.removeOption( name, mcc, mnc );
+        break;
     }
+    tariffInfoUpdate();
 }
 
 void TariffEditor::tariffInfoUpdate() {
@@ -661,9 +679,8 @@ void TariffEditor::tariffInfoUpdate() {
         return;
     }
 
-    if ( selected.size() == 1 )
-    for ( Wt::WModelIndexSet::iterator it = selected.begin(); it != selected.end(); it++ ) {
-        Wt::WModelIndex index = *it;
+    if ( selected.size() == 1 ) {
+        Wt::WModelIndex index = *selected.begin();
 
         WStandardItem* root = model_->itemFromIndex( index.parent() );
         WStandardItem* item = root->child( index.row(), 1 );
@@ -679,22 +696,20 @@ void TariffEditor::tariffInfoUpdate() {
             updateCheckBox( deliveryPayment, tariff.hasOption( "DeliveryPayment", mcc ) );
             updateCheckBox( countryAsMax, tariff.hasOption( "CountryAsMax", mcc ) );
             updateCheckBox( countryAsAvg, tariff.hasOption( "CountryAsAvg", mcc ) );
-            return;
+        } else {
+            updateCheckBox( deliveryPayment, tariff.hasOption( "DeliveryPayment", mcc, mnc ) );
+            updateCheckBox( countryAsMax, tariff.hasOption( "CountryAsMax", mcc, mnc ) );
+            updateCheckBox( countryAsAvg, tariff.hasOption( "CountryAsAvg", mcc, mnc ) );
         }
 
-        updateCheckBox( deliveryPayment, tariff.hasOption( "DeliveryPayment", mcc, mnc ) );
-        updateCheckBox( countryAsMax, tariff.hasOption( "CountryAsMax", mcc, mnc ) );
-        updateCheckBox( countryAsAvg, tariff.hasOption( "CountryAsAvg", mcc, mnc ) );
-
-        return;
     }
 }
 
 void TariffEditor::updateCheckBox( Wt::WCheckBox* box, boost::logic::tribool val ) {
 
-    if ( val )
+    if ( val == true )
         box->setCheckState( Checked );
-    else if ( !val )
+    else if ( val == false )
         box->setCheckState( Unchecked );
     else
         box->setCheckState( PartiallyChecked );

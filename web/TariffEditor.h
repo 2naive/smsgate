@@ -95,7 +95,7 @@ private:
     void onTariffUpdate();
     void tlistRebuild();
 
-    void tariffOptionChanged( std::string, bool );
+    void tariffOptionChanged( std::string, Wt::WCheckBox* );
     void tariffInfoUpdate();
     void updateCheckBox( Wt::WCheckBox* box, boost::logic::tribool val );
 

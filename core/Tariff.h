@@ -13,6 +13,86 @@
 #include "MessageClassifier.h"
 #include "PGSql.h"
 
+class TariffOption {
+public:
+    enum ValuesPolicy {
+        VALUE_MULTIPLE,
+        VALUE_SINGLE
+    };
+
+    TariffOption() {
+        valuesList = valuesSupported();
+        optionName = getOptionName();
+        optionDescr = getOptionDescription();
+    }
+
+    std::string name() { return optionName; }
+    std::string decsription() { return optionDescr; }
+
+    virtual ValuesPolicy valuesPolicy() = 0;
+
+protected:
+    typedef std::map< std::string, std::string > ValuesListT;
+    virtual ValuesListT valuesSupported() = 0;
+    virtual std::string getOptionName( ) = 0;
+    virtual std::string getOptionDescription( ) = 0;
+
+private:
+    ValuesListT valuesList;
+    std::string optionName;
+    std::string optionDescr;
+};
+
+class SingleTariffOption: public TariffOption {
+public:
+    TariffOption::ValuesPolicy valuesPolicy() { return TariffOption::VALUE_SINGLE; }
+    virtual std::string getDefaultValue() = 0;
+
+    SingleTariffOption() { value = getDefaultValue(); }
+    SingleTariffOption( std::string _value ) {
+        if ( valuesList.find( _value ) != valuesList.end() )
+            value = _value;
+        else
+            value = getDefaultValue();
+    }
+
+    template<class Archive>
+        void serialize(Archive & ar, const unsigned int) {
+            ar & BOOST_SERIALIZATION_NVP( value );
+        }
+private:
+    std::string value;
+};
+
+class MultipleTariffOption: public TariffOption {
+public:
+    TariffOption::ValuesPolicy valuesPolicy() { return TariffOption::VALUE_MULTIPLE; }
+    virtual std::string getDefaultValues() = 0;
+
+    MultipleTariffOption() { values = getDefaultValues(); }
+    MultipleTariffOption( std::set< std::string > _values ) {
+        for ( std::set< std::string >::iterator it = _values.begin(); it != _values.end(); it ++) {
+            if ( valuesList.find( *it ) != valuesList.end() )
+                values.insert( *it );
+        }
+
+        if ( values.empty() )
+            values = getDefaultValues();
+    }
+
+    template<class Archive>
+        void serialize(Archive & ar, const unsigned int) {
+            ar & BOOST_SERIALIZATION_NVP( values );
+        }
+private:
+    std::set< std::string > values;
+};
+
+class StatusPaidTariffOption: public MultipleTariffOption {
+public:
+    std::string getOptionName()
+};
+
 class Tariff {
 public:
     static const double INVALID_VALUE = -1.0;
@@ -74,6 +154,14 @@ public:
     float costs( sms::OpInfo& op ) const;
     float costs( std::string cname, std::string opcode = "" ) const;
 
+    template<class Archive>
+        void serialize(Archive & ar, const unsigned int) {
+            ar & BOOST_SERIALIZATION_NVP( tariff );
+        }
+
+private:
+    TariffInfo tariff;
+
     boost::logic::tribool hasOption( std::string name );
     boost::logic::tribool hasOption( std::string name, std::string country );
     boost::logic::tribool hasOption( std::string name, std::string country, std::string oper );
@@ -89,14 +177,6 @@ public:
     void removeOption( std::string name );
     void removeOption( std::string name, std::string country );
     void removeOption( std::string name, std::string country, std::string oper );
-
-    template<class Archive>
-        void serialize(Archive & ar, const unsigned int) {
-            ar & BOOST_SERIALIZATION_NVP( tariff );
-        }
-
-private:
-    TariffInfo tariff;
 };
 
 class TariffManager: public boost::serialization::singleton< TariffManager > {
