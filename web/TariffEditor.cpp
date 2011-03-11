@@ -33,7 +33,7 @@ TariffEditor::TariffEditor( WContainerWidget* parent ): WContainerWidget( parent
 
     WPushButton* loadBtn = new WPushButton( WString::fromUTF8( "Загрузить" ) );
     loadBtn->setMinimumSize( WLength( 3, WLength::Centimeter ), WLength::Auto );
-    loadBtn->clicked().connect( this, &TariffEditor::tariffInfoUpdate );
+    loadBtn->clicked().connect( this, &TariffEditor::onChangeRoot );
     loadBtn->clicked().connect( this, &TariffEditor::onTariffLoad );
 
     WPushButton* removeBtn = new WPushButton( WString::fromUTF8( "Удалить" ) );
@@ -47,21 +47,14 @@ TariffEditor::TariffEditor( WContainerWidget* parent ): WContainerWidget( parent
     saveBtn->clicked().connect( this, &TariffEditor::onTariffSave );
 
     WPushButton* clearBtn = new WPushButton( WString::fromUTF8( "Очистить" ) );
-    clearBtn->clicked().connect( this, &TariffEditor::tariffInfoUpdate );
+    clearBtn->clicked().connect( this, &TariffEditor::onChangeRoot );
     clearBtn->clicked().connect( this, &TariffEditor::onTariffClear );
 
     WPushButton* updateBtn = new WPushButton( WString::fromUTF8( "Обновить" ) );
-    updateBtn->clicked().connect( this, &TariffEditor::tariffInfoUpdate );
+    updateBtn->clicked().connect( this, &TariffEditor::onChangeRoot );
     updateBtn->clicked().connect( this, &TariffEditor::onTariffUpdate );
 
-    deliveryPayment = new WCheckBox( WString::fromUTF8( "Оплата за доставленные" ) ); deliveryPayment->setTristate();
-    deliveryPayment->changed().connect( boost::bind( &TariffEditor::tariffOptionChanged, this, "DeliveryPayment", deliveryPayment ) );
-
-    countryAsMax = new WCheckBox( WString::fromUTF8( "Страна как максимум" ) ); countryAsMax->setTristate();
-    countryAsMax->changed().connect( boost::bind( &TariffEditor::tariffOptionChanged, this, "CountryAsMax", countryAsMax ) );
-
-    countryAsAvg = new WCheckBox( WString::fromUTF8( "Страна как среднее" ) ); countryAsAvg->setTristate();
-    countryAsAvg->changed().connect( boost::bind( &TariffEditor::tariffOptionChanged, this, "CountryAsAvg", countryAsAvg ) );
+    paidStatuses = new TariffOptionMultiEditor< Tariff::TariffOptionPaidStatuses >( &tariff );
 
     WGridLayout* loadSaveLayout = new WGridLayout();
     loadSaveLayout->addWidget( tlistBox, 0, 0 );
@@ -78,9 +71,7 @@ TariffEditor::TariffEditor( WContainerWidget* parent ): WContainerWidget( parent
     loadSaveBox->setLayout( loadSaveLayout, AlignCenter | AlignMiddle );
 
     WGridLayout* tariffOptionsLayout = new WGridLayout();
-    tariffOptionsLayout->addWidget( deliveryPayment, 0, 0 );
-    tariffOptionsLayout->addWidget( countryAsMax, 1, 0 );
-    tariffOptionsLayout->addWidget( countryAsAvg, 2, 0 );
+    tariffOptionsLayout->addWidget( paidStatuses, 0, 0 );
 
     WGroupBox* tariffOptionsBox = new WGroupBox( WString::fromUTF8( "Тарифные опции" ) );
     tariffOptionsBox->setLayout( tariffOptionsLayout, AlignCenter | AlignMiddle);
@@ -165,7 +156,7 @@ WTreeView* TariffEditor::buildTreeView( Wt::WStandardItemModel * model ) {
     tw->sortByColumn( 0, AscendingOrder );
 
     tw->clicked().connect( this, &TariffEditor::onPriceEdit );
-    tw->clicked().connect( this, &TariffEditor::tariffInfoUpdate );
+    tw->clicked().connect( this, &TariffEditor::onChangeRoot );
 
     return tw;
 }
@@ -608,75 +599,11 @@ void TariffEditor::tlistRebuild() {
     }
 }
 
-void TariffEditor::tariffOptionChanged( std::string name, WCheckBox* set ) {
-    Wt::WModelIndexSet selected = treeView_->selectedIndexes();
-    if ( set->checkState() == PartiallyChecked )
-        set->setChecked();
-    WApplication::instance()->processEvents();
-
-    if ( selected.empty() ) {
-        if ( set->checkState() == Checked )
-            tariff.setOption( name, "1" );
-
-        if ( set->checkState() == Unchecked )
-            tariff.removeOption( name );
-
-        if ( set->checkState() == PartiallyChecked )
-            tariff.removeOption( name );
-
-        tariffInfoUpdate();
-        return;
-    }
-
-    for ( Wt::WModelIndexSet::iterator it = selected.begin(); it != selected.end(); it++ ) {
-        Wt::WModelIndex index = *it;
-
-        WStandardItem* root = model_->itemFromIndex( index.parent() );
-        WStandardItem* item = root->child( index.row(), 1 );
-
-        std::string mccmnc = item->text().toUTF8();
-
-        std::string mcc = mccmnc.substr( 0, 3 );
-        std::string mnc;
-        if ( mccmnc.length() >= 4 )
-            mnc = mccmnc.substr( 4, mccmnc.length()-4 );
-
-        if ( mnc.empty() ) {
-            if ( set->checkState() == Checked )
-                tariff.setOption( name, mcc, "1" );
-
-            if ( set->checkState() == Unchecked )
-                tariff.removeOption( name, mcc );
-
-            if ( set->checkState() == PartiallyChecked )
-                tariff.removeOption( name, mcc );
-
-        } else {
-
-            if ( set->checkState() == Checked )
-                tariff.setOption( name, mcc, mnc, "1" );
-
-            if ( set->checkState() == Unchecked )
-                tariff.removeOption( name, mcc, mnc );
-
-            if ( set->checkState() == PartiallyChecked )
-                tariff.removeOption( name, mcc, mnc );
-        }
-
-        break;
-    }
-    tariffInfoUpdate();
-}
-
-void TariffEditor::tariffInfoUpdate() {
+void TariffEditor::onChangeRoot() {
     Wt::WModelIndexSet selected = treeView_->selectedIndexes();
 
     if ( selected.empty() ) {
-        updateCheckBox( deliveryPayment, tariff.hasOption( "DeliveryPayment" ) );
-        updateCheckBox( countryAsMax, tariff.hasOption( "CountryAsMax" ) );
-        updateCheckBox( countryAsAvg, tariff.hasOption( "CountryAsAvg" ) );
-
-        return;
+        paidStatuses->setCurPosRoot();
     }
 
     if ( selected.size() == 1 ) {
@@ -693,25 +620,9 @@ void TariffEditor::tariffInfoUpdate() {
             mnc = mccmnc.substr( 4, mccmnc.length()-4 );
 
         if ( mnc.empty() ) {
-            updateCheckBox( deliveryPayment, tariff.hasOption( "DeliveryPayment", mcc ) );
-            updateCheckBox( countryAsMax, tariff.hasOption( "CountryAsMax", mcc ) );
-            updateCheckBox( countryAsAvg, tariff.hasOption( "CountryAsAvg", mcc ) );
+            paidStatuses->setCurPosCountry( mcc );
         } else {
-            updateCheckBox( deliveryPayment, tariff.hasOption( "DeliveryPayment", mcc, mnc ) );
-            updateCheckBox( countryAsMax, tariff.hasOption( "CountryAsMax", mcc, mnc ) );
-            updateCheckBox( countryAsAvg, tariff.hasOption( "CountryAsAvg", mcc, mnc ) );
+            paidStatuses->setCurPosOperator( mcc, mnc );
         }
-
     }
-}
-
-void TariffEditor::updateCheckBox( Wt::WCheckBox* box, boost::logic::tribool val ) {
-
-    if ( val == true )
-        box->setCheckState( Checked );
-    else if ( val == false )
-        box->setCheckState( Unchecked );
-    else
-        box->setCheckState( PartiallyChecked );
-
 }

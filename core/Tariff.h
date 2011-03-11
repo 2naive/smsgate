@@ -1,96 +1,163 @@
 #ifndef TARIFF_H
 #define TARIFF_H
 
+#define BOOST_MPL_LIMIT_STRING_SIZE 60
+
 #include <string>
 #include <list>
 #include <vector>
 #include <map>
 #include <boost/serialization/singleton.hpp>
+#include <boost/bind.hpp>
 #include <boost/serialization/nvp.hpp>
-
+#include <boost/serialization/set.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/mpl/for_each.hpp>
+#include <boost/mpl/string.hpp>
+#include <boost/mpl/vector.hpp>
+#include <boost/mpl/pair.hpp>
 #include <boost/logic/tribool.hpp>
 
 #include "MessageClassifier.h"
 #include "PGSql.h"
 
-class TariffOption {
+template < class ValueDescr, class DefaultValueT >
+class TariffValueSingle {
 public:
-    enum ValuesPolicy {
-        VALUE_MULTIPLE,
-        VALUE_SINGLE
-    };
+    typedef std::list< std::string > DescriptionList;
 
-    TariffOption() {
-        valuesList = valuesSupported();
-        optionName = getOptionName();
-        optionDescr = getOptionDescription();
+    TariffValueSingle( std::string value = boost::mpl::c_str< DefaultValueT >::value ) {
+        boost::mpl::for_each< ValueDescr >( generateDescrList( descrList ) );
+        bool value_correct = false;
+        boost::mpl::for_each< ValueDescr >( checkValue( value, value_correct ) );
+        if ( !value_correct )
+            value = boost::mpl::c_str< DefaultValueT >::value;
     }
 
-    std::string name() { return optionName; }
-    std::string decsription() { return optionDescr; }
-
-    virtual ValuesPolicy valuesPolicy() = 0;
-
-protected:
-    typedef std::map< std::string, std::string > ValuesListT;
-    virtual ValuesListT valuesSupported() = 0;
-    virtual std::string getOptionName( ) = 0;
-    virtual std::string getOptionDescription( ) = 0;
-
-private:
-    ValuesListT valuesList;
-    std::string optionName;
-    std::string optionDescr;
-};
-
-class SingleTariffOption: public TariffOption {
-public:
-    TariffOption::ValuesPolicy valuesPolicy() { return TariffOption::VALUE_SINGLE; }
-    virtual std::string getDefaultValue() = 0;
-
-    SingleTariffOption() { value = getDefaultValue(); }
-    SingleTariffOption( std::string _value ) {
-        if ( valuesList.find( _value ) != valuesList.end() )
-            value = _value;
-        else
-            value = getDefaultValue();
-    }
+    const DescriptionList& getDescriptions() { return descrList; }
 
     template<class Archive>
         void serialize(Archive & ar, const unsigned int) {
             ar & BOOST_SERIALIZATION_NVP( value );
         }
-private:
+
+protected:
+    DescriptionList descrList;
     std::string value;
-};
 
-class MultipleTariffOption: public TariffOption {
-public:
-    TariffOption::ValuesPolicy valuesPolicy() { return TariffOption::VALUE_MULTIPLE; }
-    virtual std::string getDefaultValues() = 0;
+private:
+    class generateDescrList {
+    public:
+        generateDescrList( DescriptionList& _descrList ): descrList( _descrList ) {}
+        template < class Element >
+        void operator() (Element) {
+            descrList.push_back( boost::mpl::c_str< Element >::value );
+        }
+    private:
+        DescriptionList& descrList;
+    };
 
-    MultipleTariffOption() { values = getDefaultValues(); }
-    MultipleTariffOption( std::set< std::string > _values ) {
-        for ( std::set< std::string >::iterator it = _values.begin(); it != _values.end(); it ++) {
-            if ( valuesList.find( *it ) != valuesList.end() )
-                values.insert( *it );
+    class checkValue {
+    public:
+        checkValue( std::string _value, bool& _res ): value( _value ), res( _res ) {}
+        template < class Element >
+        void operator() (Element) {
+            if ( value == boost::mpl::c_str< Element >::value )
+            res = true;
         }
 
-        if ( values.empty() )
-            values = getDefaultValues();
+    private:
+        std::string value;
+        bool& res;
+    };
+};
+
+template < class ValueDescr >
+class TariffValueMulti {
+public:
+    typedef std::list< std::string > DescriptionList;
+    typedef std::set< std::string > ValuesListT;
+
+    TariffValueMulti( ValuesListT _values = ValuesListT() ) {
+        boost::mpl::for_each< ValueDescr >( generateDescrList( descrList ) );
+        setValues( _values );
     }
+
+    void setValues( ValuesListT _values ) {
+        value.clear();
+        for ( ValuesListT::iterator it = _values.begin(); it != _values.end(); it++ ) {
+            bool value_correct = false;
+            boost::mpl::for_each< ValueDescr >( checkValue( *it, value_correct ) );
+            if ( !value_correct )
+                continue;
+            value.insert( *it );
+        }
+    }
+
+    ValuesListT getValues( ) { return value; }
+
+    const DescriptionList& getDescriptions() { return descrList; }
 
     template<class Archive>
         void serialize(Archive & ar, const unsigned int) {
-            ar & BOOST_SERIALIZATION_NVP( values );
+            ar & BOOST_SERIALIZATION_NVP( value );
         }
+
+protected:
+    DescriptionList descrList;
+    ValuesListT value;
+
 private:
-    std::set< std::string > values;
+    class generateDescrList {
+    public:
+        generateDescrList( DescriptionList& _descrList ): descrList( _descrList ) {}
+        template < class Element >
+        void operator() ( Element ) {
+            descrList.push_back( boost::mpl::c_str< Element >::value );
+        }
+    private:
+        DescriptionList& descrList;
+    };
+
+    class checkValue {
+    public:
+        checkValue( std::string _value, bool& _res ): value( _value ), res( _res ) {}
+        template < class Element >
+        void operator() (Element) {
+            if ( value == boost::mpl::c_str< Element >::value )
+            res = true;
+        }
+
+    private:
+        std::string value;
+        bool& res;
+    };
 };
 
-class StatusPaidTariffOption: public MultipleTariffOption {
+template < class Name, class Storage >
+class TariffOption: public Storage {
 public:
-    std::string getOptionName()
+    static std::string getName() { return boost::mpl::c_str< Name >::value; }
+
+    TariffOption() {}
+    TariffOption( std::string src ) {
+        std::istringstream ifs( src );
+        try {
+            boost::archive::xml_iarchive ia( ifs );
+            ia >> BOOST_SERIALIZATION_NVP( Storage::value );
+        } catch ( ... ) {}
+    }
+
+    std::string serialize() {
+        std::ostringstream ofs;
+        try {
+            boost::archive::xml_oarchive oa(ofs);
+            oa << BOOST_SERIALIZATION_NVP( Storage::value );
+        } catch (...) {}
+        return ofs.str();
+    }
+
 };
 
 class Tariff {
@@ -101,6 +168,31 @@ public:
         OPT_COUNTRY,
         OPT_OPERATOR
     };
+
+    typedef TariffOption<
+                            boost::mpl::string< 'U','n','p','a','i','d','S','t','a','t','u','s','e','s' >,
+                            TariffValueMulti
+                            <
+                                boost::mpl::vector<
+                                    boost::mpl::string< 'R','E','J','E','C','T','E','D' >,
+                                    boost::mpl::string< 'U','D','E','L','I','V','E','R','E','D' >,
+                                    boost::mpl::string< 'E','X','P','I','R','E','D' >
+                                >
+                            >
+                        > TariffOptionPaidStatuses;
+
+    typedef TariffOption<
+                            boost::mpl::string< 'U','n','k','n','o','w','n','P','o','l','i','c','y' >,
+                            TariffValueSingle
+                            <
+                                boost::mpl::vector<
+                                    boost::mpl::string< 'M','A','X','I','M','U','M' >,
+                                    boost::mpl::string< 'A','V','E','R','A','G','E' >,
+                                    boost::mpl::string< 'F','R','E','E' >
+                                >,
+                                boost::mpl::string< 'F','R','E','E' >
+                            >
+                        > TariffOptionUnknownPolicy;
 
     Tariff( );
     Tariff( std::string name );
@@ -158,6 +250,43 @@ public:
         void serialize(Archive & ar, const unsigned int) {
             ar & BOOST_SERIALIZATION_NVP( tariff );
         }
+
+    template < class Option >
+    boost::logic::tribool hasOption() { return hasOption( Option::getName() ); }
+
+    template < class Option >
+    boost::logic::tribool hasOption( std::string country ) { return hasOption( Option::getName(), country ); }
+
+    template < class Option >
+    boost::logic::tribool hasOption( std::string country, std::string oper ) { return hasOption( Option::getName(), country, oper ); }
+
+    template < class Option >
+    Option getOption() { return Option( getOption( Option::getName() ) ); }
+
+    template < class Option >
+    Option getOption( std::string country ) { return Option( getOption( Option::getName(), country ) ); }
+
+    template < class Option >
+    Option getOption( std::string country, std::string oper ) { return Option( getOption( Option::getName(), country, oper ) ); }
+
+    template < class Option >
+    void setOption( Option option ) { setOption( Option::getName(), option.serialize() ); }
+
+    template < class Option >
+    void setOption( Option option, std::string country ) { setOption( Option::getName(), country, option.serialize() ); }
+
+    template < class Option >
+    void setOption( Option option, std::string country, std::string oper ) { setOption( Option::getName(), country, oper, option.serialize() ); }
+
+    template < class Option >
+    void removeOption() { return removeOption( Option::getName() ); }
+
+    template < class Option >
+    void removeOption( std::string country ) { return removeOption( Option::getName(), country ); }
+
+    template < class Option >
+    void removeOption( std::string country, std::string oper ) { return removeOption( Option::getName(), country, oper ); }
+
 
 private:
     TariffInfo tariff;
