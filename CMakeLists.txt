@@ -9,7 +9,7 @@ link_directories( "/usr/local/lib" )
 link_directories( "/usr/lib" )
 
 set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-DBOOST_SPIRIT_THREADSAFE")
-#set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pg")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
 #set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -pg")
 
 #Web
@@ -26,6 +26,7 @@ set( smsgate_SRCS ${smsgate_SRCS} web/StatisticsBlock.h      web/StatisticsBlock
 set( smsgate_SRCS ${smsgate_SRCS} web/WScrollTable.h         web/WScrollTable.cpp )
 set( smsgate_SRCS ${smsgate_SRCS} web/WHintLinePassEdit.h )
 set( smsgate_SRCS ${smsgate_SRCS} web/WHintLineEdit.h )
+set( smsgate_SRCS ${smsgate_SRCS} web/TariffOptionEditor.h )
 
 #Utils
 set( smsgate_SRCS ${smsgate_SRCS} utils/Cache.h )

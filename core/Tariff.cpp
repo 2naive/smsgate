@@ -89,7 +89,7 @@ boost::logic::tribool Tariff::hasOption( std::string name, std::string country )
 
     boost::logic::tribool r = hasOption( name );
     if ( r == true )
-        return boost::logic::indeterminate;
+        return boost::logic::indeterminate_keyword_t();
 
     return r;
 }
@@ -105,7 +105,7 @@ boost::logic::tribool Tariff::hasOption( std::string name, std::string country, 
 
     boost::logic::tribool r = hasOption( name, country );
     if ( r == true )
-        return boost::logic::indeterminate;
+        return boost::logic::indeterminate_keyword_t();
 
     return r;
 }

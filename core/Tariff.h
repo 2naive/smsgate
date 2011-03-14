@@ -26,16 +26,28 @@ template < class ValueDescr, class DefaultValueT >
 class TariffValueSingle {
 public:
     typedef std::list< std::string > DescriptionList;
+    typedef std::string ValueT;
 
-    TariffValueSingle( std::string value = boost::mpl::c_str< DefaultValueT >::value ) {
-        boost::mpl::for_each< ValueDescr >( generateDescrList( descrList ) );
-        bool value_correct = false;
-        boost::mpl::for_each< ValueDescr >( checkValue( value, value_correct ) );
-        if ( !value_correct )
-            value = boost::mpl::c_str< DefaultValueT >::value;
+    TariffValueSingle( std::string _value = boost::mpl::c_str< DefaultValueT >::value ) {
+        setValue( _value );
     }
 
-    const DescriptionList& getDescriptions() { return descrList; }
+    void setValue( std::string _value ) {
+        bool value_correct = false;
+        boost::mpl::for_each< ValueDescr >( checkValue( _value, value_correct ) );
+        if ( !value_correct )
+            value = boost::mpl::c_str< DefaultValueT >::value;
+        else
+            value = _value;
+    }
+
+    ValueT getValue() { return value; }
+
+    static DescriptionList getDescriptions() {
+        DescriptionList descrList;
+        boost::mpl::for_each< ValueDescr >( generateDescrList( descrList ) );
+        return descrList;
+    }
 
     template<class Archive>
         void serialize(Archive & ar, const unsigned int) {
@@ -43,7 +55,6 @@ public:
         }
 
 protected:
-    DescriptionList descrList;
     std::string value;
 
 private:
@@ -78,9 +89,9 @@ class TariffValueMulti {
 public:
     typedef std::list< std::string > DescriptionList;
     typedef std::set< std::string > ValuesListT;
+    typedef ValuesListT ValueT;
 
     TariffValueMulti( ValuesListT _values = ValuesListT() ) {
-        boost::mpl::for_each< ValueDescr >( generateDescrList( descrList ) );
         setValues( _values );
     }
 
@@ -97,15 +108,18 @@ public:
 
     ValuesListT getValues( ) { return value; }
 
-    const DescriptionList& getDescriptions() { return descrList; }
+    static DescriptionList getDescriptions() {
+        DescriptionList descrList;
+        boost::mpl::for_each< ValueDescr >( generateDescrList( descrList ) );
+        return descrList;
+    }
 
     template<class Archive>
         void serialize(Archive & ar, const unsigned int) {
             ar & BOOST_SERIALIZATION_NVP( value );
         }
 
-protected:
-    DescriptionList descrList;
+protected:    
     ValuesListT value;
 
 private:
@@ -144,16 +158,18 @@ public:
     TariffOption( std::string src ) {
         std::istringstream ifs( src );
         try {
+            typename Storage::ValueT& value( Storage::value );
             boost::archive::xml_iarchive ia( ifs );
-            ia >> BOOST_SERIALIZATION_NVP( Storage::value );
-        } catch ( ... ) {}
+            ia >> BOOST_SERIALIZATION_NVP( value );
+        } catch ( std::exception& err ) {}
     }
 
     std::string serialize() {
         std::ostringstream ofs;
         try {
+            typename Storage::ValueT& value( Storage::value );
             boost::archive::xml_oarchive oa(ofs);
-            oa << BOOST_SERIALIZATION_NVP( Storage::value );
+            oa << BOOST_SERIALIZATION_NVP( value );
         } catch (...) {}
         return ofs.str();
     }

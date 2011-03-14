@@ -2,6 +2,7 @@
 #define MESSAGECLASSIFIER_H
 
 #include <boost/serialization/singleton.hpp>
+#include <boost/tuple/tuple.hpp>
 
 #include "ConfigManager.h"
 #include "PGSql.h"
@@ -12,15 +13,14 @@
 namespace sms {
     struct OpInfo;
 
-
-
     class MessageClassifier: public boost::serialization::singleton< MessageClassifier > {
     public:
         struct OperatorInfo {
-            int mcc;
-            int mnc;
+            std::string mcc;
+            std::string mnc;
             std::string opCompany;
             std::string opName;
+            std::string opRegion;
 
             std::string getName() {
                 if ( opName.empty() )
@@ -34,24 +34,26 @@ namespace sms {
         };
 
         struct CountryInfo {
-            int mcc;
+            std::string mcc;
             std::string cCode;
             std::string cName;
             std::string cPreffix;
 
-            typedef std::map< int, OperatorInfo > OperatorMapT;
+            typedef std::map< std::string, OperatorInfo > OperatorMapT;
             OperatorMapT operators;
         };
 
         typedef std::multimap< std::string, OpInfo > DictT;
         typedef std::map< std::string, std::pair< std::string, std::string > > ReplaceT;
         typedef std::map< std::string, std::set< std::string > > CountryOperatorT;
+        typedef std::multimap< std::string, boost::tuples::tuple< std::string, std::string, std::string > > PreffixMapT;
 
-        typedef std::map< int, CountryInfo > CountryOperatorMapT;
+        typedef std::map< std::string, CountryInfo > CountryOperatorMapT;
 
         MessageClassifier();
 
         OpInfo getMsgClass( std::string phone );
+        CountryInfo getMsgClass_v2( std::string phone );
         std::string applyReplace( std::string phone );
         CountryOperatorT getCOMap();
 
@@ -61,10 +63,12 @@ namespace sms {
         DictT dict;
         ReplaceT replaces;
         CountryOperatorMapT comap;
+        PreffixMapT preffmap;
 
         void loadOpcodes();
         void loadReplacesMap();
         void loadCountryOperatorMap();
+        void loadRoutingMap();
     };
 
     struct OpInfo {               

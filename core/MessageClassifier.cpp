@@ -106,7 +106,7 @@ namespace sms {
             tr->commit();
             for ( Result::const_iterator dbr = res.begin(); dbr != res.end(); dbr++ ) {
                 CountryInfo coinfo;
-                coinfo.mcc = (*dbr)[0].as< int >();
+                coinfo.mcc = (*dbr)[0].as< std::string >();
                 coinfo.cPreffix = (*dbr)[1].as< std::string >();
                 coinfo.cCode= (*dbr)[2].as< std::string >();
                 coinfo.cName = (*dbr)[3].as< std::string >();
@@ -129,12 +129,42 @@ namespace sms {
             tr->commit();
             for ( Result::const_iterator dbr = res.begin(); dbr != res.end(); dbr++ ) {
                 OperatorInfo coinfo;
-                coinfo.mcc = (*dbr)[0].as< int >();
-                coinfo.mnc = (*dbr)[1].as< int >();
+                coinfo.mcc = (*dbr)[0].as< std::string>();
+                coinfo.mnc = (*dbr)[1].as< std::string >();
                 coinfo.opName = (*dbr)[2].as< std::string >();
                 coinfo.opCompany = (*dbr)[3].as< std::string >();
 
                 comap[ coinfo.mcc ].operators[ coinfo.mnc ] = coinfo;
+            }
+        }
+    }
+
+    void MessageClassifier::loadRoutingMap() {
+        preffmap.clear();
+        {
+            std::ostringstream r;
+
+            r       << "select preffix, mcc, mnc, region from preffix_map;";
+
+            PGSql& db = PGSqlConnPoolSystem::get_mutable_instance().getdb();
+
+            PGSql::ConnectionHolder cHold( db );
+            ConnectionPTR conn = cHold.get();
+            TransactionPTR tr = db.openTransaction( conn, "MessageClassifier::loadRoutingMap()" );
+            Result res = tr->exec( r.str() );
+            tr->commit();
+            for ( Result::const_iterator dbr = res.begin(); dbr != res.end(); dbr++ ) {
+                std::string preff;
+                std::string mcc;
+                std::string mnc;
+                std::string region;
+
+                preff = (*dbr)[0].as< std::string >();
+                mcc = (*dbr)[1].as< std::string >();
+                mnc = (*dbr)[2].as< std::string >();
+                region = (*dbr)[3].as< std::string >();
+
+                preffmap.insert( std::make_pair( preff, boost::tuples::make_tuple( mcc, mnc, region ) ) );
             }
         }
     }
@@ -195,6 +225,41 @@ namespace sms {
 
     MessageClassifier::CountryOperatorMapT MessageClassifier::getCOMap_v2() {
         return comap;
+    }
+
+    MessageClassifier::CountryInfo MessageClassifier::getMsgClass_v2( std::string phone ) {
+        CountryInfo country;
+        for ( int i = phone.length(); i > 0 ; i-- ) {
+            std::string pref = phone.substr(0, i );
+
+            if ( comap.find( pref ) == comap.end() )
+                continue;
+
+            country = comap[ pref ];
+            break;
+        }
+
+        for ( int i = phone.length(); i > 0 ; i-- ) {
+            std::string pref = phone.substr(0, i );
+
+            if ( comap.find( pref ) == comap.end() )
+                continue;
+
+            if ( dict.count( pref ) != 1 )
+                break;
+
+            std::string mcc    = boost::tuples::get<0>( preffmap.equal_range( pref ).first->second );
+            std::string mnc    = boost::tuples::get<1>( preffmap.equal_range( pref ).first->second );
+            std::string region = boost::tuples::get<2>( preffmap.equal_range( pref ).first->second );
+
+            OperatorInfo oi = comap[mcc].operators[mnc];
+            oi.opRegion = region;
+            country.operators[ mnc ] = oi;
+
+            break;
+        }
+
+        return country;
     }
 
 }

@@ -54,7 +54,8 @@ TariffEditor::TariffEditor( WContainerWidget* parent ): WContainerWidget( parent
     updateBtn->clicked().connect( this, &TariffEditor::onChangeRoot );
     updateBtn->clicked().connect( this, &TariffEditor::onTariffUpdate );
 
-    paidStatuses = new TariffOptionMultiEditor< Tariff::TariffOptionPaidStatuses >( &tariff );
+    unknownPolicy = new UnknownPolicyEditor( &tariff );
+    paidStatuses = new PaidStatusesEditor( &tariff );
 
     WGridLayout* loadSaveLayout = new WGridLayout();
     loadSaveLayout->addWidget( tlistBox, 0, 0 );
@@ -71,7 +72,8 @@ TariffEditor::TariffEditor( WContainerWidget* parent ): WContainerWidget( parent
     loadSaveBox->setLayout( loadSaveLayout, AlignCenter | AlignMiddle );
 
     WGridLayout* tariffOptionsLayout = new WGridLayout();
-    tariffOptionsLayout->addWidget( paidStatuses, 0, 0 );
+    tariffOptionsLayout->addWidget( unknownPolicy, 0, 0 );
+    tariffOptionsLayout->addWidget( paidStatuses, 1, 0 );
 
     WGroupBox* tariffOptionsBox = new WGroupBox( WString::fromUTF8( "Тарифные опции" ) );
     tariffOptionsBox->setLayout( tariffOptionsLayout, AlignCenter | AlignMiddle);
@@ -83,6 +85,7 @@ TariffEditor::TariffEditor( WContainerWidget* parent ): WContainerWidget( parent
 
     setLayout( root );
     resizeTreeView( treeView_ );
+    onChangeRoot();
 }
 
 void TariffEditor::buildModel( WStandardItemModel* data, Tariff& tariff ) {
@@ -275,14 +278,14 @@ void TariffEditor::recursivePrintCsv( std::ostream& out, sms::MessageClassifier:
     for ( int i = 0; i < item->rowCount(); i++ ) {
         string mccmnc = item->child( i, 1 )->text().toUTF8();
         vector< string > to_vec;
-        double mcc;
-        double mnc;
+        std::string mcc;
+        std::string mnc;
         string price;
         sms::utils::Tokenize( mccmnc, to_vec, ":" );
         bool isCountry = (to_vec.size() == 1);
 
-        mcc = sdouble2double( to_vec[0], -1 );
-        if ( mcc == -1 ) continue;
+        mcc = to_vec[0];
+        if ( mcc.empty() ) continue;
 
         price = sdouble2string( item->child( i, 2 )->text().toUTF8() );
 
@@ -303,7 +306,7 @@ void TariffEditor::recursivePrintCsv( std::ostream& out, sms::MessageClassifier:
         }
 
         // Is Network
-        mnc = sdouble2double( to_vec[1], -1 );
+        mnc = to_vec[1];
 
         sms::MessageClassifier::CountryInfo ci = map[ mcc ];
         sms::MessageClassifier::OperatorInfo oi = map[ mcc ].operators[ mnc ];
@@ -604,6 +607,7 @@ void TariffEditor::onChangeRoot() {
 
     if ( selected.empty() ) {
         paidStatuses->setCurPosRoot();
+        unknownPolicy->setCurPosRoot();
     }
 
     if ( selected.size() == 1 ) {
@@ -621,8 +625,10 @@ void TariffEditor::onChangeRoot() {
 
         if ( mnc.empty() ) {
             paidStatuses->setCurPosCountry( mcc );
+            unknownPolicy->setCurPosCountry( mcc );
         } else {
             paidStatuses->setCurPosOperator( mcc, mnc );
+            unknownPolicy->setCurPosOperator( mcc, mnc );
         }
     }
 }
