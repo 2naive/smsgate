@@ -237,7 +237,7 @@ namespace sms {
 
         Status getStatus() const;
         std::string getPhone() const;
-        OpInfo getMsgClass() const;
+        MessageClassifier::CountryInfo getMsgClass() const;
         void setStatus( Status st );
         int getParts() const { return parts; }
         friend class msg_compare;
@@ -257,7 +257,7 @@ namespace sms {
         std::string phone;
         int parts;
         double price;
-        OpInfo msgClass;
+        MessageClassifier::CountryInfo msgClass;
         std::list< SMSSyncOperation > op_history;
 
         // We declare private constructor to prevent manual creating of SMSMessage instances

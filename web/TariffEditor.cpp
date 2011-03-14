@@ -89,7 +89,7 @@ TariffEditor::TariffEditor( WContainerWidget* parent ): WContainerWidget( parent
 }
 
 void TariffEditor::buildModel( WStandardItemModel* data, Tariff& tariff ) {
-    sms::MessageClassifier::CountryOperatorMapT comap = sms::MessageClassifier::get_mutable_instance().getCOMap_v2();
+    sms::MessageClassifier::CountryOperatorMapT comap = sms::MessageClassifier::get_mutable_instance().getCOMap();
 
     data->clear();
     data->insertColumns(0, 3);
@@ -262,7 +262,7 @@ void TariffEditor::exportToCsv() {
     csv->setMimeType( "text/txt" );
     csv->suggestFileName( "report.csv" );
 
-    sms::MessageClassifier::CountryOperatorMapT comap = sms::MessageClassifier::get_mutable_instance().getCOMap_v2();
+    sms::MessageClassifier::CountryOperatorMapT comap = sms::MessageClassifier::get_mutable_instance().getCOMap();
     ofstream fout( "/tmp/123.csv" );
 
     WStandardItem* item = model_->invisibleRootItem();

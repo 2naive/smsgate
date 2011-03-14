@@ -210,21 +210,6 @@ public:
                             >
                         > TariffOptionUnknownPolicy;
 
-    Tariff( );
-    Tariff( std::string name );
-    Tariff( std::string name, std::string source );
-
-    std::string serialize();
-
-    void addFilterCountry( std::string cname, double price );
-    void addFilterCountryOperator( std::string cname, std::string opcode, double price );
-
-    double costs( std::string op );
-    double costs( std::string cname, std::string opcode );
-
-    void setName( std::string n ) { tariff.name = n; }
-    std::string getName( ) { return tariff.name; };
-
     struct TariffOperatorInfo {
         std::map< std::string, std::string > options;
 
@@ -257,10 +242,20 @@ public:
             }
     };
 
-    void addFilterCountry( std::string cname, float price );
-    void addFilterCountryOperator( std::string cname, std::string opcode, float price );
-    float costs( sms::OpInfo& op ) const;
-    float costs( std::string cname, std::string opcode = "" ) const;
+    Tariff( );
+    Tariff( std::string name );
+    Tariff( std::string name, std::string source );
+
+    std::string serialize();
+
+    void addFilterCountry( std::string cname, double price );
+    void addFilterCountryOperator( std::string cname, std::string opcode, double price );
+
+    double costs( std::string op );
+    double costs( std::string cname, std::string opcode );
+
+    void setName( std::string n ) { tariff.name = n; }
+    std::string getName( ) { return tariff.name; };
 
     template<class Archive>
         void serialize(Archive & ar, const unsigned int) {

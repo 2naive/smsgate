@@ -63,66 +63,16 @@ void NumberInfoPage::onPhonePrintInfo() {
 
     std::ostringstream out;
     out.precision(2);
-    sms::OpInfo msg = sms::MessageClassifier::get_mutable_instance().getMsgClass( phoneInput->text().toUTF8() );
+    sms::MessageClassifier::CountryInfo msg = sms::MessageClassifier::get_mutable_instance().getMsgClass( phoneInput->text().toUTF8() );
 
-    out << "Код страны: " <<  msg.countrycode << std::endl;
-    out << "Страна: " <<  msg.country << std::endl;
-    out << "Оператор: " <<  msg.opname << std::endl;
-    out << "Код оператора: " <<  msg.opcode << std::endl;
-    out << "Регион: " << msg.opregion << std::endl << std::endl;
+    out << "Код страны: " <<  msg.cCode << std::endl;
+    out << "Страна: " <<  msg.cName << std::endl;
 
-    SMPPGateManager::SMPPGatesMap gm = SMPPGateManager::Instance()->getGates();
-
-    sms::StatManager::TCountryInfoTable tcd = sms::StatManager::Instance()->getCountryInfoLastUpdate();
-
-    {
-        out << "Информация по ценам:" << std::endl;
-        for ( SMPPGateManager::SMPPGatesMap::iterator it = gm.begin(); it != gm.end(); it++ ) {
-            sms::CountryInfo msgci;
-            double c;
-            try {
-                c = it->second.getTariff().costs( msg.country, msg.opcode );
-            } catch ( ... ) {
-                c = -1;
-            }
-            bool found = false;
-            for ( int i = 0; i < tcd.size(); i++ ) {
-                for ( int j = 0; j < tcd[i].size(); j++ ) {
-                    sms::CountryInfo ci = tcd[i][j];
-                    if (
-                            ( msg.country == ci.cname ) &&
-                            ( msg.opname == ci.opname ) &&
-                            ( it->first == ci.gname )
-                            ) {
-                        found = true;
-                        msgci = tcd[i][j];
-                    }
-
-                }
-            }
-            double quality = double(msgci.deliveres*100) / ( msgci.requests == 0 ? 1: msgci.requests );
-            if ( quality >= 100 ) { quality = 100; }
-            try {
-                if( c == -1 )
-                    out     << std::setw( 8 ) << std::left << it->first << ": "
-                            << std::setw( 9 ) << " ----- " << "Направление закрыто" << std::endl;
-                else {
-                    if ( found && msgci.requests > 0 ) {
-                        double average_price = c / 100 / quality == 0? 0.0001: quality;
-                        double average_time = 60 * (1 - quality == 100? 0.9999: quality/100 ) + 20;
-                        out << std::setw( 8 ) << std::left <<  it->first << ": €"
-                            << std::setw( 8 ) << std::left << c/100 << "Доставка " << quality << "% "
-                            << "по средней цене €" << std::setw( 8 ) << std::left << average_price
-                            << "за " << std::setw( 4 ) << std::left << average_time << "секунд" << std::endl;
-                    } else {
-                        out << std::setw( 8 ) << std::left <<  it->first << ": €"
-                            << std::setw( 8 ) << std::left << c/100 << "Процент доставки неизвестен" << std::endl;
-                    }
-                }
-            } catch (...) {}
-        }
+    if ( !msg.operators.empty() ) {
+        out << "Оператор: " <<  msg.operators.begin()->second.getName() << std::endl;
+        out << "Код оператора: " <<  msg.operators.begin()->second.getCode() << std::endl;
+        out << "Регион: " << msg.operators.begin()->second.opRegion << std::endl << std::endl;
     }
-
 
     phoneResult->setText( WString::fromUTF8(out.str()) );
 }
