@@ -48,6 +48,7 @@ namespace sms {
         typedef std::map< std::string, std::pair< std::string, std::string > > ReplaceT;
         typedef std::multimap< std::string, boost::tuples::tuple< std::string, std::string, std::string > > PreffixMapT;
         typedef std::map< std::string, CountryInfo > CountryOperatorMapT;
+        typedef std::map< std::string, std::string > CountryPreffixMccMapT;
 
         MessageClassifier();
 
@@ -58,6 +59,7 @@ namespace sms {
     private:
         ReplaceT replaces;
         CountryOperatorMapT comap;
+        CountryPreffixMccMapT coprefmap;
         PreffixMapT preffmap;
 
         void loadReplacesMap();

@@ -64,6 +64,7 @@ namespace sms {
                 coinfo.cName = (*dbr)[3].as< std::string >();
 
                 comap[ coinfo.mcc ] = coinfo;
+                coprefmap[ coinfo.cPreffix ] = coinfo.mcc;
             }
         }
 
@@ -141,17 +142,17 @@ namespace sms {
         for ( int i = phone.length(); i > 0 ; i-- ) {
             std::string pref = phone.substr(0, i );
 
-            if ( comap.find( pref ) == comap.end() )
+            if ( coprefmap.find( pref ) == coprefmap.end() )
                 continue;
 
-            country = comap[ pref ];
+            country = comap[ coprefmap[ pref ] ];
             break;
         }
 
         for ( int i = phone.length(); i > 0 ; i-- ) {
             std::string pref = phone.substr(0, i );
 
-            if ( comap.find( pref ) == comap.end() )
+            if ( preffmap.find( pref ) == preffmap.end() )
                 continue;
 
             if ( preffmap.count( pref ) != 1 )

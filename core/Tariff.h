@@ -23,12 +23,12 @@
 #include "PGSql.h"
 
 template < class ValueDescr, class DefaultValueT >
-class TariffValueSingle {
+class TariffValueChoise {
 public:
     typedef std::list< std::string > DescriptionList;
     typedef std::string ValueT;
 
-    TariffValueSingle( std::string _value = boost::mpl::c_str< DefaultValueT >::value ) {
+    TariffValueChoise( std::string _value = boost::mpl::c_str< DefaultValueT >::value ) {
         setValue( _value );
     }
 
@@ -119,7 +119,7 @@ public:
             ar & BOOST_SERIALIZATION_NVP( value );
         }
 
-protected:    
+protected:
     ValuesListT value;
 
 private:
@@ -147,6 +147,29 @@ private:
         std::string value;
         bool& res;
     };
+};
+
+class TariffValueDouble {
+public:
+    typedef double ValueT;
+
+    TariffValueDouble( double _values = -1.0 ) {
+        setValue( _values );
+    }
+
+    void setValue( ValueT _value ) {
+        value = _value;
+    }
+
+    ValueT getValue( ) { return value; }
+
+    template<class Archive>
+        void serialize(Archive & ar, const unsigned int) {
+            ar & BOOST_SERIALIZATION_NVP( value );
+        }
+
+protected:
+    ValueT value;
 };
 
 template < class Name, class Storage >
@@ -199,7 +222,7 @@ public:
 
     typedef TariffOption<
                             boost::mpl::string< 'U','n','k','n','o','w','n','P','o','l','i','c','y' >,
-                            TariffValueSingle
+                            TariffValueChoise
                             <
                                 boost::mpl::vector<
                                     boost::mpl::string< 'M','A','X','I','M','U','M' >,
@@ -248,8 +271,8 @@ public:
 
     std::string serialize();
 
-    void addFilterCountry( std::string cname, double price );
-    void addFilterCountryOperator( std::string cname, std::string opcode, double price );
+    void setPrice( std::string cname, double price );
+    void setPrice( std::string cname, std::string opcode, double price );
 
     double costs( std::string op );
     double costs( std::string cname, std::string opcode );

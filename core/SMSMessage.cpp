@@ -31,7 +31,7 @@ namespace sms {
     }
 
     std::string SMSMessage::getPhone() const { return this->phone; }
-    OpInfo SMSMessage::getMsgClass() const { return this->msgClass; }
+    MessageClassifier::CountryInfo SMSMessage::getMsgClass() const { return this->msgClass; }
 
     SMSMessage* SMSMessage::loadMsgFromDb( SMSMessage::ID msgid ) {
         PGSql& db = PGSqlConnPoolSystem::get_mutable_instance().getdb();
@@ -104,11 +104,11 @@ namespace sms {
                 << msg->getPhone()<< "', '"
                 << msg->parts << "', '"
                 << msg->price << "', '"
-                << msg->getMsgClass().country << "', '"
-                << msg->getMsgClass().countrycode << "', '"
-                << msg->getMsgClass().opname << "', '"
-                << msg->getMsgClass().opcode << "', '"
-                << msg->getMsgClass().opregion << "', '"
+                << msg->getMsgClass().cName << "', '"
+                << msg->getMsgClass().cCode << "', '"
+                << ( msg->getMsgClass().operators.empty() ? "" : msg->getMsgClass().operators.begin()->second.getName() )<< "', '"
+                << ( msg->getMsgClass().operators.empty() ? "" : msg->getMsgClass().operators.begin()->second.getCode() ) << "', '"
+                << ( msg->getMsgClass().operators.empty() ? "" : msg->getMsgClass().operators.begin()->second.opRegion ) << "', '"
                 << "" << "','"
                 << now.sec << "');";
         tr->exec( r.str() );

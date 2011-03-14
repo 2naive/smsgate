@@ -239,6 +239,14 @@ void TariffEditor::changeItemText( Wt::WModelIndex index, WSpinBox* text ) {
     WStandardItem* root = model_->itemFromIndex( index.parent() );
     WStandardItem* item = root->takeChild( index.row(), index.column() );
 
+    std::string mccmnc = root->takeChild( index.row(), 1 )->text().toUTF8();
+    std::vector< std::string > to_vec;
+    utils::Tokenize( mccmnc, to_vec, ":" );
+    if ( to_vec.size() == 1 ) {
+        tariff.setPrice( to_vec[0], text->value() );
+    } else
+        tariff.setPrice( to_vec[0], to_vec[1], text->value() );
+
     item->setText( text->text() );
     root->setChild( index.row(), index.column(), item );
 
@@ -535,9 +543,9 @@ void TariffEditor::importParseCsv() {
         }
 
         if ( mcc == -1 ) {
-            tariff.addFilterCountry( boost::lexical_cast< string >( mcc ), price );
+            tariff.setPrice( boost::lexical_cast< string >( mcc ), price );
         } else {
-            tariff.addFilterCountryOperator( boost::lexical_cast< string >( mcc ), boost::lexical_cast< string >( mnc ), price );
+            tariff.setPrice( boost::lexical_cast< string >( mcc ), boost::lexical_cast< string >( mnc ), price );
         }
 
         output->setText( output->text() + boost::lexical_cast< string >( mcc ) + string("\t") );

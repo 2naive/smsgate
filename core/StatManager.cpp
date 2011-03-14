@@ -443,11 +443,11 @@ namespace sms {
 
     void StatManager::onCountryInfoUpdate() {
         TCountryInfoTable p;
-        MessageClassifier::CountryOperatorT cnamelist = MessageClassifier::get_mutable_instance().getCOMap();
+        MessageClassifier::CountryOperatorMapT cnamelist = MessageClassifier::get_mutable_instance().getCOMap();
 
         int cpos;
         int gpos;
-        MessageClassifier::CountryOperatorT::const_iterator it;
+        MessageClassifier::CountryOperatorMapT::iterator it;
 
         for ( it = cnamelist.begin(), cpos = 0; it != cnamelist.end(); it++, cpos++ ) {
             string cname = it->first;
@@ -467,8 +467,8 @@ namespace sms {
             }
             cpos++;
 
-            for ( std::set< std::string >::const_iterator gt = it->second.begin(); gt != it->second.end(); gt++, cpos++ ) {
-                string opname = *gt;
+            for ( MessageClassifier::CountryInfo::OperatorMapT::iterator gt = it->second.operators.begin(); gt != it->second.operators.end(); gt++, cpos++ ) {
+                string opname = gt->first;
                 gNamePropMap gm = onUpdateFromToSMPPGateCountry( cname, opname );
                 gNamePropMap::const_iterator gt;
                 p.resize( cpos + 1 );

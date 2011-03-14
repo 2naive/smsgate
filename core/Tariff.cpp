@@ -39,18 +39,55 @@ std::string Tariff::serialize() {
     return ofs.str();
 }
 
-void Tariff::addFilterCountry( std::string cname, double price ) {
+void Tariff::setPrice( std::string cname, double price ) {
     tariff.countries[ cname ].options[ "price" ] = boost::lexical_cast< std::string >( price );
 }
 
-void Tariff::addFilterCountryOperator( std::string cname, std::string opcode, double price ) {
+void Tariff::setPrice( std::string cname, std::string opcode, double price ) {
     tariff.countries[ cname ].operators[ opcode ].options[ "price" ] = boost::lexical_cast< std::string >( price );
 }
 
 double Tariff::costs( std::string cname ) {
 
-    if ( hasOption( "price", cname ) == false ) {
-        return INVALID_VALUE;
+    if ( hasOption( "price", cname ) == false )  {
+        if ( hasOption< TariffOptionUnknownPolicy >( cname ) == false )
+            return INVALID_VALUE;
+        else
+        if ( tariff.countries.find( cname ) != tariff.countries.end() ) {
+            TariffOptionUnknownPolicy policy = getOption< TariffOptionUnknownPolicy >( cname );
+            if ( policy.getValue() == "FREE" )
+                return 0.0;
+            double maxval = INVALID_VALUE;
+            if ( policy.getValue() == "MAXIMUM" ) {
+                for ( std::map< std::string, TariffOperatorInfo >::iterator it = tariff.countries[ cname ].operators.begin(); it != tariff.countries[ cname ].operators.end(); it++ ) {
+                    std::string mnc = it->first;
+                    if ( hasOption( "price", cname, mnc ) )
+                        try {
+                            maxval = std::max( maxval, boost::lexical_cast< double >( getOption( "price", cname, mnc ) ) );
+                        } catch ( ... ) {}
+                }
+                return maxval;
+            }
+            double sum = 0;
+            double total = 0;
+            if ( policy.getValue() == "AVERAGE" ) {
+                for ( std::map< std::string, TariffOperatorInfo >::iterator it = tariff.countries[ cname ].operators.begin(); it != tariff.countries[ cname ].operators.end(); it++ ) {
+                    std::string mnc = it->first;
+                    if ( hasOption( "price", cname, mnc ) ) {
+                        try {
+                            sum += boost::lexical_cast< double >( getOption( "price", cname, mnc ) );
+                        } catch ( ... ) {
+                            continue;
+                        }
+
+                        total++;
+                    }
+                }
+                return total == 0? INVALID_VALUE: sum/total;
+            }
+
+        } else
+            return INVALID_VALUE;
     }
 
     try {
@@ -64,7 +101,11 @@ double Tariff::costs( std::string cname ) {
 double Tariff::costs( std::string cname, std::string opcode ) {
 
     if ( hasOption( "price", cname, opcode ) == false ) {
-        return INVALID_VALUE;
+        if ( hasOption< TariffOptionUnknownPolicy >( cname, opcode ) == false )
+            return INVALID_VALUE;
+        else {
+            return costs( cname );
+        }
     }
 
     try {
