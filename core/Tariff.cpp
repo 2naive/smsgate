@@ -24,7 +24,7 @@ Tariff::Tariff( std::string name, std::string source ) {
         ia >> BOOST_SERIALIZATION_NVP( tariff );
 
     } catch ( std::exception& err ) {
-        throw std::runtime_error( string( "Cannot deserialize tariff[" ) + name + string( "]: " ) + err.what() );
+        //throw std::runtime_error( string( "Cannot deserialize tariff[" ) + name + string( "]: " ) + err.what() );
     }
 }
 
@@ -34,7 +34,7 @@ std::string Tariff::serialize() {
         boost::archive::xml_oarchive oa(ofs);
         oa << BOOST_SERIALIZATION_NVP( tariff );
     } catch (...) {
-        throw std::runtime_error( "Cannot serialize tariff" );;
+        //throw std::runtime_error( "Cannot serialize tariff" );;
     }
     return ofs.str();
 }
@@ -47,51 +47,88 @@ void Tariff::setPrice( std::string cname, std::string opcode, double price ) {
     tariff.countries[ cname ].operators[ opcode ].options[ "price" ] = boost::lexical_cast< std::string >( price );
 }
 
+double Tariff::currencyConvert( TariffCurrency from, TariffCurrency to, double price ) {
+
+    if ( from.getValue() == "RUR" ) { }
+    if ( from.getValue() == "EUR" ) { price = price * EURCOURSE; }
+    if ( from.getValue() == "USD" ) { price = price * USDCOURSE; }
+    if ( from.getValue() == "0.01RUR" ) { price = price / 100; }
+    if ( from.getValue() == "0.01EUR" ) { price = price / 100 * EURCOURSE; }
+    if ( from.getValue() == "0.01USD" ) { price = price / 100 * USDCOURSE; }
+
+    if ( to.getValue() == "RUR" ) { }
+    if ( to.getValue() == "EUR" ) { price = price / EURCOURSE; }
+    if ( to.getValue() == "USD" ) { price = price / USDCOURSE; }
+    if ( to.getValue() == "0.01RUR" ) { price = price * 100; }
+    if ( to.getValue() == "0.01EUR" ) { price = price * 100 / EURCOURSE; }
+    if ( to.getValue() == "0.01USD" ) { price = price * 100 / USDCOURSE; }
+
+
+    return price;
+}
+
 double Tariff::costs( std::string cname ) {
 
-    if ( hasOption( "price", cname ) == false )  {
+    if ( hasOption( "price", cname ) ) {
+        try {
+            double price = boost::lexical_cast< double >( getOption( "price", cname ) );
+            return currencyConvert( getOption< TariffCurrency >( cname ), TariffCurrency(), price );
+        } catch ( ... ) {
+            return INVALID_VALUE;
+        }
+    } else
+    if ( !hasOption( "price", cname ) )  {
         if ( hasOption< TariffOptionUnknownPolicy >( cname ) == false )
             return INVALID_VALUE;
-        else
-        if ( tariff.countries.find( cname ) != tariff.countries.end() ) {
-            TariffOptionUnknownPolicy policy = getOption< TariffOptionUnknownPolicy >( cname );
-            if ( policy.getValue() == "FREE" )
-                return 0.0;
-            double maxval = INVALID_VALUE;
-            if ( policy.getValue() == "MAXIMUM" ) {
-                for ( std::map< std::string, TariffOperatorInfo >::iterator it = tariff.countries[ cname ].operators.begin(); it != tariff.countries[ cname ].operators.end(); it++ ) {
-                    std::string mnc = it->first;
-                    if ( hasOption( "price", cname, mnc ) )
+        else {
+            double price;
+            if ( tariff.countries.find( cname ) != tariff.countries.end() ) {
+                TariffOptionUnknownPolicy policy = getOption< TariffOptionUnknownPolicy >( cname );
+                if ( policy.getValue() == "FREE" )
+                    price = 0.0;
+                double maxval = INVALID_VALUE;
+                if ( policy.getValue() == "MAXIMUM" ) {
+                    for ( std::map< std::string, TariffOperatorInfo >::iterator it = tariff.countries[ cname ].operators.begin(); it != tariff.countries[ cname ].operators.end(); it++ ) {
+                        std::string mnc = it->first;
+                        if ( hasOption( "price", cname, mnc ) )
                         try {
-                            maxval = std::max( maxval, boost::lexical_cast< double >( getOption( "price", cname, mnc ) ) );
+                            double price = boost::lexical_cast< double >( getOption( "price", cname, mnc ) );
+                            price = currencyConvert( getOption< TariffCurrency >( cname, mnc ), TariffCurrency(), price );
+                            maxval = std::max( maxval, price );
+
                         } catch ( ... ) {}
-                }
-                return maxval;
-            }
-            double sum = 0;
-            double total = 0;
-            if ( policy.getValue() == "AVERAGE" ) {
-                for ( std::map< std::string, TariffOperatorInfo >::iterator it = tariff.countries[ cname ].operators.begin(); it != tariff.countries[ cname ].operators.end(); it++ ) {
-                    std::string mnc = it->first;
-                    if ( hasOption( "price", cname, mnc ) ) {
-                        try {
-                            sum += boost::lexical_cast< double >( getOption( "price", cname, mnc ) );
-                        } catch ( ... ) {
-                            continue;
-                        }
-
-                        total++;
                     }
+                    price = maxval;
                 }
-                return total == 0? INVALID_VALUE: sum/total;
-            }
+                double sum = 0;
+                double total = 0;
+                if ( policy.getValue() == "AVERAGE" ) {
+                    for ( std::map< std::string, TariffOperatorInfo >::iterator it = tariff.countries[ cname ].operators.begin(); it != tariff.countries[ cname ].operators.end(); it++ ) {
+                        std::string mnc = it->first;
+                        if ( hasOption( "price", cname, mnc ) ) {
+                            try {
+                                double price = boost::lexical_cast< double >( getOption( "price", cname, mnc ) );
+                                price = currencyConvert( getOption< TariffCurrency >( cname, mnc ), TariffCurrency(), price );
+                                sum += price;
+                            } catch ( ... ) {
+                                continue;
+                            }
 
-        } else
+                            total++;
+                        }
+                    }
+                    price = total == 0? INVALID_VALUE: sum/total;
+                }
+                return price;
+            } else
             return INVALID_VALUE;
+        }
+
     }
 
     try {
-        return boost::lexical_cast< double >( getOption( "price", cname ) );
+        double price = boost::lexical_cast< double >( getOption( "price" ) );
+        return currencyConvert( getOption< TariffCurrency >( cname ), TariffCurrency(), price );
     } catch ( ... ) {
         return INVALID_VALUE;
     }
@@ -100,7 +137,17 @@ double Tariff::costs( std::string cname ) {
 
 double Tariff::costs( std::string cname, std::string opcode ) {
 
-    if ( hasOption( "price", cname, opcode ) == false ) {
+    if ( hasOption( "price", cname, opcode ) ) {
+
+        try {
+            double price = boost::lexical_cast< double >( getOption( "price", cname, opcode ) );
+            return currencyConvert( getOption< TariffCurrency >( cname, opcode ), TariffCurrency(), price );
+        } catch ( ... ) {
+            return INVALID_VALUE;
+        }
+
+    } else
+    if ( !hasOption( "price", cname, opcode ) ) {
         if ( hasOption< TariffOptionUnknownPolicy >( cname, opcode ) == false )
             return INVALID_VALUE;
         else {
@@ -108,12 +155,29 @@ double Tariff::costs( std::string cname, std::string opcode ) {
         }
     }
 
-    try {
-        return boost::lexical_cast< double >( getOption( "price", cname, opcode ) );
-    } catch ( ... ) {
-        return INVALID_VALUE;
-    }
+    return costs( cname );
+}
 
+double Tariff::costs( std::string op, SMSMessage::Status status ) {
+    TariffOptionPaidStatuses option = getOption< TariffOptionPaidStatuses >( op );
+    TariffOptionPaidStatuses::ValueT opt_val;
+
+    if ( ( opt_val.find( "REJECTED" ) != option.getValues().end() ) && ( status == SMSMessage::Status::ST_REJECTED ) ) return 0.0;
+    if ( ( opt_val.find( "EXPIRED" ) != option.getValues().end() ) && ( status == SMSMessage::Status::ST_EXPIRED ) ) return 0.0;
+    if ( ( opt_val.find( "UNDELIVERED" ) != option.getValues().end() ) && ( status == SMSMessage::Status::ST_NOT_DELIVERED ) ) return 0.0;
+
+    return costs( op );
+}
+
+double Tariff::costs( std::string cname, std::string opcode, SMSMessage::Status status ) {
+    TariffOptionPaidStatuses option = getOption< TariffOptionPaidStatuses >( cname, opcode );
+    TariffOptionPaidStatuses::ValueT opt_val = option.getValues();
+
+    if ( ( opt_val.find( "REJECTED" ) != opt_val.end() ) && ( status == SMSMessage::Status::ST_REJECTED ) ) return 0.0;
+    if ( ( opt_val.find( "EXPIRED" ) != opt_val.end() ) && ( status == SMSMessage::Status::ST_EXPIRED ) ) return 0.0;
+    if ( ( opt_val.find( "UNDELIVERED" ) != opt_val.end() ) && ( status == SMSMessage::Status::ST_NOT_DELIVERED ) ) return 0.0;
+
+    return costs( cname, opcode );
 }
 
 boost::logic::tribool Tariff::hasOption( std::string name ) {

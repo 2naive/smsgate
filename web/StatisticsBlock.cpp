@@ -412,10 +412,7 @@ void WStatPageData::evaluateSummary( double &price, int &total, int &delivered, 
         tr->commit();
 
         for ( Result::const_iterator it = res.begin(); it != res.end(); it++ ) {
-            SMSMessage::Status status = SMSMessage::Status( (*it)[0].as<int>() );
-            if ( status != SMSMessage::Status::ST_REJECTED ) {
-                price += (*it)[2].as<double>();
-            }
+            SMSMessage::Status status = SMSMessage::Status( (*it)[0].as<int>() );            
 
             if ( status == SMSMessage::Status::ST_REJECTED ) {
                 rejected += (*it)[1].as<int>();
@@ -430,6 +427,7 @@ void WStatPageData::evaluateSummary( double &price, int &total, int &delivered, 
             }
 
             total += (*it)[1].as<int>();
+            price += (*it)[2].as<double>();
         }
 
     } catch ( ... ) {
@@ -469,9 +467,7 @@ void WStatPageData::execute( int lnl, int lnr, RowList &data ) {
             string __txt = (*it)[2].as<string>();
             string __status = SMSMessage::Status::russianDescr( SMSMessage::Status( (*it)[6].as<int>() ) );
             float price = (*it)[15].as<double>();
-            if ( SMSMessage::Status( (*it)[6].as<int>() ) == SMSMessage::Status::ST_REJECTED ) {
-                price = 0;
-            }
+
             string __price = boost::lexical_cast< string >( int(floor( price * 100 )) / 100) + string(".") +  boost::lexical_cast< string >( int(floor( price * 100 )) % 100 );
 
             string __country = (*it)[9].as<string>();

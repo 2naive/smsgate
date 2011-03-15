@@ -84,6 +84,10 @@ namespace sms {
                 OperatorInfo coinfo;
                 coinfo.mcc = (*dbr)[0].as< std::string>();
                 coinfo.mnc = (*dbr)[1].as< std::string >();
+
+                if ( coinfo.mnc.length() == 1 )
+                    coinfo.mnc = std::string("0") + coinfo.mnc;
+
                 coinfo.opName = (*dbr)[2].as< std::string >();
                 coinfo.opCompany = (*dbr)[3].as< std::string >();
 
@@ -115,6 +119,9 @@ namespace sms {
                 preff = (*dbr)[0].as< std::string >();
                 mcc = (*dbr)[1].as< std::string >();
                 mnc = (*dbr)[2].as< std::string >();
+                if ( mnc.length() == 1 )
+                    mnc = std::string("0") + mnc;
+
                 region = (*dbr)[3].as< std::string >();
 
                 preffmap.insert( std::make_pair( preff, boost::tuples::make_tuple( mcc, mnc, region ) ) );
@@ -146,6 +153,7 @@ namespace sms {
                 continue;
 
             country = comap[ coprefmap[ pref ] ];
+            country.operators.clear();
             break;
         }
 

@@ -35,6 +35,9 @@
 #include <string>
 #include <ostream>
 
+typedef TariffOptionEditor< Tariff::TariffOptionPaidStatuses, MultiValueAdaptor< Tariff::TariffOptionPaidStatuses > > PaidStatusesEditor;
+typedef TariffOptionEditor< Tariff::TariffOptionUnknownPolicy, MultiChoiseAdaptor< Tariff::TariffOptionUnknownPolicy> > UnknownPolicyEditor;
+typedef TariffOptionEditor< Tariff::TariffCurrency, MultiChoiseAdaptor< Tariff::Tariff::TariffCurrency> > CurrencyEditor;
 
 class TariffEditor: public Wt::WContainerWidget {
 public:
@@ -48,6 +51,7 @@ private:
     Wt::WLineEdit* nameBox;
     PaidStatusesEditor* paidStatuses;
     UnknownPolicyEditor* unknownPolicy;
+    CurrencyEditor* currencyEditor;
 
     struct import_controls {
         Wt::WLabel* netcode_helper;

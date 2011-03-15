@@ -421,7 +421,5 @@ private:
     std::map< std::string, Wt::WRadioButton* > checkboxes;
 };
 
-typedef TariffOptionEditor< Tariff::TariffOptionPaidStatuses, MultiValueAdaptor< Tariff::TariffOptionPaidStatuses > > PaidStatusesEditor;
-typedef TariffOptionEditor< Tariff::TariffOptionUnknownPolicy, MultiChoiseAdaptor< Tariff::TariffOptionUnknownPolicy> > UnknownPolicyEditor;
 
 #endif // TARIFFOPTIONEDITOR_H

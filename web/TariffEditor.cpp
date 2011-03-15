@@ -32,16 +32,16 @@ TariffEditor::TariffEditor( WContainerWidget* parent ): WContainerWidget( parent
     tlistRebuild();
 
     WPushButton* loadBtn = new WPushButton( WString::fromUTF8( "Загрузить" ) );
-    loadBtn->setMinimumSize( WLength( 3, WLength::Centimeter ), WLength::Auto );
+    loadBtn->setMinimumSize( WLength( 2, WLength::Centimeter ), WLength::Auto );
     loadBtn->clicked().connect( this, &TariffEditor::onChangeRoot );
     loadBtn->clicked().connect( this, &TariffEditor::onTariffLoad );
 
     WPushButton* removeBtn = new WPushButton( WString::fromUTF8( "Удалить" ) );
-    removeBtn->setMinimumSize( WLength( 3, WLength::Centimeter ), WLength::Auto );
+    removeBtn->setMinimumSize( WLength( 2, WLength::Centimeter ), WLength::Auto );
     removeBtn->clicked().connect( this, &TariffEditor::onTariffRemove );
 
     nameBox = new WLineEdit();
-    nameBox->setMinimumSize( WLength( 4, WLength::Centimeter ), WLength::Auto );
+    nameBox->setMinimumSize( WLength( 3, WLength::Centimeter ), WLength::Auto );
 
     WPushButton* saveBtn = new WPushButton( WString::fromUTF8( "Сохранить" ) );
     saveBtn->clicked().connect( this, &TariffEditor::onTariffSave );
@@ -54,6 +54,7 @@ TariffEditor::TariffEditor( WContainerWidget* parent ): WContainerWidget( parent
     updateBtn->clicked().connect( this, &TariffEditor::onChangeRoot );
     updateBtn->clicked().connect( this, &TariffEditor::onTariffUpdate );
 
+    currencyEditor = new CurrencyEditor( &tariff );
     unknownPolicy = new UnknownPolicyEditor( &tariff );
     paidStatuses = new PaidStatusesEditor( &tariff );
 
@@ -72,8 +73,9 @@ TariffEditor::TariffEditor( WContainerWidget* parent ): WContainerWidget( parent
     loadSaveBox->setLayout( loadSaveLayout, AlignCenter | AlignMiddle );
 
     WGridLayout* tariffOptionsLayout = new WGridLayout();
-    tariffOptionsLayout->addWidget( unknownPolicy, 0, 0 );
-    tariffOptionsLayout->addWidget( paidStatuses, 1, 0 );
+    tariffOptionsLayout->addWidget( currencyEditor, 0, 0 );
+    tariffOptionsLayout->addWidget( unknownPolicy, 1, 0 );
+    tariffOptionsLayout->addWidget( paidStatuses, 2, 0 );
 
     WGroupBox* tariffOptionsBox = new WGroupBox( WString::fromUTF8( "Тарифные опции" ) );
     tariffOptionsBox->setLayout( tariffOptionsLayout, AlignCenter | AlignMiddle);
@@ -616,6 +618,7 @@ void TariffEditor::onChangeRoot() {
     if ( selected.empty() ) {
         paidStatuses->setCurPosRoot();
         unknownPolicy->setCurPosRoot();
+        currencyEditor->setCurPosRoot();
     }
 
     if ( selected.size() == 1 ) {
@@ -634,9 +637,11 @@ void TariffEditor::onChangeRoot() {
         if ( mnc.empty() ) {
             paidStatuses->setCurPosCountry( mcc );
             unknownPolicy->setCurPosCountry( mcc );
+            currencyEditor->setCurPosCountry( mcc );
         } else {
             paidStatuses->setCurPosOperator( mcc, mnc );
             unknownPolicy->setCurPosOperator( mcc, mnc );
+            currencyEditor->setCurPosOperator( mcc, mnc );
         }
     }
 }

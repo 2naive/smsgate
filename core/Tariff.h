@@ -13,6 +13,7 @@
 #include <boost/serialization/set.hpp>
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
+
 #include <boost/mpl/for_each.hpp>
 #include <boost/mpl/string.hpp>
 #include <boost/mpl/vector.hpp>
@@ -20,6 +21,7 @@
 #include <boost/logic/tribool.hpp>
 
 #include "MessageClassifier.h"
+#include "SMSMessage.h"
 #include "PGSql.h"
 
 template < class ValueDescr, class DefaultValueT >
@@ -191,7 +193,7 @@ public:
         std::ostringstream ofs;
         try {
             typename Storage::ValueT& value( Storage::value );
-            boost::archive::xml_oarchive oa(ofs);
+            boost::archive::xml_oarchive oa( ofs );
             oa << BOOST_SERIALIZATION_NVP( value );
         } catch (...) {}
         return ofs.str();
@@ -232,6 +234,25 @@ public:
                                 boost::mpl::string< 'F','R','E','E' >
                             >
                         > TariffOptionUnknownPolicy;
+
+    typedef TariffOption<
+                            boost::mpl::string< 'C','u','r','r','e','n','c','y' >,
+                            TariffValueChoise
+                            <
+                                boost::mpl::vector<
+                                    boost::mpl::string< 'R','U','R' >,
+                                    boost::mpl::string< 'E','U','R' >,
+                                    boost::mpl::string< 'U','S','D' >,
+                                    boost::mpl::string< '0','.','0','1','R','U','R' >,
+                                    boost::mpl::string< '0','.','0','1','E','U','R' >,
+                                    boost::mpl::string< '0','.','0','1','U','S','D' >
+                                >,
+                                boost::mpl::string< 'R','U','R' >
+                            >
+                        > TariffCurrency;
+
+    static const int EURCOURSE = 42;
+    static const int USDCOURSE = 30;
 
     struct TariffOperatorInfo {
         std::map< std::string, std::string > options;
@@ -276,6 +297,9 @@ public:
 
     double costs( std::string op );
     double costs( std::string cname, std::string opcode );
+    double costs( std::string op, SMSMessage::Status status );
+    double costs( std::string cname, std::string opcode, SMSMessage::Status status );
+    double currencyConvert( TariffCurrency from, TariffCurrency to, double price );
 
     void setName( std::string n ) { tariff.name = n; }
     std::string getName( ) { return tariff.name; };

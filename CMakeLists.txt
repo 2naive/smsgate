@@ -64,9 +64,6 @@ set( smsgate_SRCS ${smsgate_SRCS} core/SMSRequest.h          core/SMSRequest.cpp
 set( smsgate_SRCS ${smsgate_SRCS} core/StatManager.h         core/StatManager.cpp )
 set( smsgate_SRCS ${smsgate_SRCS} core/Tariff.h              core/Tariff.cpp )
 
-set( thelper_SRCS ${thelper_SRCS} core/Tariff.h              core/Tariff.cpp )
-set( thelper_SRCS ${thelper_SRCS} utils/utils.h              utils/utils.cpp )
-
 set( ghelper_SRCS ${ghelper_SRCS} core/SMPPGateFilterParser.h core/SMPPGateFilterParser.cpp )
 
 
@@ -78,8 +75,8 @@ endif ( ${CMAKE_SYSTEM_NAME} MATCHES FreeBSD )
 add_executable(smsgate ${smsgate_SRCS} smsgate.cpp)
 target_link_libraries(smsgate ${smsgate_linked_libs})
 
-#add_executable(thelper ${thelper_SRCS} thelper.cpp)
-#target_link_libraries(thelper ${smsgate_linked_libs})
+add_executable(thelper ${smsgate_SRCS} thelper.cpp)
+target_link_libraries(thelper ${smsgate_linked_libs})
 
 add_executable(ghelper ${ghelper_SRCS} ghelper.cpp)
 target_link_libraries(ghelper ${smsgate_linked_libs})

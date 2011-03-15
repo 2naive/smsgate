@@ -378,8 +378,8 @@ namespace sms {
             return true;
 
         args[ "TO" ] = msg->getPhone();
-        args[ "COUNTRY" ] = info.cName;
-        args[ "COUNTRYCODE" ] = info.cCode;
+        args[ "COUNTRY" ] = info.cCode;
+        args[ "COUNTRYCODE" ] = info.mcc;
         if ( !info.operators.empty() ) {
             args[ "OPERATORCODE" ] = info.operators.begin()->second.getCode();
         }

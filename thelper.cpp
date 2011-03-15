@@ -1,4 +1,5 @@
 #include "Tariff.h"
+#include "SMSMessage.h"
 #include "utils.h"
 #include <iostream>
 #include <cstring>
@@ -7,10 +8,7 @@ using namespace std;
 
 void print_usage( ) {
     cerr << "Invalid usage:" << endl;
-    cerr << "\tthelper tariff_create tariff_name tariff_filename" << endl;
-    cerr << "\tthelper tariff_inherit tariff_name tariff_filename base_filename" << endl;
-    cerr << "\tthelper tariff_mult tariff_name tariff_filename base_filename multiplication_value" << endl;
-    cerr << "\tthelper tariff_check tariff_filename country_name operator_code" << endl;
+    cerr << "\tthelper check tariff_name " << endl;
 
 }
 
@@ -20,141 +18,27 @@ int main( int argc, char** argv ) {
         return 0;
     }
 
-    string fname = argv[1];
-    if ( fname == "tariff_create" ) {
-        if ( argc < 4 ) {
+    if ( std::string(argv[1]) == "check" ) {
+        if ( argc != 3 ) {
             print_usage();
             return 0;
         }
 
-        string tariff_name = argv[2];
-        string tariff_file = argv[3];
-
-        Tariff base = Tariff::buildEmpty( tariff_name );
+        Tariff tariff = TariffManager::get_mutable_instance().loadTariff( argv[ 2 ] );
 
         while ( !cin.eof() ) {
-            char line[1024];
-            vector< string > params;
+            std::string phone;
+            int status;
+            cin >> phone >> status;
 
-            cin.getline( line, 1024 );
-            sms::utils::Tokenize( line, params, " \n" );
-
-            if ( params.size() == 2 ) {
-                string cname = params[0];
-                float costs = boost::lexical_cast< float >( params[ 1 ] );
-
-                base.addFilterCountry( cname, costs );
-            }
-
-            if ( params.size() == 3 ) {
-                string cname = params[0];
-                string opcode = params[1];
-                float costs = boost::lexical_cast< float >( params[ 2 ] );
-
-                base.addFilterCountryOperator( cname, opcode, costs );
+            sms::MessageClassifier::CountryInfo ci = sms::MessageClassifier::get_mutable_instance().getMsgClass( phone );
+            if ( ci.operators.empty() ) {
+                cout << tariff.costs( ci.mcc, SMSMessage::Status( status ) ) << endl;
+            } else {
+                cout << tariff.costs( ci.mcc, ci.operators.begin()->second.mnc, SMSMessage::Status( status ) ) << endl;
             }
         }
 
-        base.saveToFile( tariff_file );
-    }
-
-    if ( fname == "tariff_inherit" ) {
-        if ( argc < 5 ) {
-            print_usage();
-            return 0;
-        }
-
-        string tariff_name = argv[2];
-        string tariff_file = argv[3];
-        string base_file = argv[4];
-
-        Tariff base = Tariff::buildInherit( tariff_name, base_file );
-
-        while ( !cin.eof() ) {
-            char line[1024];
-            vector< string > params;
-
-            cin.getline( line, 1024 );
-            sms::utils::Tokenize( line, params, " \n" );
-
-            if ( params.size() == 2 ) {
-                string cname = params[0];
-                float costs = boost::lexical_cast< float >( params[ 1 ] );
-
-                base.addFilterCountry( cname, costs );
-            }
-
-            if ( params.size() == 3 ) {
-                string cname = params[0];
-                string opcode = params[1];
-                float costs = boost::lexical_cast< float >( params[ 2 ] );
-
-                base.addFilterCountryOperator( cname, opcode, costs );
-            }
-        }
-
-        base.saveToFile( tariff_file );
-    }
-
-    if ( fname == "tariff_mult" ) {
-        if ( argc < 6 ) {
-            print_usage();
-            return 0;
-        }
-
-        string tariff_name = argv[2];
-        string tariff_file = argv[3];
-        string base_file = argv[4];
-        float mk = boost::lexical_cast< float >( argv[5] );
-
-        Tariff base = Tariff::buildInheritMultiplex( tariff_name, base_file, mk );
-
-        while ( !cin.eof() ) {
-            char line[1024];
-            vector< string > params;
-
-            cin.getline( line, 1024 );
-            sms::utils::Tokenize( line, params, " \n" );
-
-            if ( params.size() == 2 ) {
-                string cname = params[0];
-                float costs = boost::lexical_cast< float >( params[ 1 ] );
-
-                base.addFilterCountry( cname, costs );
-            }
-
-            if ( params.size() == 3 ) {
-                string cname = params[0];
-                string opcode = params[1];
-                float costs = boost::lexical_cast< float >( params[ 2 ] );
-
-                base.addFilterCountryOperator( cname, opcode, costs );
-            }
-        }
-
-        base.saveToFile( tariff_file );
-    }
-
-
-    if ( fname == "tariff_check" ) {
-        if ( argc < 5 ) {
-            print_usage();
-            return 0;
-        }
-
-        string tariff_file = argv[2];
-        string cname = argv[3];
-        string opcode = argv[4];
-        float costs;
-
-        Tariff base = Tariff::buildFromFile( tariff_file );
-        try {
-            costs = base.costs( cname, opcode );
-        } catch ( ... ) {
-            costs = 0.0;
-        }
-
-        cout << costs << endl;
     }
 
 }

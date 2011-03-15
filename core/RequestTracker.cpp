@@ -257,7 +257,7 @@ void RequestTracker::parseNewRequestEvent( SMSRequest::PTR req ) {
         }
 
         SMSMessage::ID  msgid = SMSMessage::ID( req->getID(), i );
-        SMSMessageManager::get_mutable_instance().createMessage( msgid, req->to[i], req->parts, price );
+        SMSMessageManager::get_mutable_instance().createMessage( msgid, *req );
 
         op_queue.push( SMSOperation::create <OP_NewMessage>( std::make_pair( req, msgid ), idp, ma_p, OP_NewMessageP ), ma_p, OP_NewMessageP );
     }
