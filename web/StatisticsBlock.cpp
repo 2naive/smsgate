@@ -466,9 +466,11 @@ void WStatPageData::execute( int lnl, int lnr, RowList &data ) {
             string __date = boost::posix_time::to_simple_string(dt);
             string __txt = (*it)[2].as<string>();
             string __status = SMSMessage::Status::russianDescr( SMSMessage::Status( (*it)[6].as<int>() ) );
-            float price = (*it)[15].as<double>();
+            double price = (*it)[15].as<double>();
 
-            string __price = boost::lexical_cast< string >( int(floor( price * 100 )) / 100) + string(".") +  boost::lexical_cast< string >( int(floor( price * 100 )) % 100 );
+            char ps[100];
+            sprintf( ps, "%0.4f", price );
+            string __price = ps;
 
             string __country = (*it)[9].as<string>();
             string __region = (*it)[13].as<string>();
