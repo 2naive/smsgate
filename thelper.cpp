@@ -8,28 +8,30 @@ using namespace std;
 
 void print_usage( ) {
     cerr << "Invalid usage:" << endl;
-    cerr << "\tthelper check tariff_name " << endl;
+    cerr << "\tthelper check " << endl;
 
 }
 
 int main( int argc, char** argv ) {
-    if ( argc <= 2 ) {
+    if ( argc != 2 ) {
         print_usage();
         return 0;
     }
 
     if ( std::string(argv[1]) == "check" ) {
-        if ( argc != 3 ) {
+        if ( argc != 2 ) {
             print_usage();
             return 0;
         }
 
-        Tariff tariff = TariffManager::get_mutable_instance().loadTariff( argv[ 2 ] );
 
         do {
+            std::string tariff_name;
             std::string phone;
             int status;
-            cin >> phone >> status;
+            cin >> tariff_name >> phone >> status;
+
+            Tariff tariff = TariffManager::get_mutable_instance().loadTariff( tariff_name );
 
             sms::MessageClassifier::CountryInfo ci = sms::MessageClassifier::get_mutable_instance().getMsgClass( phone );
             if ( ci.operators.empty() ) {
