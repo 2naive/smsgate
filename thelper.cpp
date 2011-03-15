@@ -26,18 +26,30 @@ int main( int argc, char** argv ) {
 
         Tariff tariff = TariffManager::get_mutable_instance().loadTariff( argv[ 2 ] );
 
-        while ( !cin.eof() ) {
+        do {
             std::string phone;
             int status;
             cin >> phone >> status;
 
             sms::MessageClassifier::CountryInfo ci = sms::MessageClassifier::get_mutable_instance().getMsgClass( phone );
             if ( ci.operators.empty() ) {
-                cout << tariff.costs( ci.mcc, SMSMessage::Status( status ) ) << endl;
+                cout << ci.cName << ";"
+                     << ci.mcc << ";"
+                     << ";"
+                     << ";"
+                     << ";"
+                     << tariff.costs( ci.mcc, SMSMessage::Status( status ) );
+
             } else {
-                cout << tariff.costs( ci.mcc, ci.operators.begin()->second.mnc, SMSMessage::Status( status ) ) << endl;
+                cout << ci.cName << ";"
+                     << ci.mcc << ";"
+                     << ci.operators.begin()->second.getName() << ";"
+                     << ci.operators.begin()->second.getCode() << ";"
+                     << ci.operators.begin()->second.opRegion << ";"
+                     << tariff.costs( ci.mcc, SMSMessage::Status( status ) );
             }
-        }
+            cout << endl;
+        } while ( !cin.eof() );
 
     }
 

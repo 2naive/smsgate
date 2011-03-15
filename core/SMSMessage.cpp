@@ -36,7 +36,12 @@ namespace sms {
         PGSql& db = PGSqlConnPoolSystem::get_mutable_instance().getdb();
         SMSMessage* pmsg;
         {
-            SMSRequest::PTR req = RequestTracker::Instance()->loadRequestFromDb( msgid.req );
+            SMSRequest::PTR req;
+            try {
+               req  = RequestTracker::Instance()->loadRequestFromDb( msgid.req );
+            } catch ( ... ) {
+                throw PGSqlError( "Empty dataset" );
+            }
 
             std::ostringstream r;
 
