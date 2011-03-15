@@ -119,8 +119,8 @@ namespace sms {
                 << msg->getPhone()<< "', '"
                 << msg->parts << "', '"
                 << ( msg->getMsgClass().operators.empty() ?
-                        tariff.costs( msg->getMsgClass().mcc, msg->delivery_status ) :
-                        tariff.costs( msg->getMsgClass().mcc, msg->getMsgClass().operators.begin()->second.mnc, msg->delivery_status ) )<< "', '"
+                        msg->parts*tariff.costs( msg->getMsgClass().mcc, msg->delivery_status ) :
+                        msg->parts*tariff.costs( msg->getMsgClass().mcc, msg->getMsgClass().operators.begin()->second.mnc, msg->delivery_status ) )<< "', '"
                 << msg->getMsgClass().cName << "', '"
                 << msg->getMsgClass().mcc << "', '"
                 << ( msg->getMsgClass().operators.empty() ? "" : msg->getMsgClass().operators.begin()->second.getName() )<< "', '"
@@ -152,8 +152,8 @@ namespace sms {
                 << "\"STATUS\"='" << msg->getStatus()() << "',"
                 << "\"PARTNERPRICE\"='"
                 << ( msg->getMsgClass().operators.empty() ?
-                        tariff.costs( msg->getMsgClass().mcc, msg->delivery_status ) :
-                        tariff.costs( msg->getMsgClass().mcc, msg->getMsgClass().operators.begin()->second.mnc, msg->delivery_status ) )
+                        msg->parts*tariff.costs( msg->getMsgClass().mcc, msg->delivery_status ) :
+                        msg->parts*tariff.costs( msg->getMsgClass().mcc, msg->getMsgClass().operators.begin()->second.mnc, msg->delivery_status ) )
                 <<"',"
                 << "\"GATEWAY\"='' "
                 << "WHERE "
