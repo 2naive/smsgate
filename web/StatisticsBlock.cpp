@@ -469,7 +469,7 @@ void WStatPageData::execute( int lnl, int lnr, RowList &data ) {
             double price = (*it)[15].as<double>();
 
             char ps[100];
-            sprintf( ps, "%0.4f", price );
+            sprintf( ps, "%0.2f", price );
             string __price = ps;
 
             string __country = (*it)[9].as<string>();
