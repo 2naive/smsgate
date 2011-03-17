@@ -524,14 +524,10 @@ void TariffEditor::importParseCsv() {
             continue;
         }
 
-        int mcc;
-        int mnc;
-        try {
-            mcc = boost::lexical_cast< int >( row[ col_mccmnc ].substr( 0, 3 ) );
-            mnc = sdouble2double( row[ col_mccmnc ].substr( 3, row[ col_mccmnc ].length()-3 ), -1 );
-        } catch ( ... ) {
-            continue;
-        }
+        std::string mcc;
+        std::string mnc;
+        mcc = row[ col_mccmnc ].substr( 0, 3 );
+        mnc = row[ col_mccmnc ].substr( 3, row[ col_mccmnc ].length()-3 );
 
         double price;
         try {
