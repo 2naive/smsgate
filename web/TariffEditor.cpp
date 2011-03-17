@@ -93,72 +93,83 @@ TariffEditor::TariffEditor( WContainerWidget* parent ): WContainerWidget( parent
 void TariffEditor::buildModel( WStandardItemModel* data, Tariff& tariff, bool clear ) {
     sms::MessageClassifier::CountryOperatorMapT comap = sms::MessageClassifier::get_mutable_instance().getCOMap();
 
-    data->clear();
-    data->insertColumns(0, 3);
+    if ( clear ) {
+        data->clear();
+        data->insertColumns(0, 3);
 
-    data->setHeaderData(0, Horizontal, WString::fromUTF8("Страна/Оператор"));
-    data->setHeaderData(1, Horizontal, WString::fromUTF8("MCC/MNC"));
-    data->setHeaderData(2, Horizontal, WString::fromUTF8("Цена"));
+        data->setHeaderData(0, Horizontal, WString::fromUTF8("Страна/Оператор"));
+        data->setHeaderData(1, Horizontal, WString::fromUTF8("MCC/MNC"));
+        data->setHeaderData(2, Horizontal, WString::fromUTF8("Цена"));
+    }
 
+
+    int cur_row = 0;
     for( sms::MessageClassifier::CountryOperatorMapT::iterator it = comap.begin(); it != comap.end(); it++ ) {
         sms::MessageClassifier::CountryInfo cinfo = it->second;
-        std::vector< WStandardItem* > row;
+        WStandardItem *country;
+        WStandardItem* mcc;
+        WStandardItem* price;
 
-        WStandardItem *country = new WStandardItem( string( "resources/flags/" ) + cinfo.cCode + ".png", WString::fromUTF8( cinfo.cName ) );
-        row.push_back( country );
+        string price_text = ( tariff.costs( cinfo.mcc ) == Tariff::INVALID_VALUE )? "Не задано": double2string( tariff.costs( cinfo.mcc ) );
 
-        WStandardItem* mcc = new WStandardItem();
-        mcc->setText( WString::fromUTF8( boost::lexical_cast< string >( cinfo.mcc ) ) );
-        row.push_back( mcc );
+        if ( clear ) {
+            country = new WStandardItem( string( "resources/flags/" ) + cinfo.cCode + ".png", WString::fromUTF8( cinfo.cName ) );
+            mcc = new WStandardItem( WString::fromUTF8( cinfo.mcc ) );
+            price = new WStandardItem( WString::fromUTF8( price_text ) );;
 
-        string price_text = "Не задано";
-        try {
-            double price = tariff.costs( boost::lexical_cast< string >( cinfo.mcc ) );
-            if ( price != Tariff::INVALID_VALUE )
-                price_text = double2string( price );
-        } catch ( ... ) {}
-
-        WStandardItem* price = new WStandardItem( WString::fromUTF8( price_text ) );;
-
-        row.push_back( price );
-
-        for ( sms::MessageClassifier::CountryInfo::OperatorMapT::iterator gt = cinfo.operators.begin(); gt != cinfo.operators.end(); gt++ ) {
-            sms::MessageClassifier::OperatorInfo info = gt->second;
-            std::vector< WStandardItem* > subrow;
-
-            WStandardItem* op = new WStandardItem();
-            op->setText( WString::fromUTF8( info.opName == "" ? info.opCompany : info.opName ) );
-            subrow.push_back( op );
-
-            WStandardItem* code = new WStandardItem();
-            code->setText( WString::fromUTF8( boost::lexical_cast< string >( info.mcc ) + string(":") + boost::lexical_cast< string >( info.mnc ) ) );
-            subrow.push_back( code );
-
-            string price_text = "Не задано";
-            {
-                double price = tariff.costs( boost::lexical_cast< string >( info.mcc ), boost::lexical_cast< string >( info.mnc ) );
-                if ( price != Tariff::INVALID_VALUE )
-                    price_text = double2string( price );
+            data->setItem( cur_row, 0, country );
+            data->setItem( cur_row, 1, mcc );
+            data->setItem( cur_row, 2, price );
+        } else {
+            price = data->item( cur_row, 2 );
+            if ( price->text() != WString::fromUTF8( price_text ) ) {
+                price->setText( WString::fromUTF8( price_text ) );
             }
 
-            WStandardItem* subprice = new WStandardItem( WString::fromUTF8( price_text ) );
-
-            subrow.push_back( subprice );
-
-            country->appendRow( subrow );
         }
 
-        data->appendRow( row );
+        int cur_subrow = 0;
+        for ( sms::MessageClassifier::CountryInfo::OperatorMapT::iterator gt = cinfo.operators.begin(); gt != cinfo.operators.end(); gt++ ) {
+            sms::MessageClassifier::OperatorInfo info = gt->second;
+
+            WStandardItem* op;
+            WStandardItem* code;
+            WStandardItem* subprice;
+
+            string price_text = ( tariff.costs( cinfo.mcc, info.mnc ) == Tariff::INVALID_VALUE )? "Не задано": double2string( tariff.costs( cinfo.mcc, info.mnc ) );
+
+            if ( clear ) {
+                op = new WStandardItem( WString::fromUTF8( info.getName() ) );
+                code = new WStandardItem( WString::fromUTF8( info.getCode() ) );
+                subprice = new WStandardItem( WString::fromUTF8( price_text ) );
+
+                country->setChild( cur_subrow, 0, op );
+                country->setChild( cur_subrow, 1, code );
+                country->setChild( cur_subrow, 2, subprice );
+            } else {
+                WStandardItem* root = data->item( cur_row, 0 );
+                subprice = root->child( cur_subrow, 2 );
+                if ( subprice != NULL )
+                if ( subprice->text() != WString::fromUTF8( price_text ) ) {
+                    subprice->setText( WString::fromUTF8( price_text ) );
+                }
+            }
+
+                cur_subrow++;
+        }
+
+        cur_row++;
     }
+
 }
 
 WTreeView* TariffEditor::buildTreeView( Wt::WStandardItemModel * model ) {
 
     WTreeView* tw = new WTreeView();
     tw->setModel( model );
-    tw->setSelectionMode( Wt::ExtendedSelection );
+    tw->setSelectionMode( Wt::SingleSelection );
     tw->setAlternatingRowColors( true );
-    tw->sortByColumn( 0, AscendingOrder );
+    tw->sortByColumn( 0, AscendingOrder);
 
     tw->clicked().connect( this, &TariffEditor::onPriceEdit );
     tw->clicked().connect( this, &TariffEditor::onChangeRoot );
@@ -558,9 +569,7 @@ void TariffEditor::importParseCsv() {
 }
 
 void TariffEditor::importCsvFinish() {
-    model_->clear();
-    buildModel( model_, tariff );
-
+    onTariffUpdate();
     importCtx.importDlg->accept();
 }
 
@@ -583,12 +592,13 @@ void TariffEditor::onTariffRemove() {
 void TariffEditor::onTariffClear() {
     tariff = Tariff();
 
-    onTariffUpdate();
+    buildModel( model_, tariff );
+    treeView_->sortByColumn( 0, AscendingOrder );
 }
 
 void TariffEditor::onTariffUpdate() {
-    model_->clear();
-    buildModel( model_, tariff );
+    buildModel( model_, tariff, false );
+//    treeView_->sortByColumn( 0, AscendingOrder );
 }
 
 void TariffEditor::onTariffSave() {
