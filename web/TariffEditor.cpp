@@ -90,7 +90,7 @@ TariffEditor::TariffEditor( WContainerWidget* parent ): WContainerWidget( parent
     onChangeRoot();
 }
 
-void TariffEditor::buildModel( WStandardItemModel* data, Tariff& tariff ) {
+void TariffEditor::buildModel( WStandardItemModel* data, Tariff& tariff, bool clear = false ) {
     sms::MessageClassifier::CountryOperatorMapT comap = sms::MessageClassifier::get_mutable_instance().getCOMap();
 
     data->clear();
@@ -622,6 +622,8 @@ void TariffEditor::onChangeRoot() {
 
         WStandardItem* root = model_->itemFromIndex( index.parent() );
         WStandardItem* item = root->child( index.row(), 1 );
+        if ( !item )
+            return;
 
         std::string mccmnc = item->text().toUTF8();
 
