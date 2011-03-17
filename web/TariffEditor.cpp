@@ -90,7 +90,7 @@ TariffEditor::TariffEditor( WContainerWidget* parent ): WContainerWidget( parent
     onChangeRoot();
 }
 
-void TariffEditor::buildModel( WStandardItemModel* data, Tariff& tariff ) {
+void TariffEditor::buildModel( WStandardItemModel* data, Tariff& tariff, bool clear ) {
     sms::MessageClassifier::CountryOperatorMapT comap = sms::MessageClassifier::get_mutable_instance().getCOMap();
 
     data->clear();
@@ -524,14 +524,10 @@ void TariffEditor::importParseCsv() {
             continue;
         }
 
-        int mcc;
-        int mnc;
-        try {
-            mcc = boost::lexical_cast< int >( row[ col_mccmnc ].substr( 0, 3 ) );
-            mnc = sdouble2double( row[ col_mccmnc ].substr( 3, row[ col_mccmnc ].length()-3 ), -1 );
-        } catch ( ... ) {
-            continue;
-        }
+        std::string mcc;
+        std::string mnc;
+        mcc = row[ col_mccmnc ].substr( 0, 3 );
+        mnc = row[ col_mccmnc ].substr( 3, row[ col_mccmnc ].length()-3 );
 
         double price;
         try {
@@ -544,14 +540,14 @@ void TariffEditor::importParseCsv() {
             continue;
         }
 
-        if ( mcc == -1 ) {
+        if ( mnc.empty() ) {
             tariff.setPrice( boost::lexical_cast< string >( mcc ), price );
         } else {
             tariff.setPrice( boost::lexical_cast< string >( mcc ), boost::lexical_cast< string >( mnc ), price );
         }
 
         output->setText( output->text() + boost::lexical_cast< string >( mcc ) + string("\t") );
-        if ( mnc != -1 ) {
+        if ( mnc.empty() ) {
             output->setText( output->text() + boost::lexical_cast< string >( mnc ) + string("\t") );
         } else {
             output->setText( output->text() + string("\t") );
@@ -626,6 +622,8 @@ void TariffEditor::onChangeRoot() {
 
         WStandardItem* root = model_->itemFromIndex( index.parent() );
         WStandardItem* item = root->child( index.row(), 1 );
+        if ( !item )
+            return;
 
         std::string mccmnc = item->text().toUTF8();
 
