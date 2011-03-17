@@ -90,7 +90,7 @@ TariffEditor::TariffEditor( WContainerWidget* parent ): WContainerWidget( parent
     onChangeRoot();
 }
 
-void TariffEditor::buildModel( WStandardItemModel* data, Tariff& tariff, bool clear = false ) {
+void TariffEditor::buildModel( WStandardItemModel* data, Tariff& tariff, bool clear ) {
     sms::MessageClassifier::CountryOperatorMapT comap = sms::MessageClassifier::get_mutable_instance().getCOMap();
 
     data->clear();
