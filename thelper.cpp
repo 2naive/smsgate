@@ -24,7 +24,6 @@ int main( int argc, char** argv ) {
             return 0;
         }
 
-
         do {
             std::string tariff_name;
             std::string phone;
@@ -48,7 +47,7 @@ int main( int argc, char** argv ) {
                      << ci.operators.begin()->second.getName() << ";"
                      << ci.operators.begin()->second.getCode() << ";"
                      << ci.operators.begin()->second.opRegion << ";"
-                     << tariff.costs( ci.mcc, SMSMessage::Status( status ) );
+                     << tariff.costs( ci.mcc, ci.operators.begin()->second.mnc, SMSMessage::Status( status ) );
             }
             cout << endl;
         } while ( !cin.eof() );
