@@ -540,14 +540,14 @@ void TariffEditor::importParseCsv() {
             continue;
         }
 
-        if ( mcc == -1 ) {
+        if ( mnc.empty() ) {
             tariff.setPrice( boost::lexical_cast< string >( mcc ), price );
         } else {
             tariff.setPrice( boost::lexical_cast< string >( mcc ), boost::lexical_cast< string >( mnc ), price );
         }
 
         output->setText( output->text() + boost::lexical_cast< string >( mcc ) + string("\t") );
-        if ( mnc != -1 ) {
+        if ( mnc.empty() ) {
             output->setText( output->text() + boost::lexical_cast< string >( mnc ) + string("\t") );
         } else {
             output->setText( output->text() + string("\t") );
