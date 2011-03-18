@@ -114,10 +114,10 @@ void TariffEditor::buildModel( WStandardItemModel* data, Tariff& tariff, bool cl
             WStandardItem* currency;
 
             double price_rur = tariff.costs( cinfo.mcc );
-            string price_rur_text = ( price_rur == Tariff::INVALID_VALUE )? "Не задано": double2string( price_rur );
+            string price_rur_text = ( price_rur == Tariff::INVALID_VALUE )? "-.---": double2string( price_rur );
             string currency_text = tariff.getOption< Tariff::TariffCurrency >( cinfo.mcc ).getValue();
             string price_text = ( price_rur == Tariff::INVALID_VALUE )?
-                        "Не задано":
+                        "-.---":
                         double2string( tariff.currencyConvert( Tariff::TariffCurrency(), tariff.getOption< Tariff::TariffCurrency >( cinfo.mcc ), price_rur ) );
 
             country = new WStandardItem( string( "resources/flags/" ) + cinfo.cCode + ".png", WString::fromUTF8( cinfo.cName ) );
@@ -143,10 +143,10 @@ void TariffEditor::buildModel( WStandardItemModel* data, Tariff& tariff, bool cl
                 WStandardItem* currency;
 
                 double price_rur = tariff.costs( cinfo.mcc, info.mnc );
-                string price_rur_text = ( price_rur == Tariff::INVALID_VALUE )? "Не задано": double2string( price_rur );
+                string price_rur_text = ( price_rur == Tariff::INVALID_VALUE )? "-.---": double2string( price_rur );
                 string currency_text = tariff.getOption< Tariff::TariffCurrency >( cinfo.mcc, info.mnc ).getValue();
                 string price_text = ( price_rur == Tariff::INVALID_VALUE )?
-                            "Не задано":
+                            "-.---":
                             double2string( tariff.currencyConvert( Tariff::TariffCurrency(), tariff.getOption< Tariff::TariffCurrency >( cinfo.mcc, info.mnc ), price_rur ) );
 
                 op = new WStandardItem( WString::fromUTF8( info.getName() ) );
@@ -180,16 +180,24 @@ void TariffEditor::buildModel( WStandardItemModel* data, Tariff& tariff, bool cl
             std::string imsi = imsi_item->text().toUTF8();
             std::string mcc = imsi.substr( 0, 3 );
 
+//            boost::logic::tribool hasPrice = tariff.hasOption< Tariff::Price >( mcc );
             double price_rur = tariff.costs( mcc );
-            string price_rur_text = ( price_rur == Tariff::INVALID_VALUE )? "Не задано": double2string( price_rur );
+            string price_rur_text = ( price_rur == Tariff::INVALID_VALUE )? "-.---": double2string( price_rur );
             string currency_text = tariff.getOption< Tariff::TariffCurrency >( mcc ).getValue();
             string price_text = ( price_rur == Tariff::INVALID_VALUE )?
-                        "Не задано":
+                        "-.---":
                         double2string( tariff.currencyConvert( Tariff::TariffCurrency(), tariff.getOption< Tariff::TariffCurrency >( mcc ), price_rur ) );
+
+//            if ( !hasPrice ) {
+//                ruprice_item->setIcon( "resources/attention.png" );
+//            } else {
+//                ruprice_item->setText( WString::fromUTF8( price_rur_text ) );
+//            }
 
             ruprice_item->setText( WString::fromUTF8( price_rur_text ) );
             price_item->setText( WString::fromUTF8( price_text ) );
             currency_item->setText( WString::fromUTF8( currency_text ) );
+
         }
 
         for ( int subrow = 0; subrow < root_item->rowCount(); subrow++ ) {
@@ -203,11 +211,18 @@ void TariffEditor::buildModel( WStandardItemModel* data, Tariff& tariff, bool cl
             std::string mnc = imsi.substr( 3, imsi.length() - 3 );
 
             double price_rur = tariff.costs( mcc, mnc );
-            string price_rur_text = ( price_rur == Tariff::INVALID_VALUE )? "Не задано": double2string( price_rur );
+//            boost::logic::tribool hasPrice = tariff.hasOption< Tariff::Price >( mcc, mnc );
+            string price_rur_text = ( price_rur == Tariff::INVALID_VALUE )? "-.---": double2string( price_rur );
             string currency_text = tariff.getOption< Tariff::TariffCurrency >( mcc, mnc ).getValue();
             string price_text = ( price_rur == Tariff::INVALID_VALUE )?
-                        "Не задано":
+                        "-.---":
                         double2string( tariff.currencyConvert( Tariff::TariffCurrency(), tariff.getOption< Tariff::TariffCurrency >( mcc, mnc ), price_rur ) );
+
+//            if ( !hasPrice ) {
+//                ruprice_item->setIcon( "resources/attention.png" );
+//            } else {
+//                ruprice_item->setText( WString::fromUTF8( price_rur_text ) );
+//            }
 
             ruprice_item->setText( WString::fromUTF8( price_rur_text ) );
             price_item->setText( WString::fromUTF8( price_text ) );
@@ -249,7 +264,7 @@ void TariffEditor::resizeTreeView( WTreeView* tw) {
 
 void TariffEditor::onPriceEdit( Wt::WModelIndex index, Wt::WMouseEvent event ) {
 
-    if ( index.column() != 2 ) {
+    if ( index.column() != 3 ) {
         return;
     }
 
@@ -269,10 +284,10 @@ void TariffEditor::onPriceEdit( Wt::WModelIndex index, Wt::WMouseEvent event ) {
     WLabel* oldp = new WLabel( old_price );
     WSpinBox* newp = new WSpinBox( );
     newp->setMinimum( 0 );
-    newp->setMaxLength(5);
-    newp->setMaximumSize( WLength( 1.5, WLength::Centimeter ), WLength::Auto );
-    newp->setSingleStep( 0.01 );
-    newp->setText( "0.00" );
+    newp->setMaxLength(6);
+    newp->setMaximumSize( WLength( 2, WLength::Centimeter ), WLength::Auto );
+    newp->setSingleStep( 0.001 );
+    newp->setText( "0.001" );
     newp->setValidator( new WDoubleValidator( 0, 100 ) );
     newp->enterPressed().connect( &summary, &WDialog::accept );
     newp->enterPressed().connect( boost::bind( &TariffEditor::changeItemText, this, index, newp ) );
@@ -288,7 +303,7 @@ void TariffEditor::onPriceEdit( Wt::WModelIndex index, Wt::WMouseEvent event ) {
     if ( root == model_->invisibleRootItem() ) {
         WPushButton* okAll = new WPushButton( WString::fromUTF8("Изменить все"), summary.contents() );
         okAll->clicked().connect(&summary, &WDialog::accept);
-        okAll->clicked().connect( boost::bind( &TariffEditor::changeItemTextRecursive, this, capital, 2, newp ) );
+        okAll->clicked().connect( boost::bind( &TariffEditor::changeItemTextRecursive, this, capital, 3, newp ) );
     }
 
     WPushButton* okBtn = new WPushButton( WString::fromUTF8("Изменить"), summary.contents() );
@@ -304,18 +319,19 @@ void TariffEditor::onPriceEdit( Wt::WModelIndex index, Wt::WMouseEvent event ) {
 
 void TariffEditor::changeItemText( Wt::WModelIndex index, WSpinBox* text ) {
     WStandardItem* root = model_->itemFromIndex( index.parent() );
-    WStandardItem* item = root->takeChild( index.row(), index.column() );
+    WStandardItem* item = root->child( index.row(), index.column() );
 
-    std::string mccmnc = root->takeChild( index.row(), 1 )->text().toUTF8();
-    std::vector< std::string > to_vec;
-    utils::Tokenize( mccmnc, to_vec, ":" );
-    if ( to_vec.size() == 1 ) {
-        tariff.setPrice( to_vec[0], text->value() );
-    } else
-        tariff.setPrice( to_vec[0], to_vec[1], text->value() );
+    std::string mccmnc = root->child( index.row(), 1 )->text().toUTF8();
+    std::string mcc = mccmnc.substr( 0, 3 );
+    std::string mnc = mccmnc.substr( 3, mccmnc.length() - 3 );
+
+    if ( mnc.empty() ) {
+        tariff.setPrice( mcc, text->value() );
+    } else {
+        tariff.setPrice( mcc, mnc, text->value() );
+    }
 
     item->setText( text->text() );
-    root->setChild( index.row(), index.column(), item );
 
 }
 
