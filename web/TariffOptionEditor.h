@@ -7,16 +7,18 @@
 #include <Wt/WApplication>
 #include <Wt/WCheckBox>
 #include <Wt/WString>
+#include <Wt/WGridLayout>
 #include <Wt/WVBoxLayout>
 #include <Wt/WHBoxLayout>
 #include <Wt/WRadioButton>
+#include <Wt/WGroupBox>
 
 template < class Option, class DisplayAdaptor >
-class TariffOptionEditor: public Wt::WContainerWidget, public DisplayAdaptor {
+class TariffOptionEditor: public Wt::WGridLayout, public DisplayAdaptor {
 public:
-    TariffOptionEditor( Tariff* _tariff, WContainerWidget* parent = 0 ):
+    TariffOptionEditor( Tariff* _tariff, Wt::WContainerWidget* parent = 0 ):
                 DisplayAdaptor( _tariff ),
-                WContainerWidget( parent ),
+                Wt::WGridLayout( parent ),
                 tariff( _tariff ) {
 
         optionState = new Wt::WCheckBox( Wt::WString::fromUTF8( Option::getName() ) );
@@ -24,30 +26,15 @@ public:
         optionState->changed().connect( boost::bind( &TariffOptionEditor< Option, DisplayAdaptor >::optionChanged, this ) );
         optionState_canBeUnchecked = true;
 
-        opt_box_grp = new Wt::WContainerWidget();
-        DisplayAdaptor::buildValuesGroup( opt_box_grp );
-        optionIsVisible = false;
+        Wt::WVBoxLayout* opt_box_layout = new Wt::WVBoxLayout();
+        DisplayAdaptor::buildValuesGroup( opt_box_layout );
+        opt_box_layout->setSpacing( 1 );
 
-        root_layout = new Wt::WVBoxLayout();
-        root_layout->addWidget( optionState );
+        Wt::WGridLayout::setVerticalSpacing( 1 );
+        addWidget( optionState, 0, 0, 1, 1, Wt::AlignLeft );
+        addItem( opt_box_layout, 1, 0, 1, 1, Wt::AlignRight );
 
-        setLayout( root_layout );
-        addChild( opt_box_grp );
-    }
-
-    void showOption() {
-        if ( !optionIsVisible ) {
-            root_layout->addWidget( opt_box_grp );
-        }
-        optionIsVisible = true;
-    }
-
-    void hideOption() {
-        if ( optionIsVisible ) {
-            root_layout->removeWidget( opt_box_grp );
-            addChild( opt_box_grp );
-        }
-        optionIsVisible = false;
+        repaintOption();
     }
 
     virtual void repaintOption() {
@@ -72,19 +59,19 @@ public:
         if ( opt_exists ) {
             optionState->setCheckState( Wt::Checked );
             optionState_canBeUnchecked = true;
-            showOption();
-            opt_box_grp->setDisabled( false );
+            DisplayAdaptor::setVisible( true );
+            DisplayAdaptor::setDisabled( false );
 
         } else if ( !opt_exists ) {
             optionState->setCheckState( Wt::Unchecked );
             optionState_canBeUnchecked = true;
-            hideOption();
-            opt_box_grp->setDisabled( true );
+            DisplayAdaptor::setVisible( false );
+            DisplayAdaptor::setDisabled( true );
         } else {
             optionState->setCheckState( Wt::PartiallyChecked );
             optionState_canBeUnchecked = false;
-            showOption();
-            opt_box_grp->setDisabled( true );
+            DisplayAdaptor::setVisible( true );
+            DisplayAdaptor::setDisabled( true );
         }
 
         DisplayAdaptor::repaintValues();
@@ -167,9 +154,7 @@ private:
     Tariff* tariff;
     Wt::WCheckBox* optionState;
     bool optionState_canBeUnchecked;
-    Wt::WContainerWidget* opt_box_grp;
-    bool optionIsVisible;
-    Wt::WVBoxLayout* root_layout;
+    Wt::WGridLayout* opt_box_layout;
 };
 
 class AbstractDisplayAdaptor {
@@ -231,6 +216,21 @@ public:
         }
     }
 
+    void setDisabled( bool dis ) {
+        for ( std::map< std::string, Wt::WCheckBox* >::iterator it = checkboxes.begin(); it != checkboxes.end(); it++) {
+            it->second->setDisabled( dis );
+        }
+    }
+
+    void setVisible( bool vis ) {
+        for ( std::map< std::string, Wt::WCheckBox* >::iterator it = checkboxes.begin(); it != checkboxes.end(); it++) {
+            if ( vis )
+                it->second->show();
+            else
+                it->second->hide();
+        }
+    }
+
     void repaintValues() {
 
         boost::logic::tribool opt_exists;
@@ -263,6 +263,8 @@ public:
             }
         }
     }
+
+
 
     void valueChanged( std::string name ) {
         Wt::WApplication::instance()->processEvents();
@@ -350,6 +352,21 @@ public:
         }
     }
 
+    void setDisabled( bool dis ) {
+        for ( std::map< std::string, Wt::WRadioButton* >::iterator it = checkboxes.begin(); it != checkboxes.end(); it++) {
+            it->second->setDisabled( dis );
+        }
+    }
+
+    void setVisible( bool vis ) {
+        for ( std::map< std::string, Wt::WRadioButton * >::iterator it = checkboxes.begin(); it != checkboxes.end(); it++) {
+            if ( vis )
+                it->second->show();
+            else
+                it->second->hide();
+        }
+    }
+
     void repaintValues() {
 
         boost::logic::tribool opt_exists;
@@ -373,7 +390,7 @@ public:
         if ( opt_exists || boost::logic::indeterminate( opt_exists )) {
 
             for ( std::map< std::string, Wt::WRadioButton* >::iterator it = checkboxes.begin(); it != checkboxes.end(); it++) {
-                it->second->setChecked( false );
+                    it->second->setChecked( false );
             }
 
             checkboxes[ option.getValue() ]->setChecked( true );

@@ -76,7 +76,7 @@ private:
     int elements_per_page;
     Tariff tariff;
 
-    void buildModel( Wt::WStandardItemModel*, Tariff& tariff, bool clear = false );
+    void buildModel( Wt::WStandardItemModel*, Tariff& tariff, bool clear = true );
     Wt::WTreeView* buildTreeView( Wt::WStandardItemModel* );
     void resizeTreeView( Wt::WTreeView* );
     void onPriceEdit( Wt::WModelIndex, Wt::WMouseEvent );

@@ -136,7 +136,6 @@ double Tariff::costs( std::string cname ) {
 }
 
 double Tariff::costs( std::string cname, std::string opcode ) {
-
     if ( hasOption( "price", cname, opcode ) ) {
 
         try {
