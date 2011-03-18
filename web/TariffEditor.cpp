@@ -13,10 +13,12 @@ using namespace Wt;
 using namespace std;
 
 TariffEditor::TariffEditor( WContainerWidget* parent ): WContainerWidget( parent ) {
-    columns_width.push_back(300);
-    columns_width.push_back(100);
+    columns_width.push_back(270);
     columns_width.push_back(70);
-    elements_per_page = 20;
+    columns_width.push_back(90);
+    columns_width.push_back(60);
+    columns_width.push_back(70);
+    elements_per_page = 25;
 
     model_ = new WStandardItemModel();
     buildModel( model_, tariff );
@@ -73,9 +75,9 @@ TariffEditor::TariffEditor( WContainerWidget* parent ): WContainerWidget( parent
     loadSaveBox->setLayout( loadSaveLayout, AlignCenter | AlignMiddle );
 
     WGridLayout* tariffOptionsLayout = new WGridLayout();
-    tariffOptionsLayout->addWidget( currencyEditor, 0, 0 );
-    tariffOptionsLayout->addWidget( unknownPolicy, 1, 0 );
-    tariffOptionsLayout->addWidget( paidStatuses, 2, 0 );
+    tariffOptionsLayout->addLayout( currencyEditor, 0, 0 );
+    tariffOptionsLayout->addLayout( unknownPolicy, 0, 1 );
+    tariffOptionsLayout->addLayout( paidStatuses, 1, 0 );
 
     WGroupBox* tariffOptionsBox = new WGroupBox( WString::fromUTF8( "Тарифные опции" ) );
     tariffOptionsBox->setLayout( tariffOptionsLayout, AlignCenter | AlignMiddle);
@@ -95,70 +97,122 @@ void TariffEditor::buildModel( WStandardItemModel* data, Tariff& tariff, bool cl
 
     if ( clear ) {
         data->clear();
-        data->insertColumns(0, 3);
+        data->insertColumns(0, 5);
 
         data->setHeaderData(0, Horizontal, WString::fromUTF8("Страна/Оператор"));
         data->setHeaderData(1, Horizontal, WString::fromUTF8("MCC/MNC"));
-        data->setHeaderData(2, Horizontal, WString::fromUTF8("Цена"));
-    }
+        data->setHeaderData(2, Horizontal, WString::fromUTF8("Цена,RUR"));
+        data->setHeaderData(3, Horizontal, WString::fromUTF8("Цена"));
+        data->setHeaderData(4, Horizontal, WString::fromUTF8("Валюта"));
 
+        for( sms::MessageClassifier::CountryOperatorMapT::iterator it = comap.begin(); it != comap.end(); it++ ) {
+            sms::MessageClassifier::CountryInfo cinfo = it->second;
+            WStandardItem *country;
+            WStandardItem* mcc;
+            WStandardItem* ruprice;
+            WStandardItem* price;
+            WStandardItem* currency;
 
-    int cur_row = 0;
-    for( sms::MessageClassifier::CountryOperatorMapT::iterator it = comap.begin(); it != comap.end(); it++ ) {
-        sms::MessageClassifier::CountryInfo cinfo = it->second;
-        WStandardItem *country;
-        WStandardItem* mcc;
-        WStandardItem* price;
+            double price_rur = tariff.costs( cinfo.mcc );
+            string price_rur_text = ( price_rur == Tariff::INVALID_VALUE )? "Не задано": double2string( price_rur );
+            string currency_text = tariff.getOption< Tariff::TariffCurrency >( cinfo.mcc ).getValue();
+            string price_text = ( price_rur == Tariff::INVALID_VALUE )?
+                        "Не задано":
+                        double2string( tariff.currencyConvert( Tariff::TariffCurrency(), tariff.getOption< Tariff::TariffCurrency >( cinfo.mcc ), price_rur ) );
 
-        string price_text = ( tariff.costs( cinfo.mcc ) == Tariff::INVALID_VALUE )? "Не задано": double2string( tariff.costs( cinfo.mcc ) );
-
-        if ( clear ) {
             country = new WStandardItem( string( "resources/flags/" ) + cinfo.cCode + ".png", WString::fromUTF8( cinfo.cName ) );
             mcc = new WStandardItem( WString::fromUTF8( cinfo.mcc ) );
-            price = new WStandardItem( WString::fromUTF8( price_text ) );;
+            ruprice = new WStandardItem( WString::fromUTF8( price_rur_text ) );
+            price = new WStandardItem( WString::fromUTF8( price_text ) );
+            currency = new WStandardItem( WString::fromUTF8( currency_text ) );
 
-            data->setItem( cur_row, 0, country );
-            data->setItem( cur_row, 1, mcc );
-            data->setItem( cur_row, 2, price );
-        } else {
-            price = data->item( cur_row, 2 );
-            if ( price->text() != WString::fromUTF8( price_text ) ) {
-                price->setText( WString::fromUTF8( price_text ) );
-            }
+            std::vector< WStandardItem* > row;
+            row.push_back( country );
+            row.push_back( mcc );
+            row.push_back( ruprice );
+            row.push_back( price );
+            row.push_back( currency );
 
-        }
+            for ( sms::MessageClassifier::CountryInfo::OperatorMapT::iterator gt = cinfo.operators.begin(); gt != cinfo.operators.end(); gt++ ) {
+                sms::MessageClassifier::OperatorInfo info = gt->second;
 
-        int cur_subrow = 0;
-        for ( sms::MessageClassifier::CountryInfo::OperatorMapT::iterator gt = cinfo.operators.begin(); gt != cinfo.operators.end(); gt++ ) {
-            sms::MessageClassifier::OperatorInfo info = gt->second;
+                WStandardItem* op;
+                WStandardItem* code;
+                WStandardItem* ruprice;
+                WStandardItem* price;
+                WStandardItem* currency;
 
-            WStandardItem* op;
-            WStandardItem* code;
-            WStandardItem* subprice;
+                double price_rur = tariff.costs( cinfo.mcc, info.mnc );
+                string price_rur_text = ( price_rur == Tariff::INVALID_VALUE )? "Не задано": double2string( price_rur );
+                string currency_text = tariff.getOption< Tariff::TariffCurrency >( cinfo.mcc, info.mnc ).getValue();
+                string price_text = ( price_rur == Tariff::INVALID_VALUE )?
+                            "Не задано":
+                            double2string( tariff.currencyConvert( Tariff::TariffCurrency(), tariff.getOption< Tariff::TariffCurrency >( cinfo.mcc, info.mnc ), price_rur ) );
 
-            string price_text = ( tariff.costs( cinfo.mcc, info.mnc ) == Tariff::INVALID_VALUE )? "Не задано": double2string( tariff.costs( cinfo.mcc, info.mnc ) );
-
-            if ( clear ) {
                 op = new WStandardItem( WString::fromUTF8( info.getName() ) );
                 code = new WStandardItem( WString::fromUTF8( info.getCode() ) );
-                subprice = new WStandardItem( WString::fromUTF8( price_text ) );
+                ruprice = new WStandardItem( WString::fromUTF8( price_rur_text ) );
+                price = new WStandardItem( WString::fromUTF8( price_text ) );
+                currency = new WStandardItem( WString::fromUTF8( currency_text ) );
 
-                country->setChild( cur_subrow, 0, op );
-                country->setChild( cur_subrow, 1, code );
-                country->setChild( cur_subrow, 2, subprice );
-            } else {
-                WStandardItem* root = data->item( cur_row, 0 );
-                subprice = root->child( cur_subrow, 2 );
-                if ( subprice != NULL )
-                if ( subprice->text() != WString::fromUTF8( price_text ) ) {
-                    subprice->setText( WString::fromUTF8( price_text ) );
-                }
+                std::vector< WStandardItem* > row;
+                row.push_back( op );
+                row.push_back( code );
+                row.push_back( ruprice );
+                row.push_back( price );
+                row.push_back( currency );
+
+                country->appendRow( row );
             }
 
-                cur_subrow++;
+            data->appendRow( row );
         }
 
-        cur_row++;
+    } else
+    for ( int row = 0; row < data->rowCount(); row++ ) {
+        WStandardItem* root_item = data->item( row, 0 );
+        {
+            WStandardItem* imsi_item = data->item( row, 1 );
+            WStandardItem* ruprice_item = data->item( row, 2 );
+            WStandardItem* price_item = data->item( row, 3 );
+            WStandardItem* currency_item = data->item( row, 4 );
+
+            std::string imsi = imsi_item->text().toUTF8();
+            std::string mcc = imsi.substr( 0, 3 );
+
+            double price_rur = tariff.costs( mcc );
+            string price_rur_text = ( price_rur == Tariff::INVALID_VALUE )? "Не задано": double2string( price_rur );
+            string currency_text = tariff.getOption< Tariff::TariffCurrency >( mcc ).getValue();
+            string price_text = ( price_rur == Tariff::INVALID_VALUE )?
+                        "Не задано":
+                        double2string( tariff.currencyConvert( Tariff::TariffCurrency(), tariff.getOption< Tariff::TariffCurrency >( mcc ), price_rur ) );
+
+            ruprice_item->setText( WString::fromUTF8( price_rur_text ) );
+            price_item->setText( WString::fromUTF8( price_text ) );
+            currency_item->setText( WString::fromUTF8( currency_text ) );
+        }
+
+        for ( int subrow = 0; subrow < root_item->rowCount(); subrow++ ) {
+            WStandardItem* imsi_item = root_item->child( subrow, 1 );
+            WStandardItem* ruprice_item = root_item->child( subrow, 2 );
+            WStandardItem* price_item = root_item->child( subrow, 3 );
+            WStandardItem* currency_item = root_item->child( subrow, 4 );
+
+            std::string imsi = imsi_item->text().toUTF8();
+            std::string mcc = imsi.substr( 0, 3 );
+            std::string mnc = imsi.substr( 3, imsi.length() - 3 );
+
+            double price_rur = tariff.costs( mcc, mnc );
+            string price_rur_text = ( price_rur == Tariff::INVALID_VALUE )? "Не задано": double2string( price_rur );
+            string currency_text = tariff.getOption< Tariff::TariffCurrency >( mcc, mnc ).getValue();
+            string price_text = ( price_rur == Tariff::INVALID_VALUE )?
+                        "Не задано":
+                        double2string( tariff.currencyConvert( Tariff::TariffCurrency(), tariff.getOption< Tariff::TariffCurrency >( mcc, mnc ), price_rur ) );
+
+            ruprice_item->setText( WString::fromUTF8( price_rur_text ) );
+            price_item->setText( WString::fromUTF8( price_text ) );
+            currency_item->setText( WString::fromUTF8( currency_text ) );
+        }
     }
 
 }
@@ -167,7 +221,7 @@ WTreeView* TariffEditor::buildTreeView( Wt::WStandardItemModel * model ) {
 
     WTreeView* tw = new WTreeView();
     tw->setModel( model );
-    tw->setSelectionMode( Wt::SingleSelection );
+    tw->setSelectionMode( Wt::ExtendedSelection );
     tw->setAlternatingRowColors( true );
     tw->sortByColumn( 0, AscendingOrder);
 
@@ -592,13 +646,11 @@ void TariffEditor::onTariffRemove() {
 void TariffEditor::onTariffClear() {
     tariff = Tariff();
 
-    buildModel( model_, tariff );
-    treeView_->sortByColumn( 0, AscendingOrder );
+    buildModel( model_, tariff, false );
 }
 
 void TariffEditor::onTariffUpdate() {
     buildModel( model_, tariff, false );
-//    treeView_->sortByColumn( 0, AscendingOrder );
 }
 
 void TariffEditor::onTariffSave() {
@@ -632,15 +684,11 @@ void TariffEditor::onChangeRoot() {
 
         WStandardItem* root = model_->itemFromIndex( index.parent() );
         WStandardItem* item = root->child( index.row(), 1 );
-        if ( !item )
-            return;
 
         std::string mccmnc = item->text().toUTF8();
 
         std::string mcc = mccmnc.substr( 0, 3 );
-        std::string mnc;
-        if ( mccmnc.length() >= 4 )
-            mnc = mccmnc.substr( 4, mccmnc.length()-4 );
+        std::string mnc = mccmnc.substr( 3, mccmnc.length()-3 );
 
         if ( mnc.empty() ) {
             paidStatuses->setCurPosCountry( mcc );
