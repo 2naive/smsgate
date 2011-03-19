@@ -170,9 +170,11 @@ namespace sms {
             std::string mnc    = boost::tuples::get<1>( preffmap.equal_range( pref ).first->second );
             std::string region = boost::tuples::get<2>( preffmap.equal_range( pref ).first->second );
 
-            OperatorInfo oi = comap[mcc].operators[mnc];
-            oi.opRegion = region;
-            country.operators[ mnc ] = oi;
+            if ( ( comap.find( mcc ) != comap.end() ) && ( comap[ mcc ].operators.find( mnc ) != comap[ mcc ].operators.end() ) ) {
+                OperatorInfo oi = comap[mcc].operators[mnc];
+                oi.opRegion = region;
+                country.operators[ mnc ] = oi;
+            }
 
             break;
         }
