@@ -218,7 +218,7 @@ namespace sms {
         {
             TransactionPTR tr = db.openTransaction( conn, "SMSMessage::addMessageHistoryToDb" );
             std::ostringstream dbreq1;
-            dbreq1  << "UPDATE message_status set OURPRICE="
+            dbreq1  << "UPDATE message_status set \"OURPRICE\"="
                     << price << " "
                     << "WHERE \"REQUESTID\"=" << msg->msg_id.req << " "
                     << "AND \"MESSAGEID\"=" << msg->msg_id.msg_num << ";";
