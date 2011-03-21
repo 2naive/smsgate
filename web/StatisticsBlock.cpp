@@ -261,7 +261,8 @@ void WStatPageData::prepareRequest( ) {
         std::ostringstream req;
         req     <<  "CREATE OR REPLACE TEMP VIEW " << view_name << " AS ";
         req     <<  "SELECT message_status.\"REQUESTID\", message_status.\"MESSAGEID\", \"TXT\", \"FROM\", \"PID\", smsrequest.\"WHEN\" AS REQUESTDATE, "
-                <<  "\"STATUS\", message_status.\"TO\", \"PARTS\", \"COUNTRY\", \"COUNTRYCODE\", \"OPERATOR\", \"OPERATORCODE\", \"REGION\", message_status.\"WHEN\" AS DELIVERYDATE, \"PARTNERPRICE\" "
+                <<  "\"STATUS\", message_status.\"TO\", \"PARTS\", \"COUNTRY\", \"COUNTRYCODE\", \"OPERATOR\", \"OPERATORCODE\", \"REGION\", "
+                <<  "message_status.\"WHEN\" AS DELIVERYDATE, \"PARTNERPRICE\", \"OURPRICE\" "
                 <<  "FROM smsrequest, message_status WHERE smsrequest.\"REQUESTID\"=message_status.\"REQUESTID\"  ";
         if ( pid_filter )
             req <<  "AND \"PID\"='" << tr->esc( pid_value ) << "' ";
@@ -467,10 +468,13 @@ void WStatPageData::execute( int lnl, int lnr, RowList &data ) {
             string __txt = (*it)[2].as<string>();
             string __status = SMSMessage::Status::russianDescr( SMSMessage::Status( (*it)[6].as<int>() ) );
             double price = (*it)[15].as<double>();
+            double ourprice = (*it)[16].as<double>();
 
             char ps[100];
             sprintf( ps, "%0.2f", price );
             string __price = ps;
+            sprintf( ps, "%0.2f", ourprice );
+            string __ourprice = ps;
 
             string __country = (*it)[9].as<string>();
             string __region = (*it)[13].as<string>();
@@ -499,6 +503,8 @@ void WStatPageData::execute( int lnl, int lnr, RowList &data ) {
             row.push_back( new WLabel( WString::fromUTF8( __country ) ) );
             row.push_back( new WLabel( WString::fromUTF8( __region ) ) );
             row.push_back( new WLabel( WString::fromUTF8( __price ) ) );
+            if ( ppage->isAdmin )
+                row.push_back( new WLabel( WString::fromUTF8( __ourprice ) ) );
 
             data.push_back( row );
         }
