@@ -212,7 +212,7 @@ namespace sms {
                                     msg->parts*tariff.costs( mcc, status ) :
                                     msg->parts*tariff.costs( mcc, mnc, status ) );
 
-            if ( sub_price < 0 )
+            if ( sub_price > 0 )
                 price += msg->parts;
         }
         {
