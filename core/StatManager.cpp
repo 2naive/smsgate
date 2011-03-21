@@ -307,9 +307,9 @@ namespace sms {
                 req_view        << "create or replace temp view idlist as "
                                 << "select * from message_status where TRUE ";
                 if ( !cname.empty() )
-                    req_view    << "AND \"COUNTRY\"='"<< cname <<"' ";
+                    req_view    << "AND \"COUNTRY\"='"<< tr->esc( cname ) <<"' ";
                 if ( !opname.empty() )
-                    req_view    << "AND \"OPERATOR\"='"<< opname <<"' ";
+                    req_view    << "AND \"OPERATOR\"='"<< tr->esc( opname ) <<"' ";
                 req_view        << "AND \"WHEN\">" << now.sec - 60*60*24 << ";";
 
                 {
