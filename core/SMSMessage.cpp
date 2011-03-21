@@ -213,7 +213,7 @@ namespace sms {
                                     msg->parts*tariff.costs( mcc, mnc, status ) );
 
             if ( sub_price > 0 )
-                price += msg->parts;
+                price += sub_price;
         }
         {
             TransactionPTR tr = db.openTransaction( conn, "SMSMessage::addMessageHistoryToDb" );
