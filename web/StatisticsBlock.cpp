@@ -473,8 +473,6 @@ void WStatPageData::execute( int lnl, int lnr, RowList &data ) {
             char ps[100];
             sprintf( ps, "%0.2f", price );
             string __price = ps;
-            sprintf( ps, "%0.2f ( %+0.2f )", ourprice, price - ourprice );
-            string __ourprice = ps;
 
             string __country = (*it)[9].as<string>();
             string __region = (*it)[13].as<string>();
@@ -503,8 +501,32 @@ void WStatPageData::execute( int lnl, int lnr, RowList &data ) {
             row.push_back( new WLabel( WString::fromUTF8( __country ) ) );
             row.push_back( new WLabel( WString::fromUTF8( __region ) ) );
             row.push_back( new WLabel( WString::fromUTF8( __price ) ) );
-            if ( ppage->isAdmin )
-                row.push_back( new WLabel( WString::fromUTF8( __ourprice ) ) );
+            if ( ppage->isAdmin ) {
+                sprintf( ps, "%0.2f ( %+0.2f )", ourprice, price - ourprice );
+                string __ourprice = ps;
+                string gateways;
+
+                SMSMessage::HistoryType msg_hist = SMSMessageManager::get_mutable_instance().loadMessage( msgid )->getHistory();
+                for ( SMSMessage::HistoryType::iterator it = msg_hist.begin(); it != msg_hist.end(); it++ ) {
+                    if ( it->op_direction != 0 )
+                            continue;
+
+                    gateways += it->gateway + ";";
+                }
+
+                WLabel* ourprice_label = new WLabel( WString::fromUTF8( __ourprice + std::string("[") + gateways + std::string("]") ) );
+                if ( ourprice > price ) {
+                    ourprice_label->setStyleClass( "rowErr" );
+                }
+                if ( ourprice = price ) {
+                    ourprice_label->setStyleClass( "rowWarn" );
+                }
+                if ( ourprice < price ) {
+                    ourprice_label->setStyleClass( "rowOk" );
+                }
+
+                row.push_back( ourprice_label );
+            }
 
             data.push_back( row );
         }
