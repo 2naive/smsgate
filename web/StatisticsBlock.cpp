@@ -10,8 +10,10 @@
 #include <Wt/WVBoxLayout>
 #include <Wt/WHBoxLayout>
 #include <Wt/WDialog>
+#include <Wt/WSuggestionPopup>
 
 #include "Logger.h"
+#include "MessageClassifier.h"
 
 using namespace Wt;
 using namespace std;
@@ -83,7 +85,31 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             status->addItem(WString::fromUTF8("Не доставлено"));
             status->addItem(WString::fromUTF8("Неверный номер"));
             //Country input field
-            country = new WLineEdit(); country->setMaximumSize(  WLength( 1, WLength::Centimeter ), WLength::Auto  );
+            country = new WLineEdit(); country->setMinimumSize(  WLength( 3, WLength::Centimeter ), WLength::Auto  );
+            Wt::WSuggestionPopup::Options suggestOptions
+            = { "<b>",         // highlightBeginTag
+                "</b>",        // highlightEndTag
+                ',',           // listSeparator      (for multiple addresses)
+                " \\n",        // whitespace
+                " ",           // wordSeparators     (within an address)
+                ""             // appendReplacedText (prepare next email address)
+               };
+            WSuggestionPopup* suggest_country = new WSuggestionPopup( suggestOptions, ppage );
+            suggest_country->forEdit( country );
+
+            {
+                std::vector< std::string > countries;
+                MessageClassifier::CountryOperatorMapT comap = MessageClassifier::get_mutable_instance().getCOMap();
+                for ( MessageClassifier::CountryOperatorMapT::iterator it = comap.begin(); it != comap.end(); it++ ) {
+                    countries.push_back( it->second.cName );
+                }
+                std::sort( countries.begin(), countries.end() );
+
+                for ( std::vector< std::string >::iterator it = countries.begin(); it != countries.end(); it++ ) {
+                    suggest_country->addSuggestion( WString::fromUTF8(*it), WString::fromUTF8(*it) );
+                }
+            }
+
             //Report button
             reportbtn = new WPushButton( WString::fromUTF8("Сгенерировать отчет") );
 
@@ -506,13 +532,17 @@ void WStatPageData::execute( int lnl, int lnr, RowList &data ) {
                 string __ourprice = ps;
                 string gateways;
 
+                std::set< std::string > gateways_found;
                 try {
                     SMSMessage::HistoryType msg_hist = SMSMessageManager::get_mutable_instance().loadMessage( msgid )->getHistory();
                     for ( SMSMessage::HistoryType::iterator it = msg_hist.begin(); it != msg_hist.end(); it++ ) {
-                        if ( it->op_direction != 0 )
+                        if ( it->op_code == 2 )
                             continue;
 
-                        gateways += it->gateway + ";";
+                        if ( gateways_found.find( it->gateway ) == gateways_found.end() ) {
+                            gateways_found.insert( it->gateway );
+                            gateways += it->gateway + ";";
+                        }
                     }
                 } catch ( ... ) {}
 
