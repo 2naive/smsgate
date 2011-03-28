@@ -518,12 +518,6 @@ void WStatPageData::execute( int lnl, int lnr, RowList &data ) {
                 if ( ourprice > price ) {
                     ourprice_label->setStyleClass( "rowErr" );
                 }
-                if ( ourprice = price ) {
-                    ourprice_label->setStyleClass( "rowWarn" );
-                }
-                if ( ourprice < price ) {
-                    ourprice_label->setStyleClass( "rowOk" );
-                }
 
                 row.push_back( ourprice_label );
             }
