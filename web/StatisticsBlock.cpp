@@ -506,13 +506,15 @@ void WStatPageData::execute( int lnl, int lnr, RowList &data ) {
                 string __ourprice = ps;
                 string gateways;
 
-                SMSMessage::HistoryType msg_hist = SMSMessageManager::get_mutable_instance().loadMessage( msgid )->getHistory();
-                for ( SMSMessage::HistoryType::iterator it = msg_hist.begin(); it != msg_hist.end(); it++ ) {
-                    if ( it->op_direction != 0 )
+                try {
+                    SMSMessage::HistoryType msg_hist = SMSMessageManager::get_mutable_instance().loadMessage( msgid )->getHistory();
+                    for ( SMSMessage::HistoryType::iterator it = msg_hist.begin(); it != msg_hist.end(); it++ ) {
+                        if ( it->op_direction != 0 )
                             continue;
 
-                    gateways += it->gateway + ";";
-                }
+                        gateways += it->gateway + ";";
+                    }
+                } catch ( ... ) {}
 
                 WLabel* ourprice_label = new WLabel( WString::fromUTF8( __ourprice + std::string("[") + gateways + std::string("]") ) );
                 if ( ourprice > price ) {
