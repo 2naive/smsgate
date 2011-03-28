@@ -11,9 +11,11 @@
 #include <Wt/WHBoxLayout>
 #include <Wt/WDialog>
 #include <Wt/WSuggestionPopup>
+#include <Wt/WPopupMenu>
 
 #include "Logger.h"
 #include "MessageClassifier.h"
+#include "SMSMessage.h"
 
 using namespace Wt;
 using namespace std;
@@ -520,6 +522,10 @@ void WStatPageData::execute( int lnl, int lnr, RowList &data ) {
                 status_label->setStyleClass("rowWarn");
             }
 
+            if ( ppage->isAdmin ) {
+                status_label->clicked().connect( boost::bind( &StatisticsBlock::onMoreInfo, ppage, _1, msgid ) );
+            }
+
             row.push_back( new WLabel( WString::fromUTF8( __phone ) ) );
             row.push_back( new WLabel( WString::fromUTF8( __date ) ) );
             row.push_back( txt_label );
@@ -530,23 +536,8 @@ void WStatPageData::execute( int lnl, int lnr, RowList &data ) {
             if ( ppage->isAdmin ) {
                 sprintf( ps, "%0.2f ( %+0.2f )", ourprice, price - ourprice );
                 string __ourprice = ps;
-                string gateways;
 
-                std::set< std::string > gateways_found;
-                try {
-                    SMSMessage::HistoryType msg_hist = SMSMessageManager::get_mutable_instance().loadMessage( msgid )->getHistory();
-                    for ( SMSMessage::HistoryType::iterator it = msg_hist.begin(); it != msg_hist.end(); it++ ) {
-                        if ( it->op_code == 2 )
-                            continue;
-
-                        if ( gateways_found.find( it->gateway ) == gateways_found.end() ) {
-                            gateways_found.insert( it->gateway );
-                            gateways += it->gateway + ";";
-                        }
-                    }
-                } catch ( ... ) {}
-
-                WLabel* ourprice_label = new WLabel( WString::fromUTF8( __ourprice + std::string("[") + gateways + std::string("]") ) );
+                WLabel* ourprice_label = new WLabel( WString::fromUTF8( __ourprice ) );
                 if ( ourprice > price ) {
                     ourprice_label->setStyleClass( "rowErr" );
                 }
@@ -719,4 +710,24 @@ StatisticsBlock::StatisticsBlock( string pId_, bool isAdmin, const Wt::WEnvironm
     statistics->buildData();
     statistics->buildFooter();
     addWidget( statistics );
+}
+
+void StatisticsBlock::onMoreInfo(const WMouseEvent &e, SMSMessage::ID msgid ) {
+    WPopupMenu* popup = new WPopupMenu();
+
+    std::set< std::string > gateways_found;
+    try {
+        SMSMessage::HistoryType msg_hist = SMSMessageManager::get_mutable_instance().loadMessage( msgid )->getHistory();
+        for ( SMSMessage::HistoryType::iterator it = msg_hist.begin(); it != msg_hist.end(); it++ ) {
+            if ( it->op_code == 2 )
+                continue;
+
+            if ( gateways_found.find( it->gateway ) == gateways_found.end() ) {
+                gateways_found.insert( it->gateway );
+                popup->addItem( it->gateway );
+            }
+        }
+    } catch ( ... ) {}
+
+    popup->popup( e );
 }
