@@ -208,7 +208,7 @@ namespace sms {
             string num = req->to[ msg->getID().msg_num ];
 
             if ( gName == "mt_skyline" ) req->from = "1312";
-            if ( msg->getMsgClass().opcode == "kz:401:02" ) req->from = msg->getPhone();
+            if ( !msg->getMsgClass().operators.empty() && (msg->getMsgClass().operators.begin()->second.getCode() == "40102") ) req->from = "79852970920";
 
             bool isTrial = false;
             try {
@@ -310,50 +310,20 @@ namespace sms {
 
         std::map< string, std::pair< double, double > > gatesPoints;
         std::vector< string > gs;
-        sms::OpInfo msg = sms::MessageClassifier::Instance()->getMsgClass( req->to[ msgid.msg_num ] );
-        sms::StatManager::TCountryInfoTable tcd = sms::StatManager::Instance()->getCountryInfoLastUpdate();
+        sms::MessageClassifier::CountryInfo msg = sms::MessageClassifier::get_mutable_instance().getMsgClass( req->to[ msgid.msg_num ] );
 
         for ( std::list< string >::iterator it = gates.begin(); it != gates.end(); it++ ) {
             string gname = *it;
 
-            sms::CountryInfo msgci;
-            bool found = false;
-            for ( int i = 0; i < tcd.size(); i++ ) {
-                for ( int j = 0; j < tcd[i].size(); j++ ) {
-                    sms::CountryInfo ci = tcd[i][j];
-                    if (
-                            ( msg.country == ci.cname ) &&
-                            ( msg.opname == ci.opname ) &&
-                            ( gname == ci.gname )
-                            ) {
-                        found = true;
-                        msgci = tcd[i][j];
-                    }
+            double price;
+            SMPPGateManager::SMPPGatesMap gm = SMPPGateManager::Instance()->getGates();
+            if ( !msg.operators.empty() )
+                price = gm[ gname ].getTariff().costs( msg.mcc, msg.operators.begin()->second.mnc );
+            else
+                price = gm[ gname ].getTariff().costs( msg.mcc );
 
-                }
-            }
-
-            if ( !found ) {
-                msgci.requests = 100;
-                msgci.deliveres = 80;
-                msgci.acks = 90;
-            }
-
-
-            double quality = double(msgci.deliveres) / ( msgci.requests == 0 ? 1: msgci.requests );
-            double c;
-            try {
-                SMPPGateManager::SMPPGatesMap gm = SMPPGateManager::Instance()->getGates();
-                c = gm[ gname ].getTariff().costs( msg );
-            } catch (...) {
-                c = 10;
-            }
-
-            double average_price = 2*c * ( 2 - quality );
+            double average_price = price;
             double average_time = 2;
-            if ( msgci.requests > 0 ) {
-                average_time = 2 - quality;
-            }
 
             gatesPoints[ gname ] = std::make_pair( average_price, average_time );
 
@@ -403,15 +373,16 @@ namespace sms {
     bool SMPPGateManager::canAccept( string gName, SMSRequest::PTR req, SMSMessage::ID msgid ) {
         std::map< std::string, boost::any > args;
         SMSMessage::PTR msg = SMSMessageManager::get_mutable_instance().loadMessage( msgid );
-        OpInfo info = msg->getMsgClass();
+        MessageClassifier::CountryInfo info = msg->getMsgClass();
         if ( gmap[ gName ].gateRule().empty() )
             return true;
 
         args[ "TO" ] = msg->getPhone();
-        args[ "COUNTRY" ] = info.country;
-        args[ "COUNTRYCODE" ] = info.countrycode;
-        args[ "OPERATOR" ] = info.opname;
-        args[ "OPERATORCODE" ] = info.opcode;
+        args[ "COUNTRY" ] = info.cCode;
+        args[ "COUNTRYCODE" ] = info.mcc;
+        if ( !info.operators.empty() ) {
+            args[ "OPERATORCODE" ] = info.operators.begin()->second.getCode();
+        }
         args[ "FROM" ] = req->from;
 
         SMPPGateFilterParser parser;

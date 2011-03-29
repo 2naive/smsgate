@@ -8,58 +8,11 @@
 
 namespace sms {
 
-    MessageClassifier* MessageClassifier::pInstance_;
-
-    OpInfo::OpInfo() {}
-    OpInfo::OpInfo(  int countrycode,
-                     std::string country,
-                     std::string opcode,
-                     std::string opname,
-                     std::string opregion) {
-        this->countrycode = countrycode;
-        this->country = country;
-        this->opcode = opcode;
-        this->opname = opname;
-        this->opregion = opregion;
-    }
 
     MessageClassifier::MessageClassifier() {
-        loadOpcodes();
         loadReplacesMap();
-    }
-
-    void MessageClassifier::loadOpcodes() {
-        ConfigManager& cfg = *ConfigManager::Instance();
-        std::ostringstream out;
-
-        out << "Loading opcodes: ";
-
-        std::string opdb = cfg.getProperty<std::string>("system.opcodes");
-        std::ifstream in(opdb.c_str());
-
-        while ( in.good() ) {
-            char l[256];
-            in.getline(l, 256);
-            std::vector< std::string > to_vec;
-            utils::Tokenize( l, to_vec, "`" );
-
-            if ( to_vec.size() < 6 )
-                continue;
-
-            OpInfo inf;
-            inf.countrycode = atoi( to_vec[1].c_str() );
-            inf.country = to_vec[2];
-            inf.opcode = to_vec[3];
-            inf.opname = to_vec[4];
-            inf.opregion = to_vec[5];
-
-            dict.insert( std::make_pair( to_vec[0], inf ) );
-
-        }
-
-        out << dict.size() << " opcodes loaded;";
-        Logger::get_mutable_instance().smsloginfo( out.str() );
-
+        loadCountryOperatorMap();
+        loadRoutingMap();
     }
 
     void MessageClassifier::loadReplacesMap() {
@@ -89,6 +42,93 @@ namespace sms {
 
     }
 
+    void MessageClassifier::loadCountryOperatorMap() {
+        comap.clear();
+        {
+            std::ostringstream r;
+
+            r       << "select mcc, preffix, LOWER(code), name from countries;";
+
+            PGSql& db = PGSqlConnPoolSystem::get_mutable_instance().getdb();
+
+            PGSql::ConnectionHolder cHold( db );
+            ConnectionPTR conn = cHold.get();
+            TransactionPTR tr = db.openTransaction( conn, "MessageClassifier::loadCountryOperatorMap()" );
+            Result res = tr->exec( r.str() );
+            tr->commit();
+            for ( Result::const_iterator dbr = res.begin(); dbr != res.end(); dbr++ ) {
+                CountryInfo coinfo;
+                coinfo.mcc = (*dbr)[0].as< std::string >();
+                coinfo.cPreffix = (*dbr)[1].as< std::string >();
+                coinfo.cCode= (*dbr)[2].as< std::string >();
+                coinfo.cName = (*dbr)[3].as< std::string >();
+
+                comap[ coinfo.mcc ] = coinfo;
+                coprefmap[ coinfo.cPreffix ] = coinfo.mcc;
+            }
+        }
+
+        {
+            std::ostringstream r;
+
+            r       << "select mcc, mnc, name, company from mccmnc;";
+
+            PGSql& db = PGSqlConnPoolSystem::get_mutable_instance().getdb();
+
+            PGSql::ConnectionHolder cHold( db );
+            ConnectionPTR conn = cHold.get();
+            TransactionPTR tr = db.openTransaction( conn, "MessageClassifier::loadCountryOperatorMap()" );
+            Result res = tr->exec( r.str() );
+            tr->commit();
+            for ( Result::const_iterator dbr = res.begin(); dbr != res.end(); dbr++ ) {
+                OperatorInfo coinfo;
+                coinfo.mcc = (*dbr)[0].as< std::string>();
+                coinfo.mnc = (*dbr)[1].as< std::string >();
+
+                if ( coinfo.mnc.length() == 1 )
+                    coinfo.mnc = std::string("0") + coinfo.mnc;
+
+                coinfo.opName = (*dbr)[2].as< std::string >();
+                coinfo.opCompany = (*dbr)[3].as< std::string >();
+
+                comap[ coinfo.mcc ].operators[ coinfo.mnc ] = coinfo;
+            }
+        }
+    }
+
+    void MessageClassifier::loadRoutingMap() {
+        preffmap.clear();
+        {
+            std::ostringstream r;
+
+            r       << "select preffix, mcc, mnc, region from preffix_map;";
+
+            PGSql& db = PGSqlConnPoolSystem::get_mutable_instance().getdb();
+
+            PGSql::ConnectionHolder cHold( db );
+            ConnectionPTR conn = cHold.get();
+            TransactionPTR tr = db.openTransaction( conn, "MessageClassifier::loadRoutingMap()" );
+            Result res = tr->exec( r.str() );
+            tr->commit();
+            for ( Result::const_iterator dbr = res.begin(); dbr != res.end(); dbr++ ) {
+                std::string preff;
+                std::string mcc;
+                std::string mnc;
+                std::string region;
+
+                preff = (*dbr)[0].as< std::string >();
+                mcc = (*dbr)[1].as< std::string >();
+                mnc = (*dbr)[2].as< std::string >();
+                if ( mnc.length() == 1 )
+                    mnc = std::string("0") + mnc;
+
+                region = (*dbr)[3].as< std::string >();
+
+                preffmap.insert( std::make_pair( preff, boost::tuples::make_tuple( mcc, mnc, region ) ) );
+            }
+        }
+    }
+
     std::string MessageClassifier::applyReplace( std::string phone ) {
         for ( int i = phone.length(); i > 0 ; i-- ) {
             std::string s = phone.substr(0, i );
@@ -100,47 +140,46 @@ namespace sms {
         return phone;
     }
 
-    OpInfo MessageClassifier::getMsgClass( std::string phone ) {
-        for ( int i = phone.length(); i > 0 ; i-- ) {
-            std::string s = phone.substr(0, i );
-            if ( dict.find( s ) != dict.end() ) {
-                if ( dict.count( s ) == 1) {
-                    OpInfo inf = dict.equal_range(s).first->second;
-                    return inf;
-                }
-
-                DictT::iterator it;
-                OpInfo inf = dict.equal_range( s ).first->second;
-                for ( it = dict.equal_range( s ).first; it != dict.equal_range( s ).second; it++ ) {
-                    if ( it->second.country != inf.country ) {
-                        inf.country = "unknown";
-                        inf.countrycode = 0;
-                        inf.opname = "unknown";
-                        inf.opcode = "0";
-                        inf.opregion = "unknown";
-                    }
-                    if ( it->second.opname != inf.opname ) {
-                        inf.opname = "unknown";
-                    }
-                    if ( it->second.opregion != inf.opregion ) {
-                        inf.opregion = "unknown";
-                    }
-                }
-
-                return inf;
-            }
-        }
-        OpInfo unknown( 0, "0", "unknown", "unknown", "unknown" );
-        return unknown;
+    MessageClassifier::CountryOperatorMapT MessageClassifier::getCOMap() {
+        return comap;
     }
 
-    MessageClassifier::CountryOperatorT MessageClassifier::getCOMap() {
-        CountryOperatorT res;
-        for ( DictT::iterator it = dict.begin(); it != dict.end(); it++ ) {
-            OpInfo inf = it->second;
-            res[ inf.country ].insert( inf.opname );
+    MessageClassifier::CountryInfo MessageClassifier::getMsgClass( std::string phone ) {
+        CountryInfo country;
+        for ( int i = phone.length(); i > 0 ; i-- ) {
+            std::string pref = phone.substr(0, i );
+
+            if ( coprefmap.find( pref ) == coprefmap.end() )
+                continue;
+
+            country = comap[ coprefmap[ pref ] ];
+            country.operators.clear();
+            break;
         }
-        return res;
+
+        for ( int i = phone.length(); i > 0 ; i-- ) {
+            std::string pref = phone.substr(0, i );
+
+            if ( preffmap.find( pref ) == preffmap.end() )
+                continue;
+
+            if ( preffmap.count( pref ) != 1 )
+                break;
+
+            std::string mcc    = boost::tuples::get<0>( preffmap.equal_range( pref ).first->second );
+            std::string mnc    = boost::tuples::get<1>( preffmap.equal_range( pref ).first->second );
+            std::string region = boost::tuples::get<2>( preffmap.equal_range( pref ).first->second );
+
+            if ( ( comap.find( mcc ) != comap.end() ) && ( comap[ mcc ].operators.find( mnc ) != comap[ mcc ].operators.end() ) ) {
+                OperatorInfo oi = comap[mcc].operators[mnc];
+                oi.opRegion = region;
+                country.operators[ mnc ] = oi;
+            }
+
+            break;
+        }
+
+        return country;
     }
 
 }

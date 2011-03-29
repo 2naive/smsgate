@@ -9,7 +9,7 @@ link_directories( "/usr/local/lib" )
 link_directories( "/usr/lib" )
 
 set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-DBOOST_SPIRIT_THREADSAFE")
-#set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pg")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
 #set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -pg")
 
 #Web
@@ -19,10 +19,14 @@ set( smsgate_SRCS ${smsgate_SRCS} web/MonitoringHandler.h    web/MonitoringHandl
 set( smsgate_SRCS ${smsgate_SRCS} web/NumberInfoPage.h       web/NumberInfoPage.cpp )
 set( smsgate_SRCS ${smsgate_SRCS} web/PersonalCabinet.h      web/PersonalCabinet.cpp )
 set( smsgate_SRCS ${smsgate_SRCS} web/PersonalPage.h         web/PersonalPage.cpp )
+set( smsgate_SRCS ${smsgate_SRCS} web/TariffEditor.h         web/TariffEditor.cpp )
+set( smsgate_SRCS ${smsgate_SRCS} web/LoginBlock.h           web/LoginBlock.cpp )
+set( smsgate_SRCS ${smsgate_SRCS} web/StatisticsBlock.h      web/StatisticsBlock.cpp )
 
 set( smsgate_SRCS ${smsgate_SRCS} web/WScrollTable.h         web/WScrollTable.cpp )
 set( smsgate_SRCS ${smsgate_SRCS} web/WHintLinePassEdit.h )
 set( smsgate_SRCS ${smsgate_SRCS} web/WHintLineEdit.h )
+set( smsgate_SRCS ${smsgate_SRCS} web/TariffOptionEditor.h )
 
 #Utils
 set( smsgate_SRCS ${smsgate_SRCS} utils/Cache.h )
@@ -41,6 +45,7 @@ set( smsgate_SRCS ${smsgate_SRCS} core/ConfigManager.h       core/ConfigManager.
 set( smsgate_SRCS ${smsgate_SRCS} core/DataSource.h )
 set( smsgate_SRCS ${smsgate_SRCS} core/DeliveryHandler.h     core/DeliveryHandler.cpp )
 set( smsgate_SRCS ${smsgate_SRCS} core/DLRHandler.h          core/DLRHandler.cpp )
+set( smsgate_SRCS ${smsgate_SRCS} core/EventHandler.h )
 set( smsgate_SRCS ${smsgate_SRCS} core/HttpClient.h          core/HttpClient.cpp )
 set( smsgate_SRCS ${smsgate_SRCS} core/GateManager.h         core/GateManager.cpp )
 #set( smsgate_SRCS ${smsgate_SRCS} core/KSHandler.h           core/KSHandler.cpp )
@@ -59,9 +64,6 @@ set( smsgate_SRCS ${smsgate_SRCS} core/SMSRequest.h          core/SMSRequest.cpp
 set( smsgate_SRCS ${smsgate_SRCS} core/StatManager.h         core/StatManager.cpp )
 set( smsgate_SRCS ${smsgate_SRCS} core/Tariff.h              core/Tariff.cpp )
 
-set( thelper_SRCS ${thelper_SRCS} core/Tariff.h              core/Tariff.cpp )
-set( thelper_SRCS ${thelper_SRCS} utils/utils.h              utils/utils.cpp )
-
 set( ghelper_SRCS ${ghelper_SRCS} core/SMPPGateFilterParser.h core/SMPPGateFilterParser.cpp )
 
 
@@ -73,7 +75,7 @@ endif ( ${CMAKE_SYSTEM_NAME} MATCHES FreeBSD )
 add_executable(smsgate ${smsgate_SRCS} smsgate.cpp)
 target_link_libraries(smsgate ${smsgate_linked_libs})
 
-add_executable(thelper ${thelper_SRCS} thelper.cpp)
+add_executable(thelper ${smsgate_SRCS} thelper.cpp)
 target_link_libraries(thelper ${smsgate_linked_libs})
 
 add_executable(ghelper ${ghelper_SRCS} ghelper.cpp)

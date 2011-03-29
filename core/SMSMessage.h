@@ -215,7 +215,7 @@ namespace sms {
         class PTR;
     }
 
-    class SMSMessage: public boost::noncopyable {
+    class SMSMessage: public boost::noncopyable, public SMSRequest {
     public:
         typedef std::list< message::HistoryElement > HistoryType;
         typedef message::HistoryElement HistoryElement;
@@ -237,7 +237,7 @@ namespace sms {
 
         Status getStatus() const;
         std::string getPhone() const;
-        OpInfo getMsgClass() const;
+        MessageClassifier::CountryInfo getMsgClass() const;
         void setStatus( Status st );
         int getParts() const { return parts; }
         friend class msg_compare;
@@ -254,14 +254,11 @@ namespace sms {
         HistoryType history;
         Status delivery_status;
         SMSMessage::ID msg_id;
-        std::string phone;
-        int parts;
-        double price;
-        OpInfo msgClass;
+        MessageClassifier::CountryInfo msgClass;
         std::list< SMSSyncOperation > op_history;
 
         // We declare private constructor to prevent manual creating of SMSMessage instances
-        SMSMessage( ID id, std::string phone, int parts, double price );
+        SMSMessage( ID id, SMSRequest req );
         static SMSMessage* loadMsgFromDb( SMSMessage::ID msgid );
         void saveToDb( );
         void updateMessageToDb( );
@@ -319,7 +316,7 @@ namespace sms {
         SMSMessage::PTR loadMessage( SMSMessage::ID msgid ) throw ( MessageNotFoundError );
         void lockSMSMessage( SMSMessage::ID msgid );
         void unlockSMSMessage( SMSMessage::ID msgid );
-        void createMessage( SMSMessage::ID msgid, std::string phone, int parts, double price ) throw ( MessageAlreadyExistsError );
+        void createMessage( SMSMessage::ID msgid, SMSRequest req ) throw ( MessageAlreadyExistsError );
         void sync();
         void cleanup();
         bool setDirty( SMSMessage::ID, bool val );

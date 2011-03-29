@@ -1,57 +1,71 @@
 #ifndef MESSAGECLASSIFIER_H
 #define MESSAGECLASSIFIER_H
 
+#include <boost/serialization/singleton.hpp>
+#include <boost/tuple/tuple.hpp>
+
 #include "ConfigManager.h"
+#include "PGSql.h"
+
 #include <set>
+#include <map>
 
 namespace sms {
-    struct OpInfo;
-
-    class MessageClassifier
-    {
+    class MessageClassifier: public boost::serialization::singleton< MessageClassifier > {
     public:
+        struct OperatorInfo {
+            std::string mcc;
+            std::string mnc;
+            std::string opCompany;
+            std::string opName;
+            std::string opRegion;
 
-        typedef std::multimap< std::string, OpInfo > DictT;
+            std::string getName() {
+                if ( opName.empty() )
+                    return opCompany;
+
+                if ( opCompany.empty() )
+                    return opName;
+
+                return opName + std::string("(") + opCompany + std::string(")");
+            }
+
+            std::string getCode() {
+                return mcc + mnc;
+            }
+        };
+
+        struct CountryInfo {
+            std::string mcc;
+            std::string cCode;
+            std::string cName;
+            std::string cPreffix;
+
+            typedef std::map< std::string, OperatorInfo > OperatorMapT;
+            OperatorMapT operators;
+        };
+
         typedef std::map< std::string, std::pair< std::string, std::string > > ReplaceT;
-        typedef std::map< std::string, std::set< std::string > > CountryOperatorT;
-        MessageClassifier();
-        static MessageClassifier* Instance() {
-            if (!pInstance_)
-                pInstance_ = new MessageClassifier;
-            return pInstance_;
-        }
+        typedef std::multimap< std::string, boost::tuples::tuple< std::string, std::string, std::string > > PreffixMapT;
+        typedef std::map< std::string, CountryInfo > CountryOperatorMapT;
+        typedef std::map< std::string, std::string > CountryPreffixMccMapT;
 
-        OpInfo getMsgClass( std::string phone );
+        MessageClassifier();
+
+        CountryInfo getMsgClass( std::string phone );
         std::string applyReplace( std::string phone );
-        CountryOperatorT getCOMap();
+        CountryOperatorMapT getCOMap();
 
     private:
-        DictT dict;
         ReplaceT replaces;
-        static MessageClassifier* pInstance_;
+        CountryOperatorMapT comap;
+        CountryPreffixMccMapT coprefmap;
+        PreffixMapT preffmap;
 
-        void loadOpcodes();
         void loadReplacesMap();
+        void loadCountryOperatorMap();
+        void loadRoutingMap();
     };
-
-    struct OpInfo {               
-        int countrycode;
-        std::string country;
-        std::string opcode;
-        std::string opname;
-        std::string opregion;
-
-        typedef std::map< std::string, std::string > CostMapT;
-
-        OpInfo( int ccode,
-                std::string clcode,
-                std::string opcode,
-                std::string opname,
-                std::string opregion);
-
-        OpInfo();
-    };
-
 }
 
 #endif // MESSAGECLASSIFIER_H

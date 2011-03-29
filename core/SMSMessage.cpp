@@ -1,15 +1,14 @@
 #include "SMSMessage.h"
+#include "PartnerManager.h"
+#include "RequestTracker.h"
 #include "PGSql.h"
 #include "Logger.h"
 
 namespace sms {
 
-    SMSMessage::SMSMessage( ID id, std::string ph, int parts, double partner_price ) {
-        phone = ph;
-        this->parts = parts;
-        msgClass = MessageClassifier::Instance()->getMsgClass( ph );
+    SMSMessage::SMSMessage( ID id, SMSRequest req ): SMSRequest( req ) {
         msg_id = id;
-        price = partner_price;
+        msgClass = MessageClassifier::get_mutable_instance().getMsgClass( req.to[ msg_id.msg_num ] );
         delivery_status = Status::ST_UNKNOWN;
     }
 
@@ -30,16 +29,23 @@ namespace sms {
         SMSMessageManager::get_mutable_instance().setDirty( this->msg_id, true );
     }
 
-    std::string SMSMessage::getPhone() const { return this->phone; }
-    OpInfo SMSMessage::getMsgClass() const { return this->msgClass; }
+    std::string SMSMessage::getPhone() const { return to[ msg_id.msg_num ]; }
+    MessageClassifier::CountryInfo SMSMessage::getMsgClass() const { return this->msgClass; }
 
-    SMSMessage* SMSMessage::loadMsgFromDb( SMSMessage::ID msgid ) {
+    SMSMessage* SMSMessage::loadMsgFromDb( SMSMessage::ID msgid ) {        
         PGSql& db = PGSqlConnPoolSystem::get_mutable_instance().getdb();
         SMSMessage* pmsg;
         {
+            SMSRequest::PTR req;
+            try {
+               req  = RequestTracker::Instance()->loadRequestFromDb( msgid.req );
+            } catch ( ... ) {
+                throw PGSqlError( "Empty dataset" );
+            }
+
             std::ostringstream r;
 
-            r       << "SELECT \"STATUS\", \"TO\", \"GATEWAY\", \"PARTS\", \"PARTNERPRICE\", \"WHEN\" FROM message_status "
+            r       << "SELECT \"STATUS\" FROM message_status "
                     << "WHERE \"REQUESTID\"='" << msgid.req << "' "
                     << "AND \"MESSAGEID\"='" << msgid.msg_num << "'; ";
 
@@ -49,7 +55,8 @@ namespace sms {
             Result res = tr->exec( r.str() );
             tr->commit();
             if ( res.size() > 0 ) {
-                pmsg = new SMSMessage( msgid, res[0][1].as< std::string >(), res[0][3].as< int >(), res[0][4].as< double >() );
+
+                pmsg = new SMSMessage( msgid, *req );
                 pmsg->delivery_status = res[0][0].as< int >();
 
             }  else {
@@ -95,6 +102,14 @@ namespace sms {
         TransactionPTR tr = db.openTransaction( conn, "RequestTracker::parseNewMessageEvent" );
         std::ostringstream r;
 
+        Tariff tariff;
+        try {
+            PartnerInfo partner = PartnerManager::get_mutable_instance().findById( this->pid );
+            tariff = partner.tariff;
+        } catch ( ... ) {
+
+        }
+
         r       << "INSERT INTO message_status "
                 << "(\"REQUESTID\",\"MESSAGEID\",\"STATUS\",\"TO\", \"PARTS\", \"PARTNERPRICE\", \"COUNTRY\", \"COUNTRYCODE\", \"OPERATOR\", \"OPERATORCODE\", \"REGION\", \"GATEWAY\", \"WHEN\") "
                 << "VALUES('"
@@ -103,12 +118,14 @@ namespace sms {
                 << msg->getStatus()() << "','"
                 << msg->getPhone()<< "', '"
                 << msg->parts << "', '"
-                << msg->price << "', '"
-                << msg->getMsgClass().country << "', '"
-                << msg->getMsgClass().countrycode << "', '"
-                << msg->getMsgClass().opname << "', '"
-                << msg->getMsgClass().opcode << "', '"
-                << msg->getMsgClass().opregion << "', '"
+                << ( msg->getMsgClass().operators.empty() ?
+                        msg->parts*tariff.costs( msg->getMsgClass().mcc, msg->delivery_status ) :
+                        msg->parts*tariff.costs( msg->getMsgClass().mcc, msg->getMsgClass().operators.begin()->second.mnc, msg->delivery_status ) )<< "', '"
+                << msg->getMsgClass().cName << "', '"
+                << msg->getMsgClass().mcc << "', '"
+                << ( msg->getMsgClass().operators.empty() ? "" : msg->getMsgClass().operators.begin()->second.getName() )<< "', '"
+                << ( msg->getMsgClass().operators.empty() ? "" : msg->getMsgClass().operators.begin()->second.getCode() )<< "', '"
+                << ( msg->getMsgClass().operators.empty() ? "" : msg->getMsgClass().operators.begin()->second.opRegion ) << "', '"
                 << "" << "','"
                 << now.sec << "');";
         tr->exec( r.str() );
@@ -119,12 +136,25 @@ namespace sms {
         PGSql& db = PGSqlConnPoolSystem::get_mutable_instance().getdb();
         SMSMessage* msg = this;
 
+        Tariff tariff;
+        try {
+            PartnerInfo partner = PartnerManager::get_mutable_instance().findById( this->pid );
+            tariff = partner.tariff;
+        } catch ( ... ) {
+
+        }
+
         PGSql::ConnectionHolder cHold( db );
         ConnectionPTR conn = cHold.get();
         TransactionPTR tr = db.openTransaction( conn, "RequestTracker::parseNewMessageEvent" );
         std::ostringstream dbreq2;
         dbreq2  << "UPDATE message_status SET "
                 << "\"STATUS\"='" << msg->getStatus()() << "',"
+                << "\"PARTNERPRICE\"='"
+                << ( msg->getMsgClass().operators.empty() ?
+                        msg->parts*tariff.costs( msg->getMsgClass().mcc, msg->delivery_status ) :
+                        msg->parts*tariff.costs( msg->getMsgClass().mcc, msg->getMsgClass().operators.begin()->second.mnc, msg->delivery_status ) )
+                <<"',"
                 << "\"GATEWAY\"='' "
                 << "WHERE "
                 << "\"REQUESTID\"='" << msg_id.req << "' AND "
@@ -152,7 +182,7 @@ namespace sms {
         tr->commit();
     }
 
-    void SMSMessageManager::createMessage( SMSMessage::ID msgid, std::string phone, int parts, double price ) throw ( MessageAlreadyExistsError ) {
+    void SMSMessageManager::createMessage( SMSMessage::ID msgid, SMSRequest req ) throw ( MessageAlreadyExistsError ) {
         boost::recursive_mutex::scoped_lock lck( msgdata_lock );
 
         if ( msg_data.get<tag_id>().find( msgid ) != msg_data.get<tag_id>().end() )
@@ -161,7 +191,7 @@ namespace sms {
         SMSMessageInfo* msginfo = new SMSMessageInfo();
         boost::shared_ptr< SMSMessageInfo > msginfoptr( msginfo );
 
-        SMSMessage* msgptr = new SMSMessage( msgid, phone, parts, price );
+        SMSMessage* msgptr = new SMSMessage( msgid, req );
         msginfoptr->msgid = msgid;
         msginfoptr->msgptr = boost::shared_ptr< SMSMessage>( msgptr );
         msginfoptr->msgptr->op_history.push_back( SMSMessage::SMSSyncOperation::create<SMSMessage::OP_AddMessageToDB>( msgid ) );

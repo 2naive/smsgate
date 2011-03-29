@@ -244,17 +244,20 @@ void RequestTracker::parseNewRequestEvent( SMSRequest::PTR req ) {
     }
 
     for ( unsigned int i = 0; i < req->to.size(); i++ ) {
-        float price = 0;
+        double price = 0;
         try {
             PartnerInfo p = PartnerManager::get_mutable_instance().findById( req->pid );
-            sms::OpInfo msg = sms::MessageClassifier::Instance()->getMsgClass( req->to[i] );
-            price = p.tariff.costs( msg.country, msg.opcode ) * req->parts;
+            sms::MessageClassifier::CountryInfo msg = sms::MessageClassifier::get_mutable_instance().getMsgClass( req->to[i] );
+            if ( !msg.operators.empty() )
+                price = p.tariff.costs( msg.mcc, msg.operators.begin()->second.mnc ) * req->parts;
+            else
+                price = p.tariff.costs( msg.mcc ) * req->parts;
         } catch ( std::exception& err ) {
             Logger::get_mutable_instance().smslogwarn( err.what() );
         }
 
         SMSMessage::ID  msgid = SMSMessage::ID( req->getID(), i );
-        SMSMessageManager::get_mutable_instance().createMessage( msgid, req->to[i], req->parts, price );
+        SMSMessageManager::get_mutable_instance().createMessage( msgid, *req );
 
         op_queue.push( SMSOperation::create <OP_NewMessage>( std::make_pair( req, msgid ), idp, ma_p, OP_NewMessageP ), ma_p, OP_NewMessageP );
     }
@@ -270,7 +273,7 @@ void RequestTracker::parseNewMessageEvent( SMSRequest::PTR req, SMSMessage::ID m
 
     std::ostringstream out;
     out     << "OP_NewMessage ID=" << msg->getID().to_str() << " "
-            << "country=" << msg->getMsgClass().country << " "
+            << "country=" << msg->getMsgClass().cName << " "
             << "status=" << msg->getStatus()() << " ";
 
     op_queue.push( SMSOperation::create<OP_SendMessage>( std::make_pair( req, msgid ), idp, ma_p, OP_SendMessageP  ), ma_p, OP_SendMessageP );

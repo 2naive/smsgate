@@ -116,7 +116,7 @@ namespace sms {
                         =   lexeme_d[(+digit_p >> *('.' >> +digit_p))
                                      [boost::bind(&SMPPFilterBuilder::addNumericArg, &gr.fb, _1, _2)]
                                      ]
-                            |   lexeme_d['"' >> (+(alnum_p|' '|'.'))
+                            |   lexeme_d['"' >> (+(alnum_p|' '|'.'|':'))
                                          [boost::bind(&SMPPFilterBuilder::addStringArg, &gr.fb, _1, _2)] >> '"']
                             |   str_p("TO")[boost::bind(&SMPPFilterBuilder::addLinkedStringArg, &gr.fb, _1, _2)]
                             |   str_p("COUNTRYCODE")[boost::bind(&SMPPFilterBuilder::addLinkedStringArg, &gr.fb, _1, _2)]
