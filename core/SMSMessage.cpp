@@ -1,4 +1,5 @@
 #include "SMSMessage.h"
+#include "SMPPGateManager.h"
 #include "PartnerManager.h"
 #include "RequestTracker.h"
 #include "PGSql.h"
@@ -168,18 +169,63 @@ namespace sms {
         SMSMessage* msg = this;
         PGSql::ConnectionHolder cHold( db );
         ConnectionPTR conn = cHold.get();
-        TransactionPTR tr = db.openTransaction( conn, "SMSMessage::addMessageHistoryToDb" );
-        std::ostringstream dbreq1;
-        dbreq1  << "INSERT INTO message_history (\"REQUESTID\", \"MESSAGEID\", \"OP_CODE\", \"OP_DIRECTION\", \"OP_RESULT\", \"GATEWAY\", \"WHEN\" ) VALUES('"
-                << msg->getID().req << "','"
-                << msg->getID().msg_num << "','"
-                << el.op_code << "','"
-                << el.op_direction << "','"
-                << el.op_result() << "','"
-                << el.gateway << "','"
-                << el.when << "');";
-        tr->exec( dbreq1.str() );
-        tr->commit();
+        {
+            TransactionPTR tr = db.openTransaction( conn, "SMSMessage::addMessageHistoryToDb" );
+            std::ostringstream dbreq1;
+            dbreq1  << "INSERT INTO message_history (\"REQUESTID\", \"MESSAGEID\", \"OP_CODE\", \"OP_DIRECTION\", \"OP_RESULT\", \"GATEWAY\", \"WHEN\" ) VALUES('"
+                    << msg->getID().req << "','"
+                    << msg->getID().msg_num << "','"
+                    << el.op_code << "','"
+                    << el.op_direction << "','"
+                    << el.op_result() << "','"
+                    << el.gateway << "','"
+                    << el.when << "');";
+            tr->exec( dbreq1.str() );
+            tr->commit();
+        }
+        std::map< std::string, SMSMessage::Status > gw_status_map;
+
+        for ( SMSMessage::HistoryType::const_iterator it = msg->history.begin(); it != msg->history.end(); it++ ) {
+            SMSMessage::HistoryElement el = *it;
+
+            if ( gw_status_map.find( el.gateway ) == gw_status_map.end() )
+                gw_status_map[ el.gateway ] == SMSMessage::Status::ST_UNKNOWN;
+
+            if ( el.op_direction = 1 ) {
+                if ( gw_status_map[ el.gateway ] < el.op_result )
+                        msg->setStatus( el.op_result );
+            }
+        }
+
+        double price = 0;
+        for ( std::map< std::string, SMSMessage::Status >::const_iterator it = gw_status_map.begin(); it != gw_status_map.end(); it++ ) {
+            std::string gname = it->first;
+            SMSMessage::Status status = it->second;
+            Tariff tariff = SMPPGateManager::Instance()->getGates()[ gname ].getTariff();
+
+            std::string mcc = msg->getMsgClass().mcc;
+            std::string mnc;
+            if ( !msg->getMsgClass().operators.empty() )
+                mnc = msg->getMsgClass().operators.begin()->second.mnc;
+
+            double sub_price = ( msg->getMsgClass().operators.empty() ?
+                                    msg->parts*tariff.costs( mcc, status ) :
+                                    msg->parts*tariff.costs( mcc, mnc, status ) );
+
+            if ( sub_price > 0 )
+                price += sub_price;
+        }
+        {
+            TransactionPTR tr = db.openTransaction( conn, "SMSMessage::addMessageHistoryToDb" );
+            std::ostringstream dbreq1;
+            dbreq1  << "UPDATE message_status set \"OURPRICE\"="
+                    << price << " "
+                    << "WHERE \"REQUESTID\"=" << msg->msg_id.req << " "
+                    << "AND \"MESSAGEID\"=" << msg->msg_id.msg_num << ";";
+
+            tr->exec( dbreq1.str() );
+            tr->commit();
+        }
     }
 
     void SMSMessageManager::createMessage( SMSMessage::ID msgid, SMSRequest req ) throw ( MessageAlreadyExistsError ) {

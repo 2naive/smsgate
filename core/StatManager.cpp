@@ -21,7 +21,7 @@ const int on1SecondUpdateInterval = 1;
 const int on1MinuteUpdateInterval = 1;
 const int on1HourUpdateInterval = 60;
 const int on1DayUpdateInterval = 60*60;
-const int onCountryInfoUpdateInterval = 60*60*4;
+const int onCountryInfoUpdateInterval = 60*30;
 
 namespace sms {
 
@@ -307,9 +307,9 @@ namespace sms {
                 req_view        << "create or replace temp view idlist as "
                                 << "select * from message_status where TRUE ";
                 if ( !cname.empty() )
-                    req_view    << "AND \"COUNTRY\"='"<< cname <<"' ";
+                    req_view    << "AND \"COUNTRY\"='"<< tr->esc( cname ) <<"' ";
                 if ( !opname.empty() )
-                    req_view    << "AND \"OPERATOR\"='"<< opname <<"' ";
+                    req_view    << "AND \"OPERATOR\"='"<< tr->esc( opname ) <<"' ";
                 req_view        << "AND \"WHEN\">" << now.sec - 60*60*24 << ";";
 
                 {
@@ -450,7 +450,7 @@ namespace sms {
         MessageClassifier::CountryOperatorMapT::iterator it;
 
         for ( it = cnamelist.begin(), cpos = 0; it != cnamelist.end(); it++, cpos++ ) {
-            string cname = it->first;
+            string cname = it->second.cName;
 
             gNamePropMap gm = onUpdateFromToSMPPGateCountry( cname, "" );
             gNamePropMap::const_iterator gt;
@@ -468,7 +468,7 @@ namespace sms {
             cpos++;
 
             for ( MessageClassifier::CountryInfo::OperatorMapT::iterator gt = it->second.operators.begin(); gt != it->second.operators.end(); gt++, cpos++ ) {
-                string opname = gt->first;
+                string opname = gt->second.getName();
                 gNamePropMap gm = onUpdateFromToSMPPGateCountry( cname, opname );
                 gNamePropMap::const_iterator gt;
                 p.resize( cpos + 1 );

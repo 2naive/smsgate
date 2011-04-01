@@ -113,6 +113,7 @@ private:
     WStatPageData data;
     WStatPageFooter footer;
 
+    void onMoreInfo(const Wt::WMouseEvent& e, SMSMessage::ID msgid );
     void onSummaryShow();
     void onPageUpdate( Wt::WSpinBox* page );
     void onPageInc( Wt::WSpinBox* page );

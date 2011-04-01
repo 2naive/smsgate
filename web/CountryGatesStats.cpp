@@ -26,19 +26,19 @@ CountryGatesStats::CountryGatesStats( const WEnvironment& env ): WApplication( e
 
     if ( !data.empty() )
     for ( int j = 0; j < data[0].size(); j++ )
-        tbl->elementAt( 0, j+1 )->addWidget( new WLabel(data[0][j].gname) );
+        tbl->elementAt( 0, j+1 )->addWidget( new WLabel(  data[0][j].gname) );
 
     int last_total_index = data.size()-1;
     for ( int i = data.size()-1; i >= 0; i-- ) {
         if ( !data[i].empty() ) {
             if (( data[i][0].opname == "Total" ) && ( i != last_total_index )) {
-                WLabel* lbl = new WLabel(data[i][0].cname + string(":") + data[i][0].opname );
+                WLabel* lbl = new WLabel( WString::fromUTF8( data[i][0].cname + string(":") + data[i][0].opname ) );
                 lbl->clicked().connect( boost::bind( &CountryGatesStats::onExpand, this, i+2, last_total_index ) );
                 last_total_index = i;
                 tbl->elementAt( i+1, 0 )->addWidget( lbl );
             }
             if ( data[i][0].opname != "Total" ) {
-                WLabel* lbl = new WLabel( string( "---" ) + data[i][0].cname + string(":") + data[i][0].opname );
+                WLabel* lbl = new WLabel( WString::fromUTF8( string( "---" ) + data[i][0].cname + string(":") + data[i][0].opname ) );
                 tbl->rowAt( i+1 )->hide();
                 tbl->elementAt( i+1, 0 )->addWidget( lbl );
             }
