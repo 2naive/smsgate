@@ -144,7 +144,8 @@ SMSRequest::PTR RequestTracker::loadRequestFromDb( SMSRequest::ID reqid ) {
         <<"\"TXT\", "
         <<"\"TID\", "
         <<"\"FROM\", "
-        <<"\"UTF\", "
+        << "1, " // We use 1 because the txt message is always encoded to utf in DB
+//        <<"\"UTF\", "
         <<"\"SUBPREF\", "
         <<"\"HEX\", "
         <<"\"UDH\", "
