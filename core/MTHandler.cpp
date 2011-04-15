@@ -54,7 +54,7 @@ void MTHandler::handleRequest(const Wt::Http::Request& request, Wt::Http::Respon
             const string cost 		= request.getParameter("cost") 		? *request.getParameter("cost")		: e;
             const string md5 		= request.getParameter("md5")  		? *request.getParameter("md5")		: e;
 
-            if ( ( pref == "LABIRINT" ) || ( pref == "OTPISAT'" ) ) {
+            if ( ( pref == "labirint" ) || ( pref == "otpisat'" ) ) {
                 ostringstream req;
                 req << "http://sender.greensms.ru/mt.cgi";
                 bool firstdone = false;
