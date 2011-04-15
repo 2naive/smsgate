@@ -30,7 +30,7 @@ void MTHandler::handleRequest(const Wt::Http::Request& request, Wt::Http::Respon
 
         Logger::get_mutable_instance().smslogwarn( "MTHandler::handleRequest started" );
 
-        response.setMimeType("text/txt");
+        response.setMimeType("text/html");
 
         SMSRequest* req = new SMSRequest();
         const string e = "";
@@ -55,7 +55,7 @@ void MTHandler::handleRequest(const Wt::Http::Request& request, Wt::Http::Respon
         const string cost 		= request.getParameter("cost") 		? *request.getParameter("cost")		: e;
         const string md5 		= request.getParameter("md5")  		? *request.getParameter("md5")		: e;
 
-        response.out()<< utils::StringUtf8ToCp1251("sms=Тест принят");
+        response.out() << utils::StringUtf8ToCp1251("sms=Тест принят");
 
         Logger::get_mutable_instance().smslogwarn( "MTHandler::handleRequest finished" );
 }
