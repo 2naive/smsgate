@@ -4,6 +4,7 @@
 #include "DLRHandler.h"
 #include "MonitoringHandler.h"
 #include "RequestTracker.h"
+#include "MTHandler.h"
 #include "ConfigManager.h"
 #include "StatManager.h"
 #include "AdminPage.h"
@@ -46,6 +47,7 @@ int main(int argc, char **argv) {
         server.addResource( new DeliveryHandler(), "/rcv.cgi" );
         server.addResource( new DLRHandler(), "/dlr.cgi" );
         server.addResource( new MonitoringHandler(), "/stat.cgi" );
+        server.addResource( new MTHandler(), "/mth.cgi" );
         server.addEntryPoint( Wt::Application, createAdminPage, "/admin.cgi");
         server.addEntryPoint( Wt::Application, createGatesStatsPage, "/gstats.cgi");
         server.addEntryPoint( Wt::Application, createNumberInfoPage, "/gnuminfo.cgi");
