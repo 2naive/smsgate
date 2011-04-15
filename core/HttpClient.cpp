@@ -62,7 +62,7 @@ namespace sms {
         return size*nmemb;
     }
 
-    HttpClient::Response HttpClient::get(std::string url) throw ( HttpError ) {
+    HttpClient::Response HttpClient::get(std::string url, int timeout) throw ( HttpError ) {
         boost::thread::id id = boost::this_thread::get_id();
         boost::xtime now;
         boost::xtime_get( &now, boost::TIME_UTC );
@@ -90,6 +90,10 @@ namespace sms {
         curl_easy_setopt(curl_handle, CURLOPT_HTTP200ALIASES, slist );
         curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, write_data);
         curl_easy_setopt(curl_handle, CURLOPT_HEADERFUNCTION, write_header);
+        if ( timeout ) {
+            curl_easy_setopt(curl_handle, CURLOPT_TIMEOUT_MS, timeout);
+            curl_easy_setopt(curl_handle, CURLOPT_CONNECTTIMEOUT_MS, timeout);
+        }
 
         curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, &resp.body);
         curl_easy_setopt(curl_handle, CURLOPT_HEADERDATA, &resp.headers);
@@ -115,7 +119,7 @@ namespace sms {
         return resp;
     }
 
-    HttpClient::Response HttpClient::post(std::string url, std::string data) throw ( HttpError ) {
+    HttpClient::Response HttpClient::post(std::string url, std::string data, int timeout) throw ( HttpError ) {
         boost::thread::id id = boost::this_thread::get_id();
         boost::xtime now;
         boost::xtime_get( &now, boost::TIME_UTC );
@@ -149,6 +153,10 @@ namespace sms {
         curl_easy_setopt(curl_handle, CURLOPT_HTTP200ALIASES, slist );
         curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, write_data);
         curl_easy_setopt(curl_handle, CURLOPT_HEADERFUNCTION, write_header);
+        if ( timeout ) {
+            curl_easy_setopt(curl_handle, CURLOPT_TIMEOUT_MS, timeout);
+            curl_easy_setopt(curl_handle, CURLOPT_CONNECTTIMEOUT_MS, timeout);
+        }
 
         curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, &resp.body);
         curl_easy_setopt(curl_handle, CURLOPT_HEADERDATA, &resp.headers);

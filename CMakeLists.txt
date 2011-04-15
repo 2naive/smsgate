@@ -50,6 +50,7 @@ set( smsgate_SRCS ${smsgate_SRCS} core/HttpClient.h          core/HttpClient.cpp
 set( smsgate_SRCS ${smsgate_SRCS} core/GateManager.h         core/GateManager.cpp )
 #set( smsgate_SRCS ${smsgate_SRCS} core/KSHandler.h           core/KSHandler.cpp )
 set( smsgate_SRCS ${smsgate_SRCS} core/MessageClassifier.h   core/MessageClassifier.cpp )
+set( smsgate_SRCS ${smsgate_SRCS} core/MTHandler.h           core/MTHandler.cpp )
 set( smsgate_SRCS ${smsgate_SRCS} core/Operation.h )
 set( smsgate_SRCS ${smsgate_SRCS} core/MessagesQueue.h       core/MessagesQueue.cpp )
 set( smsgate_SRCS ${smsgate_SRCS} core/PartnerManager.h      core/PartnerManager.cpp )

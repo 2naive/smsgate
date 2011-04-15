@@ -124,7 +124,7 @@ namespace sms {
             return r.str();
         }
 
-        std::string StringRecodeFromTo(std::string src, std::string from, std::string to) throw ( ParamError) {
+        std::string StringRecodeFromTo(std::string src, const std::string from, std::string to) throw ( ParamError) {
             string res = src;
             int err;
             size_t srcsize = src.length();
@@ -195,19 +195,19 @@ namespace sms {
             return res;
         }
 
-        std::string StringUtf8ToCp1251(std::string src) throw ( ParamError) {
+        std::string StringUtf8ToCp1251(const std::string src) throw ( ParamError) {
             return StringRecodeFromTo(src, "UTF-8", "CP1251");
         }
 
-        std::string StringCp1251ToUtf8(std::string src) throw ( ParamError) {
+        std::string StringCp1251ToUtf8(const std::string src) throw ( ParamError) {
             return StringRecodeFromTo(src, "CP1251", "UTF-8");
         }
 
-        std::string StringUtf8ToUcs2be(std::string src) throw ( ParamError) {
+        std::string StringUtf8ToUcs2be(const std::string src) throw ( ParamError) {
             return StringRecodeFromTo(src, "UTF-8", "UCS-2BE");
         }
 
-        std::string StringCp1251ToUcs2be(std::string src) throw ( ParamError) {
+        std::string StringCp1251ToUcs2be(const std::string src) throw ( ParamError) {
             return StringRecodeFromTo(src, "CP1251", "UCS-2BE");
         }
 

@@ -26,11 +26,11 @@ namespace sms {
         string UrlEncodeString(const std::string & decoded);
         string UrlDecodeString(const std::string& st);
 
-        string StringUtf8ToCp1251(std::string src) throw ( ParamError );
-        string StringCp1251ToUtf8(std::string src) throw ( ParamError );
+        string StringUtf8ToCp1251(const std::string src) throw ( ParamError );
+        string StringCp1251ToUtf8(const std::string src) throw ( ParamError );
 
-        string StringUtf8ToUcs2be(std::string src) throw ( ParamError );
-        string StringCp1251ToUcs2be(std::string src) throw ( ParamError );
+        string StringUtf8ToUcs2be(const std::string src) throw ( ParamError );
+        string StringCp1251ToUcs2be(const std::string src) throw ( ParamError );
 
         string Hex2String(std::string src);
         string str_join(const std::vector<std::string> & vec,const std::string & sep);

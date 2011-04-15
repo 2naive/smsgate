@@ -39,8 +39,8 @@ namespace sms {
         HttpClient(const HttpClient& orig);
         virtual ~HttpClient();
 
-        Response get( std::string url ) throw (HttpError);
-        Response post( std::string url, std::string data ) throw (HttpError);
+        Response get( std::string url, int timeout = 0 ) throw (HttpError);
+        Response post( std::string url, std::string data, int timeout = 0 ) throw (HttpError);
     private:
         typedef std::map< boost::thread::id, CURL * > curlMapT;
         typedef std::map< boost::thread::id, long > curlReqMapT;
