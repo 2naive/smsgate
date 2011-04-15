@@ -55,7 +55,7 @@ void MTHandler::handleRequest(const Wt::Http::Request& request, Wt::Http::Respon
         const string cost 		= request.getParameter("cost") 		? *request.getParameter("cost")		: e;
         const string md5 		= request.getParameter("md5")  		? *request.getParameter("md5")		: e;
 
-        response.out() << utils::StringUtf8ToCp1251("sms=Тест принят");
+        response.out() << utils::StringUtf8ToCp1251(std::string("sms=ECHO ") + txt);
 
         Logger::get_mutable_instance().smslogwarn( "MTHandler::handleRequest finished" );
 }
