@@ -116,6 +116,7 @@ public:
     const std::string kport;
 
     void parseMarkUndeliveredEvent( SMSRequest::PTR req, SMSMessage::ID msg );
+    HttpClient client;
 private:
     HttpClient kannel;
     PGSql& db;

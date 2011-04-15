@@ -96,6 +96,7 @@ void RequestTracker::markUndelivered() {
 
 RequestTracker::RequestTracker():
         kannel( HttpClient() ),
+        client( HttpClient() ),
         db( PGSqlConnPoolSystem::get_mutable_instance().getdb() ),
         op_queue( TOpQueue() ),
         req_cache( TReqCache(ConfigManager::Instance()->getProperty<long>( "system.cache.size" )) ),
