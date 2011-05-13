@@ -122,9 +122,9 @@ void MTHandler::handleRequest(const Wt::Http::Request& request, Wt::Http::Respon
                 }
                 HttpClient::Response resp;
                 resp = trck->client.get( req.str(), 1000 );
-                response.out() << utils::StringUtf8ToCp1251(std::string("sms=") + resp.body);
+                response.out() << utils::StringUtf8ToCp1251(std::string("sms=Ваше сообщение принято."));
             } else {
-                response.out() << utils::StringUtf8ToCp1251(std::string("sms=ECHO ") + txt);
+                response.out() << utils::StringUtf8ToCp1251(std::string("sms=Ваше сообщение принято."));
             }
 
         } catch ( BasicError& err ) {
