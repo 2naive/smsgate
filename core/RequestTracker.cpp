@@ -28,9 +28,8 @@ void RequestTracker::deliverUndelivered() {
         std::ostringstream r;
 
         r       << "SELECT \"REQUESTID\", \"MESSAGEID\", \"WHEN\" FROM message_status "
-                << "WHERE \"WHEN\">'" << now.sec - ConfigManager::Instance()->getProperty<int>( "system.undeliveredtimeout" ) << "' "
-                << "AND NOT \"STATUS\"='-1' "
-                << "AND NOT \"STATUS\"='0';";
+                << "WHERE ( \"WHEN\">'" << now.sec - ConfigManager::Instance()->getProperty<int>( "system.undeliveredtimeout" ) << "' AND \"STATUS\" BETWEEN 1 AND 3 ) OR "
+                << "( \"WHEN\">'" << now.sec << "' AND \"STATUS\"=4 );";
 
 
         PGSql::ConnectionHolder cHold( db );
@@ -38,6 +37,7 @@ void RequestTracker::deliverUndelivered() {
         TransactionPTR tr = db.openTransaction( conn, "RequestTracker::RequestTracker()" );
         Result res = tr->exec( r.str() );
         tr->commit();
+        string k = r.str();
         for ( Result::const_iterator it = res.begin(); it != res.end(); it++ ) {
             SMSMessage::ID msgid;
             msgid.req = (*it)[0].as<long long>();
@@ -231,7 +231,7 @@ void RequestTracker::parseNewRequestEvent( SMSRequest::PTR req ) {
         << req->pid<< "','"
         << req->priority<< "','"
         << req->garant<< "','"
-        << now.sec << "');";
+        << now.sec + boost::lexical_cast< int >( req->delay ) << "');";
         tr->exec( r.str() );
         tr->commit();
     } catch ( PGBrokenConnection& err ) {
@@ -261,7 +261,12 @@ void RequestTracker::parseNewRequestEvent( SMSRequest::PTR req ) {
         SMSMessage::ID  msgid = SMSMessage::ID( req->getID(), i );
         SMSMessageManager::get_mutable_instance().createMessage( msgid, *req );
 
-        op_queue.push( SMSOperation::create <OP_NewMessage>( std::make_pair( req, msgid ), idp, ma_p, OP_NewMessageP ), ma_p, OP_NewMessageP );
+        if ( boost::lexical_cast< int >( req->delay ) ) {
+            del_queue.push( SMSOperation::create <OP_NewMessage>( std::make_pair( req, msgid ), idp, ma_p, OP_NewMessageP ), boost::lexical_cast< int >( req->delay ) );
+        } else {
+            op_queue.push( SMSOperation::create <OP_NewMessage>( std::make_pair( req, msgid ), idp, ma_p, OP_NewMessageP ), ma_p, OP_NewMessageP );
+        }
+
     }
 
     out << "parsed";

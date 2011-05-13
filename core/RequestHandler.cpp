@@ -59,6 +59,8 @@ void RequestHandler::handleRequest(const Wt::Http::Request& request, Wt::Http::R
         const string hex		= request.getParameter("hex") 		? *request.getParameter("hex")		: zero;
 	const string udh		= request.getParameter("udh") 		? *request.getParameter("udh")		: e;
         const string delay		= request.getParameter("delay") 	? *request.getParameter("delay")	: zero;
+        const string date		= request.getParameter("date")   	? *request.getParameter("date")         : zero;
+        const string tz 		= request.getParameter("tz")       	? *request.getParameter("tz")           : zero;
         const string dlr		= request.getParameter("dlr")  		? *request.getParameter("dlr")		: zero;
               string pid		= request.getParameter("idp")  		? *request.getParameter("idp")		: e;
         const int    priority           = request.getParameter("priority")  	? atoi( request.getParameter("priority")->c_str() ) : 0;
