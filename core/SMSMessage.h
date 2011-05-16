@@ -90,7 +90,7 @@ namespace sms {
             static std::string russianDescr( const Status& st ) {
                 switch (st.value) {
                 case ST_UNKNOWN:
-                    return "Неизвестно";
+                    return "Ожидает отправки";
                 case ST_REJECTED:
                     return "Неверный номер";
                 case ST_PREPARING:

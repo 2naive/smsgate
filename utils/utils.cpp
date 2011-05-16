@@ -5,6 +5,11 @@
 #include <cerrno>
 #include "iconv.h"
 #include <iostream>
+#include <ctime>
+#include <clocale>
+
+#include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/thread/xtime.hpp>
 
 namespace sms {
 
@@ -337,8 +342,25 @@ namespace sms {
 
         }
 
+        long getDate2ts( const std::string& src_date, int ts, const std::string format ) {
+            struct tm result;
+            if ( strptime( src_date.c_str(), format.c_str(), &result) == NULL ) {
+                boost::xtime now;
+                boost::xtime_get( &now, boost::TIME_UTC );
+                return now.sec;
+            }
 
+            boost::gregorian::date date = boost::gregorian::date_from_tm( result );
+            boost::gregorian::date orig( 1970, boost::gregorian::Jan, 1 );
+            boost::posix_time::ptime to( date, boost::posix_time::hours(0) );
+            boost::posix_time::ptime begin( orig, boost::posix_time::hours(0) );
+            boost::posix_time::time_period rv( begin, to );
+
+            return rv.length().total_seconds()-ts*60*60;
+        }
 
     }
 
 }
+
+

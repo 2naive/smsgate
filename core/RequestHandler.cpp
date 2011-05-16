@@ -58,9 +58,9 @@ void RequestHandler::handleRequest(const Wt::Http::Request& request, Wt::Http::R
 	const string subpref            = request.getParameter("subpref") 	? *request.getParameter("subpref")	: e;
         const string hex		= request.getParameter("hex") 		? *request.getParameter("hex")		: zero;
 	const string udh		= request.getParameter("udh") 		? *request.getParameter("udh")		: e;
-        const string delay		= request.getParameter("delay") 	? *request.getParameter("delay")	: zero;
-        const string date		= request.getParameter("date")   	? *request.getParameter("date")         : zero;
-        const string tz 		= request.getParameter("tz")       	? *request.getParameter("tz")           : zero;
+              string delay		= request.getParameter("delay") 	? *request.getParameter("delay")	: e;
+        const string date		= request.getParameter("date")   	? *request.getParameter("datetime")     : e;
+        const string tz 		= request.getParameter("tz")       	? *request.getParameter("tz")           : "4";
         const string dlr		= request.getParameter("dlr")  		? *request.getParameter("dlr")		: zero;
               string pid		= request.getParameter("idp")  		? *request.getParameter("idp")		: e;
         const int    priority           = request.getParameter("priority")  	? atoi( request.getParameter("priority")->c_str() ) : 0;
@@ -74,6 +74,19 @@ void RequestHandler::handleRequest(const Wt::Http::Request& request, Wt::Http::R
             if ( ptnr.pId != "1" ) { pid = ptnr.pId; }
         } catch ( PartnerNotFoundError& e ) {
             Logger::get_mutable_instance().smslogwarn( string("Unknown user is requesting status: [") + uname + string(":") + pass + "]");
+        }
+
+        if ( !date.empty() ) {
+            try {
+                boost::xtime now;
+                boost::get_xtime( now );
+
+                int kdelay = utils::getDate2ts( date, boost::lexical_cast< int >( tz ) ) - now.sec;
+                if ( ( kdelay < 0 ) || ( !delay.empty() ) )
+                    delay = boost::lexical_cast< std::string >( kdelay );
+            } catch ( ... ) {
+
+            }
         }
 
 	req->parse( uname, pass, tov, txt, tid, from, utf, subpref, hex, udh, delay, dlr, pid, priority, garant );
