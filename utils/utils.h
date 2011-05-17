@@ -40,7 +40,7 @@ namespace sms {
         string narrow( const std::wstring& str );
 
         int getGsmParts( const string& orig );
-        long getDate2ts( const std::string& src_date, int ts = 4, const std::string format = "%Y-%m-%d %R" );
+        time_t getDate2ts( const std::string& src_date, int ts = 4, const std::string format = "%Y-%m-%d %R" );
     }
 }
 #endif

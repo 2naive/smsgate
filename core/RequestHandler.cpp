@@ -58,8 +58,8 @@ void RequestHandler::handleRequest(const Wt::Http::Request& request, Wt::Http::R
 	const string subpref            = request.getParameter("subpref") 	? *request.getParameter("subpref")	: e;
         const string hex		= request.getParameter("hex") 		? *request.getParameter("hex")		: zero;
 	const string udh		= request.getParameter("udh") 		? *request.getParameter("udh")		: e;
-              string delay		= request.getParameter("delay") 	? *request.getParameter("delay")	: e;
-        const string date		= request.getParameter("date")   	? *request.getParameter("datetime")     : e;
+              string delay              = request.getParameter("delay") 	? *request.getParameter("delay")	: zero;
+        const string date		= request.getParameter("datetime")   	? *request.getParameter("datetime")     : e;
         const string tz 		= request.getParameter("tz")       	? *request.getParameter("tz")           : "4";
         const string dlr		= request.getParameter("dlr")  		? *request.getParameter("dlr")		: zero;
               string pid		= request.getParameter("idp")  		? *request.getParameter("idp")		: e;
@@ -79,10 +79,10 @@ void RequestHandler::handleRequest(const Wt::Http::Request& request, Wt::Http::R
         if ( !date.empty() ) {
             try {
                 boost::xtime now;
-                boost::get_xtime( now );
+                boost::xtime_get( &now, boost::TIME_UTC );
 
                 int kdelay = utils::getDate2ts( date, boost::lexical_cast< int >( tz ) ) - now.sec;
-                if ( ( kdelay < 0 ) || ( !delay.empty() ) )
+                if ( ( kdelay > 0 ) && ( delay == "0" ) )
                     delay = boost::lexical_cast< std::string >( kdelay );
             } catch ( ... ) {
 
