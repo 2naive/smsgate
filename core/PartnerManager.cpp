@@ -57,7 +57,7 @@ void PartnerManager::loadFromDb() {
         ConnectionPTR conn = cHold.get();
         TransactionPTR tr = db.openTransaction( conn, "PartnerManager::loadFromDb" );
         std::ostringstream dbreq1;
-        dbreq1  << " SELECT pid, uname, pass, cname, manager, balance, credit, plimit, postplay, trial, priority, phone, contact, tariff FROM partners;";
+        dbreq1  << " SELECT pid, uname, pass, cname, manager, balance, credit, plimit, postplay, trial, priority, phone, contact, tariff, ts FROM partners;";
 
         Result res = tr->exec( dbreq1.str() );
         tr->commit();
@@ -78,7 +78,8 @@ void PartnerManager::loadFromDb() {
                                             (*dbr)[7].as<int>(),
                                             (*dbr)[8].as<bool>(),
                                             (*dbr)[9].as<bool>(),
-                                            (*dbr)[10].as<int>()
+                                            (*dbr)[10].as<int>(),
+                                            (*dbr)[14].as<int>()
                                    ) );
         }
 

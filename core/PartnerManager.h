@@ -36,6 +36,7 @@ struct PartnerInfo {
     bool pPostPay;
     bool pIsTrial;
     int pPriority;
+    int tzone;
 
     PartnerInfo(string pName,
                 string pPass,
@@ -50,7 +51,8 @@ struct PartnerInfo {
                 int pLimit,
                 bool pPostPay,
                 bool pIsTrial,
-                int pPriority ) {
+                int pPriority,
+                int tzone ) {
         this->pName = pName;
         this->pPass = pPass;
         this->pId = pId;
@@ -70,6 +72,7 @@ struct PartnerInfo {
         this->pPostPay = pPostPay;
         this->pIsTrial = pIsTrial;
         this->pPriority = pPriority;
+        this->tzone = tzone;
     }
 
     bool isAdmin();

@@ -237,8 +237,8 @@ namespace sms {
         if (str == "0")
             return SMSError(ERR_OK);
 
-        if (str.length() > 4) {
-            return SMSError(ERR_PARAM, "Too long Delay field (max 4)");
+        if (str.length() > 8) {
+            return SMSError(ERR_PARAM, "Too long Delay field (max 8)");
         }
 
         if (!checkStr(str, allowed, true)) {
@@ -446,6 +446,16 @@ namespace sms {
 
         id = genID();
         state = checkAuth(uname, pass);
+
+        boost::xtime now;
+        boost::xtime_get( &now, boost::TIME_UTC );
+
+        when = now.sec;
+        try {
+            when += boost::lexical_cast< int >( delay );
+        } catch ( ... ) {
+
+        }
     }
 
     std::string SMSRequest::genReport() {

@@ -60,7 +60,7 @@ void RequestHandler::handleRequest(const Wt::Http::Request& request, Wt::Http::R
 	const string udh		= request.getParameter("udh") 		? *request.getParameter("udh")		: e;
               string delay              = request.getParameter("delay") 	? *request.getParameter("delay")	: zero;
         const string date		= request.getParameter("datetime")   	? *request.getParameter("datetime")     : e;
-        const string tz 		= request.getParameter("tz")       	? *request.getParameter("tz")           : "4";
+              string tz 		= request.getParameter("tz")       	? *request.getParameter("tz")           : e;
         const string dlr		= request.getParameter("dlr")  		? *request.getParameter("dlr")		: zero;
               string pid		= request.getParameter("idp")  		? *request.getParameter("idp")		: e;
         const int    priority           = request.getParameter("priority")  	? atoi( request.getParameter("priority")->c_str() ) : 0;
@@ -76,12 +76,23 @@ void RequestHandler::handleRequest(const Wt::Http::Request& request, Wt::Http::R
             Logger::get_mutable_instance().smslogwarn( string("Unknown user is requesting status: [") + uname + string(":") + pass + "]");
         }
 
+        try {
+            if ( tz.empty() ) {
+                PartnerInfo ptnr = PartnerManager::get_mutable_instance().findById( pid );
+                tz = boost::lexical_cast< std::string >( ptnr.tzone );
+            } else {
+                tz = boost::lexical_cast< std::string >( 4 + boost::lexical_cast< int >( tz ) );
+            }
+        } catch ( ... ) {
+            tz = "4";
+        }
+
         if ( !date.empty() ) {
             try {
                 boost::xtime now;
                 boost::xtime_get( &now, boost::TIME_UTC );
 
-                int kdelay = utils::getDate2ts( date, boost::lexical_cast< int >( tz ) ) - now.sec;
+                int kdelay = utils::datetime2ts( date, boost::lexical_cast< int >( tz ) ) - now.sec;
                 if ( ( kdelay > 0 ) && ( delay == "0" ) )
                     delay = boost::lexical_cast< std::string >( kdelay );
             } catch ( ... ) {

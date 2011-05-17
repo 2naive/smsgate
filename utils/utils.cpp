@@ -339,15 +339,29 @@ namespace sms {
 
         }
 
-        time_t getDate2ts( const std::string& src_date, int ts, const std::string format ) {
+        time_t datetime2ts( const std::string& src_date, int ts, const std::string format ) {
             time_t now = time( NULL );
             struct tm result = *localtime( &now );
             char* pos= strptime( src_date.c_str(), format.c_str(), &result);
             if ( pos == NULL ) {
                 return now;
             }
+            result.tm_hour -= ts;
+            result.tm_sec += result.tm_gmtoff;
             time_t tsl = (time_t)mktime( &result );
-            return time_t( tsl + result.tm_gmtoff - ts*60*60 );
+
+            return time_t( tsl );
+        }
+
+        std::string ts2datetime( time_t src_date, int ts, const std::string format ) {
+            char buf[100];
+            struct tm result = *localtime( &src_date );
+            result.tm_hour += ts;
+            result.tm_sec -= result.tm_gmtoff;
+            mktime( &result );
+
+            strftime( buf, 100, format.c_str(), &result );
+            return buf;
         }
 
     }

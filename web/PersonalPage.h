@@ -9,6 +9,7 @@
 #include "StatisticsBlock.h"
 #include "TariffEditor.h"
 #include "LoginBlock.h"
+#include "PartnerManager.h"
 
 using namespace Wt;
 

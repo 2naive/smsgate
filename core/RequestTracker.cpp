@@ -24,12 +24,12 @@ void RequestTracker::deliverUndelivered() {
 
     boost::xtime now;
     boost::xtime_get( &now, boost::TIME_UTC );
+
     try {
         std::ostringstream r;
 
-        r       << "SELECT \"REQUESTID\", \"MESSAGEID\", \"WHEN\" FROM message_status "
-                << "WHERE ( \"WHEN\">'" << now.sec - ConfigManager::Instance()->getProperty<int>( "system.undeliveredtimeout" ) << "' AND \"STATUS\" BETWEEN 1 AND 3 ) OR "
-                << "( \"WHEN\">'" << now.sec << "' AND \"STATUS\"=4 );";
+        r       << "SELECT \"REQUESTID\", \"MESSAGEID\", \"WHEN\", \"STATUS\" FROM message_status "
+                << "WHERE ( \"WHEN\">'" << now.sec - ConfigManager::Instance()->getProperty<int>( "system.undeliveredtimeout" ) << "' AND \"STATUS\" BETWEEN 1 AND 4 );";
 
 
         PGSql::ConnectionHolder cHold( db );
@@ -37,23 +37,31 @@ void RequestTracker::deliverUndelivered() {
         TransactionPTR tr = db.openTransaction( conn, "RequestTracker::RequestTracker()" );
         Result res = tr->exec( r.str() );
         tr->commit();
-        string k = r.str();
         for ( Result::const_iterator it = res.begin(); it != res.end(); it++ ) {
             SMSMessage::ID msgid;
+            SMSMessage::PTR msg;
             msgid.req = (*it)[0].as<long long>();
             msgid.msg_num = (*it)[1].as<int>();
+            time_t when = (*it)[2].as<long>();
+            SMSMessage::Status st = (*it)[3].as<int>();
             SMSRequest::PTR req;
             idp = "";
             try {
                 req = this->loadRequestFromDb(msgid.req);
                 req_cache.push( req, msgid.req );
-                SMSMessage::PTR msg = SMSMessageManager::get_mutable_instance().loadMessage( msgid );
-                std::string idp = req->pid;
+                msg = SMSMessageManager::get_mutable_instance().loadMessage( msgid );
+                idp = req->pid;
             } catch (...) {
                 continue;
             }
 
-            del_queue.push( SMSOperation::create<OP_CheckDelivery>( std::make_pair( req, msgid ), idp, ma_p, OP_CheckDeliveryP ), ConfigManager::Instance()->getProperty<int>( "system.resendtimeout" ) );
+            boost::xtime_get( &now, boost::TIME_UTC );
+
+            if ( st < SMSMessage::Status::ST_BUFFERED ) {
+                del_queue.push( SMSOperation::create<OP_CheckDelivery>( std::make_pair( req, msgid ), idp, ma_p, OP_CheckDeliveryP ), when - now.sec );
+            } else {
+                del_queue.push( SMSOperation::create<OP_CheckDelivery>( std::make_pair( req, msgid ), idp, ma_p, OP_CheckDeliveryP ), when + ConfigManager::Instance()->getProperty<int>( "system.resendtimeout" ) - now.sec );
+            }
             //del_queue.push( SMSOperation::create<OP_MarkUndelivered>( std::make_pair( req, msgid ), idp, ma_p, OP_MarkUndeliveredP ), ConfigManager::Instance()->getProperty<int>( "system.undeliveredtimeout" ) + (*it)[2].as<int>() - now.sec );
 
         }

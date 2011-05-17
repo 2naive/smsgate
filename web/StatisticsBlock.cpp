@@ -16,6 +16,7 @@
 #include "Logger.h"
 #include "MessageClassifier.h"
 #include "SMSMessage.h"
+#include "PartnerManager.h"
 
 using namespace Wt;
 using namespace std;
@@ -490,9 +491,9 @@ void WStatPageData::execute( int lnl, int lnr, RowList &data ) {
             string __pid = (*it)[4].as<string>();
             string __phone = (*it)[7].as<string>();
             long __date_num = (*it)[5].as<long>();
-            boost::gregorian::date orig( 1970, boost::gregorian::Jan, 1 );
-            boost::posix_time::ptime dt( orig, boost::posix_time::seconds( __date_num + 3*60*60 ) );
-            string __date = boost::posix_time::to_simple_string(dt);
+            int ts = PartnerManager::get_mutable_instance().findById( this->ppage->pId ).tzone;
+
+            string __date = utils::ts2datetime( __date_num, ts );
             string __txt = (*it)[2].as<string>();
             string __status = SMSMessage::Status::russianDescr( SMSMessage::Status( (*it)[6].as<int>() ) );
             double price = (*it)[15].as<double>();
@@ -580,7 +581,7 @@ void StatisticsBlock::onReportBtnClicked( RowInfo row ) {
         boost::posix_time::ptime begin( orig, boost::posix_time::hours(0) );
         boost::posix_time::time_period lv( begin, from );
 
-        data.setDateFromFilter( lv.length().total_seconds()-3*60*60 );
+        data.setDateFromFilter( lv.length().total_seconds()-PartnerManager::get_mutable_instance().findById( pId ).tzone*60*60 );
     }
 
     std::string _rdate = row.date_to->date().toString("yyyy/MM/dd").toUTF8();
@@ -592,7 +593,7 @@ void StatisticsBlock::onReportBtnClicked( RowInfo row ) {
         boost::posix_time::ptime begin( orig, boost::posix_time::hours(0) );
         boost::posix_time::time_period rv( begin, to );
 
-        data.setDateToFilter( rv.length().total_seconds()-3*60*60 );
+        data.setDateToFilter( rv.length().total_seconds()-PartnerManager::get_mutable_instance().findById( pId ).tzone*60*60 );
     }
 
     if ( row.status->currentIndex() == 0 ) {

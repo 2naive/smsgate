@@ -195,6 +195,7 @@ namespace sms {
         std::string delay;
         std::string dlr;
         std::string pid;
+        time_t when;
         int priority;
         std::string garant;
         int parts;
