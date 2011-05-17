@@ -562,9 +562,6 @@ namespace sms {
         if ( udh != "0" )
             out << "&udh=" << UrlEncodeString(Hex2String(udh));
 
-        if ( delay != "0")
-            out << "&deferred=" << delay;
-
         return out.str();
     }
 
