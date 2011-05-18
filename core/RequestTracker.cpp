@@ -189,7 +189,8 @@ SMSRequest::PTR RequestTracker::loadRequestFromDb( SMSRequest::ID reqid ) {
                 res[0][11].as<std::string>(),
                 res[0][12].as<std::string>(),
                 res[0][13].as<int>(),
-                res[0][14].as<std::string>()
+                res[0][14].as<std::string>(),
+                res[0][15].as<int>()
             );
             req = SMSRequest::PTR( preq );
 
@@ -239,7 +240,7 @@ void RequestTracker::parseNewRequestEvent( SMSRequest::PTR req ) {
         << req->pid<< "','"
         << req->priority<< "','"
         << req->garant<< "','"
-        << now.sec + boost::lexical_cast< int >( req->delay ) << "');";
+        << now.sec << "');";
         tr->exec( r.str() );
         tr->commit();
     } catch ( PGBrokenConnection& err ) {

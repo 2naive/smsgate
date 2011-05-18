@@ -320,7 +320,8 @@ namespace sms {
             const std::string _dlr,
             const std::string _pid,
             const int _priority,
-            const std::string _garant
+            const std::string _garant,
+            const int _when
             ) {
 
         state = checkUname(_uname);
@@ -447,15 +448,7 @@ namespace sms {
         id = genID();
         state = checkAuth(uname, pass);
 
-        boost::xtime now;
-        boost::xtime_get( &now, boost::TIME_UTC );
-
-        when = now.sec;
-        try {
-            when += boost::lexical_cast< int >( delay );
-        } catch ( ... ) {
-
-        }
+        when = _when;
     }
 
     std::string SMSRequest::genReport() {

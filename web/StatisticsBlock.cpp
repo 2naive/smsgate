@@ -717,7 +717,22 @@ void StatisticsBlock::onMoreInfo(const WMouseEvent &e, SMSMessage::ID msgid ) {
     WPopupMenu* popup = new WPopupMenu();
     int ts = PartnerManager::get_mutable_instance().findById( pId ).tzone;
     try {
-        SMSMessage::HistoryType msg_hist = SMSMessageManager::get_mutable_instance().loadMessage( msgid )->getHistory();
+        SMSMessage::HistoryType msg_hist;
+        {
+            SMSMessage::PTR msg = SMSMessageManager::get_mutable_instance().loadMessage( msgid );
+            msg_hist=msg->getHistory();
+            std::string item;
+            item = utils::ts2datetime( msg->when, ts ) + " << ";
+            try {
+                item += PartnerManager::get_mutable_instance().findById( msg->pid ).pCName;
+            } catch ( ... ) {
+                item += "[";
+                item += msg->pid;
+                item += "]";
+            }
+            popup->addItem( item );
+        }
+
         for ( SMSMessage::HistoryType::iterator it = msg_hist.begin(); it != msg_hist.end(); it++ ) {
             std::string item;
             item = utils::ts2datetime( it->when, ts ) + " ";

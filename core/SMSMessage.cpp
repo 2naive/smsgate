@@ -128,7 +128,7 @@ namespace sms {
                 << ( msg->getMsgClass().operators.empty() ? "" : msg->getMsgClass().operators.begin()->second.getCode() )<< "', '"
                 << ( msg->getMsgClass().operators.empty() ? "" : msg->getMsgClass().operators.begin()->second.opRegion ) << "', '"
                 << "" << "','"
-                << when << "');";
+                << when + boost::lexical_cast<int>( delay )<< "');";
         tr->exec( r.str() );
         tr->commit();
     }

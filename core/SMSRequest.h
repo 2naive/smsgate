@@ -127,7 +127,8 @@ namespace sms {
                 const std::string _dlr,
                 const std::string _pid,
                 const int _priority,
-                const std::string _garant
+                const std::string _garant,
+                const int _when
                     ) {
             parse(_uname, _pass, _to, _msg,
                     _tid,
@@ -140,7 +141,8 @@ namespace sms {
                     _dlr,
                     _pid,
                     _priority,
-                    _garant );
+                    _garant,
+                    _when );
                     }
 
         void parse(const std::string _uname, const std::string _pass, const to_vec _to, const std::string _msg,
@@ -154,7 +156,8 @@ namespace sms {
                 const std::string _dlr,
                 const std::string _pid,
                 const int _priority,
-                const std::string _garant
+                const std::string _garant,
+                const int _when
                     );
 
         const SMSError& getErr() const {
