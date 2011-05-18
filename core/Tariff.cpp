@@ -161,9 +161,9 @@ double Tariff::costs( std::string op, SMSMessage::Status status ) {
     TariffOptionPaidStatuses option = getOption< TariffOptionPaidStatuses >( op );
     TariffOptionPaidStatuses::ValueT opt_val;
 
-    if ( ( opt_val.find( "REJECTED" ) != option.getValues().end() ) && ( status == SMSMessage::Status::ST_REJECTED ) ) return 0.0;
-    if ( ( opt_val.find( "EXPIRED" ) != option.getValues().end() ) && ( status == SMSMessage::Status::ST_EXPIRED ) ) return 0.0;
-    if ( ( opt_val.find( "UNDELIVERED" ) != option.getValues().end() ) && ( status == SMSMessage::Status::ST_NOT_DELIVERED ) ) return 0.0;
+    if ( ( opt_val.find( "REJECTED" ) != opt_val.end() ) && ( status == SMSMessage::Status::ST_REJECTED ) ) return 0.0;
+    if ( ( opt_val.find( "EXPIRED" ) != opt_val.end() ) && ( status == SMSMessage::Status::ST_EXPIRED ) ) return 0.0;
+    if ( ( opt_val.find( "UNDELIVERED" ) != opt_val.end() ) && ( status == SMSMessage::Status::ST_NOT_DELIVERED ) ) return 0.0;
 
     return costs( op );
 }
