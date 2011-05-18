@@ -289,7 +289,7 @@ void WStatPageData::prepareRequest( ) {
 
         std::ostringstream req;
         req     <<  "CREATE OR REPLACE TEMP VIEW " << view_name << " AS ";
-        req     <<  "SELECT message_status.\"REQUESTID\", message_status.\"MESSAGEID\", \"TXT\", \"FROM\", \"PID\", smsrequest.\"WHEN\" AS REQUESTDATE, "
+        req     <<  "SELECT message_status.\"REQUESTID\", message_status.\"MESSAGEID\", \"TXT\", \"FROM\", \"PID\", message_status.\"WHEN\" AS REQUESTDATE, "
                 <<  "\"STATUS\", message_status.\"TO\", \"PARTS\", \"COUNTRY\", \"COUNTRYCODE\", \"OPERATOR\", \"OPERATORCODE\", \"REGION\", "
                 <<  "message_status.\"WHEN\" AS DELIVERYDATE, \"PARTNERPRICE\", \"OURPRICE\" "
                 <<  "FROM smsrequest, message_status WHERE smsrequest.\"REQUESTID\"=message_status.\"REQUESTID\"  ";
