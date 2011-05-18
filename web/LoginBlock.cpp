@@ -23,11 +23,14 @@ LoginBlock::LoginBlock( WContainerWidget* parent ):
 
     failedMsgLabel = new WLabel( failedMsg );
 
-    loginBox = new WHintLineEdit( unameMsg );
+    loginBox = new WLineEdit();
+    loginBox->setEmptyText( unameMsg );
     loginBox->setMinimumSize( WLength( 100, WLength::Pixel ), WLength::Auto );
 //    loginBox->setMargin( WLength( 5, WLength::Pixel ) );
 
-    passBox = new WHintLinePassEdit( passMsg );
+    passBox = new WLineEdit( );
+    passBox->setEmptyText( passMsg );
+    passBox->setEchoMode( WLineEdit::Password );
     passBox->setMinimumSize( WLength( 100, WLength::Pixel ), WLength::Auto );
     passBox->enterPressed().connect(SLOT(this, LoginBlock::onLoginEvent));
 //    passBox->setMargin( WLength( 5, WLength::Pixel ) );

@@ -235,15 +235,6 @@ public:
                             >
                         > TariffOptionUnknownPolicy;
 
-    typedef TariffOption<
-                            boost::mpl::string< 'p','r','i','c','e' >,
-                            TariffValueChoise
-                            <
-                                boost::mpl::vector<
-                                >,
-                                boost::mpl::string< '-','0','.','0' >
-                            >
-                        > Price;
 
     typedef TariffOption<
                             boost::mpl::string< 'C','u','r','r','e','n','c','y' >,

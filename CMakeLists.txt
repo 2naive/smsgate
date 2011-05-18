@@ -20,6 +20,7 @@ set( smsgate_SRCS ${smsgate_SRCS} web/NumberInfoPage.h       web/NumberInfoPage.
 set( smsgate_SRCS ${smsgate_SRCS} web/PersonalCabinet.h      web/PersonalCabinet.cpp )
 set( smsgate_SRCS ${smsgate_SRCS} web/PersonalPage.h         web/PersonalPage.cpp )
 set( smsgate_SRCS ${smsgate_SRCS} web/TariffEditor.h         web/TariffEditor.cpp )
+set( smsgate_SRCS ${smsgate_SRCS} web/PartnerEditor.h        web/PartnerEditor.cpp )
 set( smsgate_SRCS ${smsgate_SRCS} web/LoginBlock.h           web/LoginBlock.cpp )
 set( smsgate_SRCS ${smsgate_SRCS} web/StatisticsBlock.h      web/StatisticsBlock.cpp )
 

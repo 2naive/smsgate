@@ -8,8 +8,7 @@
 #include <Wt/WPushButton>
 #include <Wt/WImage>
 
-#include "WHintLineEdit.h"
-#include "WHintLinePassEdit.h"
+#include <Wt/WLineEdit>
 
 class LoginBlock: public Wt::WContainerWidget {
 public:
@@ -17,8 +16,8 @@ public:
     Wt::Signal<std::string, bool>& onLogin() { return onLogin_; };
 private:
     Wt::WLabel* failedMsgLabel;
-    WHintLineEdit* loginBox;
-    WHintLinePassEdit* passBox;
+    Wt::WLineEdit* loginBox;
+    Wt::WLineEdit* passBox;
     Wt::Signal<std::string, bool> onLogin_;
 
     bool authorized;

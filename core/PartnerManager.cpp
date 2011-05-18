@@ -45,6 +45,19 @@ PartnerInfo PartnerManager::findById( string id ) throw ( PartnerNotFoundError )
 
 }
 
+std::list< PartnerInfo > PartnerManager::getAll() {
+    boost::recursive_mutex::scoped_lock lck( pmlock );
+    std::list< PartnerInfo > pi;
+
+    pBox::nth_index<2>::type::iterator it;
+
+    for ( it = pbox.get<2>().begin(); it != pbox.get<2>().end(); it++ ) {
+        pi.push_back( *it );
+    }
+
+    return pi;
+}
+
 void PartnerManager::loadFromDb() {
     PGSql& db = PGSqlConnPoolSystem::get_mutable_instance().getdb();
 

@@ -85,6 +85,7 @@ public:
     PartnerManager();
     PartnerInfo findByName( string pName ) throw ( PartnerNotFoundError );
     PartnerInfo findById( string id ) throw ( PartnerNotFoundError );
+    std::list< PartnerInfo > getAll();
 
     void loadFromDb();
 

@@ -29,6 +29,7 @@ PersonalPage::PersonalPage( const WEnvironment& env ):
 
     wStatBlock = NULL;
     wTariffEditor = NULL;
+    wPartnerEditor = NULL;
 }
 
 void PersonalPage::onLogin(string pId, bool isAdmin) {
@@ -58,12 +59,22 @@ WContainerWidget* PersonalPage::buildTariffEditor( ) {
     return wTariffEditor;
 }
 
+WContainerWidget* PersonalPage::buildPartnerEditor( ) {
+    if ( wPartnerEditor ) {
+        return wPartnerEditor;
+    }
+
+    wPartnerEditor= new PartnerEditor();
+    return wPartnerEditor;
+}
+
 void PersonalPage::buildPersonalPage( ) {
 
     WTabWidget* wt = new WTabWidget();
     wt->addTab( buildStatisticsBlock(), WString::fromUTF8("Статистика") );
     if ( isAdmin ) {
         wt->addTab( buildTariffEditor(), WString::fromUTF8("Редактор тарифов") );
+        wt->addTab( buildPartnerEditor(), WString::fromUTF8("Редактор партнеров") );
     }
 
     root()->addWidget( wt );
