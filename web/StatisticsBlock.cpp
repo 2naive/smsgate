@@ -715,18 +715,29 @@ StatisticsBlock::StatisticsBlock( string pId_, bool isAdmin, const Wt::WEnvironm
 
 void StatisticsBlock::onMoreInfo(const WMouseEvent &e, SMSMessage::ID msgid ) {
     WPopupMenu* popup = new WPopupMenu();
-
-    std::set< std::string > gateways_found;
+    int ts = PartnerManager::get_mutable_instance().findById( pId ).tzone;
     try {
         SMSMessage::HistoryType msg_hist = SMSMessageManager::get_mutable_instance().loadMessage( msgid )->getHistory();
         for ( SMSMessage::HistoryType::iterator it = msg_hist.begin(); it != msg_hist.end(); it++ ) {
-            if ( it->op_code == 2 )
-                continue;
+            std::string item;
+            item = utils::ts2datetime( it->when, ts ) + " ";
 
-            if ( gateways_found.find( it->gateway ) == gateways_found.end() ) {
-                gateways_found.insert( it->gateway );
-                popup->addItem( it->gateway );
+            if ( it->op_direction == 0 ) {
+                item += ">> ";
             }
+
+            if ( it->op_direction == 1 ) {
+                item += "<< ";
+            }
+
+            item += it->gateway + " ";
+            if ( it->op_direction == 1 ) {
+                item += "[";
+                item += SMSMessage::Status::statusDescr( it->op_result );
+                item += "]";
+            }
+
+            popup->addItem( item );
         }
     } catch ( ... ) {}
 
