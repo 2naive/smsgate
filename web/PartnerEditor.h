@@ -31,10 +31,14 @@ public:
 
 private:
     std::string pid;
+    bool isPersonalInfoVisible;
 
+    Wt::WTable* tbl;
     Wt::WLabel* pName;
     Wt::WInPlaceEdit* pNameEditor;
+    Wt::WText* pExpand;
 
+    void onPersonalShowHide();
 };
 
 class PartnerEditor: public Wt::WContainerWidget {

@@ -1,8 +1,15 @@
 #include "PartnerEditor.h"
 #include "PartnerManager.h"
+#include "Tariff.h"
 
 #include <Wt/WHBoxLayout>
+#include <Wt/WVBoxLayout>
+#include <Wt/WPushButton>
+#include <Wt/WText>
 #include <Wt/WStandardItem>
+#include <Wt/WRegExpValidator>
+#include <Wt/WIntValidator>
+#include <Wt/WSuggestionPopup>
 #include <vector>
 
 using namespace Wt;
@@ -18,27 +25,99 @@ PartnerOptions::PartnerOptions( std::string _pid, Wt::WContainerWidget *parent )
 
     int cl = 0;
 
-    WTable* tbl = new WTable();
+    WPushButton* saveBtn;
+    if ( pid.empty() )
+        saveBtn = new WPushButton( WString::fromUTF8( "Создать" ) );
+    else
+        saveBtn = new WPushButton( WString::fromUTF8( "Сохранить" ) );
+
+    tbl = new WTable();
     tbl->setStyleClass( "restable" );
     tbl->setHeaderCount( 1 );
 
     WCustomInPlaceEdit* pCNameEdit = new WCustomInPlaceEdit( WString::fromUTF8( pi.pCName ), uv );
     tbl->elementAt( cl, 0 )->addWidget( pCNameEdit );
-    tbl->elementAt( cl++, 0 )->setColumnSpan( 2 );
+    tbl->elementAt( cl, 1 )->setContentAlignment( AlignRight | AlignMiddle );
+    tbl->elementAt( cl++, 1 )->addWidget( saveBtn );
 
+    WCustomInPlaceEdit* pLastNameEdit = new WCustomInPlaceEdit( WString::fromUTF8( pi.phone ), uv );
+    tbl->elementAt( cl, 0 )->addWidget( new WLabel( WString::fromUTF8( "Фамилия" ) ) );
+    tbl->elementAt( cl++, 1 )->addWidget( pLastNameEdit );
+
+    WCustomInPlaceEdit* pFirstNameEdit = new WCustomInPlaceEdit( WString::fromUTF8( pi.phone ), uv );
+    tbl->elementAt( cl, 0 )->addWidget( new WLabel( WString::fromUTF8( "Имя" ) ) );
+    tbl->elementAt( cl++, 1 )->addWidget( pFirstNameEdit );
+
+    WCustomInPlaceEdit* pMiddleNameEdit = new WCustomInPlaceEdit( WString::fromUTF8( pi.phone ), uv );
+    tbl->elementAt( cl, 0 )->addWidget( new WLabel( WString::fromUTF8( "Отчество" ) ) );
+    tbl->elementAt( cl++, 1 )->addWidget( pMiddleNameEdit );
+
+    WCustomInPlaceEdit* pEmailEdit = new WCustomInPlaceEdit( WString::fromUTF8( pi.phone ), uv );
+    std::string email_match = "^[A-Z0-9._%-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}$";
+    WRegExpValidator* pEmailValidator = new WRegExpValidator( email_match );
+    pEmailValidator->setFlags( MatchCaseInsensitive );
+    pEmailValidator->setMandatory( true );
+    pEmailEdit->lineEdit()->setValidator( pEmailValidator );
+    tbl->elementAt( cl, 0 )->addWidget( new WLabel( WString::fromUTF8( "Электронная почта" ) ) );
+    tbl->elementAt( cl++, 1 )->addWidget( pEmailEdit );
+
+    WCustomInPlaceEdit* pOwnerPhoneEdit = new WCustomInPlaceEdit( WString::fromUTF8( pi.phone ), uv );
+    std::string phone_match = "^[1-9]{1}[0-9]{7,14}$";
+    WRegExpValidator* pPhoneValidator = new WRegExpValidator( phone_match );
+    pPhoneValidator->setFlags( MatchCaseInsensitive );
+    pPhoneValidator->setMandatory( true );
+    pOwnerPhoneEdit->lineEdit()->setValidator( pPhoneValidator );
+    tbl->elementAt( cl, 0 )->addWidget( new WLabel( WString::fromUTF8( "Контрольный телефон" ) ) );
+    tbl->elementAt( cl++, 1 )->addWidget( pOwnerPhoneEdit );
 
     WCustomInPlaceEdit* pPhoneEdit = new WCustomInPlaceEdit( WString::fromUTF8( pi.phone ), uv );
+    pPhoneEdit->lineEdit()->setValidator( pPhoneValidator );
     tbl->elementAt( cl, 0 )->addWidget( new WLabel( WString::fromUTF8( "Контактный телефон" ) ) );
     tbl->elementAt( cl++, 1 )->addWidget( pPhoneEdit );
 
+    WCustomInPlaceEdit* pTimeZoneEdit = new WCustomInPlaceEdit( WString::fromUTF8( boost::lexical_cast< std::string >( pi.tzone ) ), uv );
+    WIntValidator* pTimeZoneValidator = new WIntValidator( -12, 12 );
+    pTimeZoneEdit->lineEdit()->setValidator( pTimeZoneValidator );
     tbl->elementAt( cl, 0 )->addWidget( new WLabel( WString::fromUTF8( "Часовой пояс ( UTC )" ) ) );
-    tbl->elementAt( cl++, 1 )->addWidget( new WCustomInPlaceEdit( WString::fromUTF8( boost::lexical_cast< std::string >( pi.tzone ) ), uv ) );
+    tbl->elementAt( cl++, 1 )->addWidget( pTimeZoneEdit );
 
+    pExpand = new WText( WString::fromUTF8( "⇑Скрыть личную инфомацию⇑" ) );
+    pExpand->setStyleClass( "link" );
+    pExpand->clicked().connect( this, &PartnerOptions::onPersonalShowHide );
+    tbl->elementAt( cl, 0 )->setColumnSpan( 2 );
+    tbl->elementAt( cl, 0 )->addWidget( pExpand );
+    tbl->elementAt( cl, 0 )->setContentAlignment( AlignCenter | AlignMiddle );
+    cl++;
+
+    Wt::WSuggestionPopup::Options suggestOptions
+    = { "<b>",         // highlightBeginTag
+        "</b>",        // highlightEndTag
+        ',',           // listSeparator      (for multiple addresses)
+        " \\n",        // whitespace
+        " ",           // wordSeparators     (within an address)
+        ""             // appendReplacedText (prepare next email address)
+       };
+
+    WCustomInPlaceEdit* pManagerEdit = new WCustomInPlaceEdit( WString::fromUTF8( pi.pManager ), uv );
+    WSuggestionPopup* pManagerSuggest = new WSuggestionPopup( suggestOptions );
+
+    std::list< PartnerInfo > lst = PartnerManager::get_mutable_instance().getAll();
+    pManagerSuggest->forEdit( pManagerEdit->lineEdit() );
+    for ( std::list< PartnerInfo >::iterator it = lst.begin(); it != lst.end(); it++ ) {
+        pManagerSuggest->addSuggestion( WString::fromUTF8( it->pManager ), WString::fromUTF8( it->pManager ) );
+    }
     tbl->elementAt( cl, 0 )->addWidget( new WLabel( WString::fromUTF8( "Менеджер" ) ) );
-    tbl->elementAt( cl++, 1 )->addWidget( new WCustomInPlaceEdit( WString::fromUTF8( pi.pManager ), uv ) );
+    tbl->elementAt( cl++, 1 )->addWidget( pManagerEdit );
 
+    WCustomInPlaceEdit* pTariffEdit = new WCustomInPlaceEdit( WString::fromUTF8( pi.tariff.getName() ), uv );
+    TariffManager::TariffListT tariffs = TariffManager::get_mutable_instance().tariffs_list();
+    WSuggestionPopup* pTariffSuggest = new WSuggestionPopup( suggestOptions );
+    pTariffSuggest->forEdit( pTariffEdit->lineEdit() );
+    for ( TariffManager::TariffListT::iterator it = tariffs.begin(); it != tariffs.end(); it++ ) {
+        pTariffSuggest->addSuggestion( WString::fromUTF8( *it ), WString::fromUTF8( *it ) );
+    }
     tbl->elementAt( cl, 0 )->addWidget( new WLabel( WString::fromUTF8( "Тариф" ) ) );
-    tbl->elementAt( cl++, 1 )->addWidget( new WCustomInPlaceEdit( WString::fromUTF8( pi.tariff.getName() ), uv ) );
+    tbl->elementAt( cl++, 1 )->addWidget( pTariffEdit );
 
     tbl->elementAt( cl, 0 )->addWidget( new WLabel( WString::fromUTF8( "Тестовый аккаунт" ) ) );
     tbl->elementAt( cl++, 1 )->addWidget( new WCustomInPlaceEdit( WString::fromUTF8( boost::lexical_cast< std::string >( pi.pIsTrial ) ), uv ) );
@@ -58,10 +137,31 @@ PartnerOptions::PartnerOptions( std::string _pid, Wt::WContainerWidget *parent )
     tbl->elementAt( cl, 0 )->addWidget( new WLabel( WString::fromUTF8( "Пропускная способность" ) ) );
     tbl->elementAt( cl++, 1 )->addWidget( new WCustomInPlaceEdit( WString::fromUTF8( boost::lexical_cast< std::string >( pi.pLimit ) ), uv ) );
 
-    WHBoxLayout* lyt = new WHBoxLayout();
+    if ( pid.empty() ) {
+        isPersonalInfoVisible = true;
+    } else
+        isPersonalInfoVisible = false;
+    onPersonalShowHide();
+
+    WVBoxLayout* lyt = new WVBoxLayout();
     lyt->addWidget( tbl, AlignCenter | AlignMiddle );
 
     setLayout( lyt, AlignCenter | AlignMiddle );
+}
+
+void PartnerOptions::onPersonalShowHide() {
+    if ( isPersonalInfoVisible ) {
+        pExpand->setText( WString::fromUTF8( "⇑Скрыть личную инфомацию⇑" ) );
+        for ( int i = 1; i < 8; i++ ) {
+            tbl->rowAt( i )->show();
+        }
+    } else {
+        pExpand->setText( WString::fromUTF8( "⇓Показать личную инфомацию⇓" ) );
+        for ( int i = 1; i < 8; i++ ) {
+            tbl->rowAt( i )->hide();
+        }
+    }
+    isPersonalInfoVisible = !isPersonalInfoVisible;
 }
 
 PartnerEditor::PartnerEditor( Wt::WContainerWidget* parent ):WContainerWidget( parent ) {
