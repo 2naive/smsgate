@@ -11,6 +11,7 @@
 #include <Wt/WIntValidator>
 #include <Wt/WSuggestionPopup>
 #include <vector>
+#include <iostream>
 
 using namespace Wt;
 
@@ -89,35 +90,49 @@ PartnerOptions::PartnerOptions( std::string _pid, Wt::WContainerWidget *parent )
     tbl->elementAt( cl, 0 )->setContentAlignment( AlignCenter | AlignMiddle );
     cl++;
 
-    Wt::WSuggestionPopup::Options suggestOptions
-    = { "<b>",         // highlightBeginTag
-        "</b>",        // highlightEndTag
-        ',',           // listSeparator      (for multiple addresses)
-        " \\n",        // whitespace
-        " ",           // wordSeparators     (within an address)
-        ""             // appendReplacedText (prepare next email address)
-       };
+    {
+        Wt::WSuggestionPopup::Options suggestOptions
+        = { "<b>",         // highlightBeginTag
+            "</b>",        // highlightEndTag
+            ',',           // listSeparator      (for multiple addresses)
+            " \\n",        // whitespace
+            " ",           // wordSeparators     (within an address)
+            ""             // appendReplacedText (prepare next email address)
+           };
 
-    WCustomInPlaceEdit* pManagerEdit = new WCustomInPlaceEdit( WString::fromUTF8( pi.pManager ), uv );
-    WSuggestionPopup* pManagerSuggest = new WSuggestionPopup( suggestOptions );
-
-    std::list< PartnerInfo > lst = PartnerManager::get_mutable_instance().getAll();
-    pManagerSuggest->forEdit( pManagerEdit->lineEdit() );
-    for ( std::list< PartnerInfo >::iterator it = lst.begin(); it != lst.end(); it++ ) {
-        pManagerSuggest->addSuggestion( WString::fromUTF8( it->pManager ), WString::fromUTF8( it->pManager ) );
+        WCustomInPlaceEdit* pManagerEdit = new WCustomInPlaceEdit( WString::fromUTF8( pi.pManager ), uv );
+        WSuggestionPopup* pManagerSuggest = new WSuggestionPopup( suggestOptions, this );
+        std::list< PartnerInfo > lst = PartnerManager::get_mutable_instance().getAll();
+        pManagerSuggest->forEdit( pManagerEdit->lineEdit(), WSuggestionPopup::DropDownIcon );
+        for ( std::list< PartnerInfo >::iterator it = lst.begin(); it != lst.end(); it++ ) {
+            pManagerSuggest->addSuggestion( WString::fromUTF8( it->pManager ), WString::fromUTF8( it->pManager ) );
+        }
+        tbl->elementAt( cl, 0 )->addWidget( new WLabel( WString::fromUTF8( "Менеджер" ) ) );
+        tbl->elementAt( cl, 1 )->addWidget( pManagerSuggest );
+        tbl->elementAt( cl++, 1 )->addWidget( pManagerEdit );
     }
-    tbl->elementAt( cl, 0 )->addWidget( new WLabel( WString::fromUTF8( "Менеджер" ) ) );
-    tbl->elementAt( cl++, 1 )->addWidget( pManagerEdit );
 
-    WCustomInPlaceEdit* pTariffEdit = new WCustomInPlaceEdit( WString::fromUTF8( pi.tariff.getName() ), uv );
-    TariffManager::TariffListT tariffs = TariffManager::get_mutable_instance().tariffs_list();
-    WSuggestionPopup* pTariffSuggest = new WSuggestionPopup( suggestOptions );
-    pTariffSuggest->forEdit( pTariffEdit->lineEdit() );
-    for ( TariffManager::TariffListT::iterator it = tariffs.begin(); it != tariffs.end(); it++ ) {
-        pTariffSuggest->addSuggestion( WString::fromUTF8( *it ), WString::fromUTF8( *it ) );
+    {
+        Wt::WSuggestionPopup::Options suggestOptions
+        = { "<b>",         // highlightBeginTag
+            "</b>",        // highlightEndTag
+            ',',           // listSeparator      (for multiple addresses)
+            " \\n",        // whitespace
+            " ",           // wordSeparators     (within an address)
+            ""             // appendReplacedText (prepare next email address)
+           };
+
+        WCustomInPlaceEdit* pTariffEdit = new WCustomInPlaceEdit( WString::fromUTF8( pi.tariff.getName() ), uv );
+        TariffManager::TariffListT tariffs = TariffManager::get_mutable_instance().tariffs_list();
+        WSuggestionPopup* pTariffSuggest = new WSuggestionPopup( suggestOptions, this );
+        pTariffSuggest->forEdit( pTariffEdit->lineEdit(), WSuggestionPopup::DropDownIcon );
+        for ( TariffManager::TariffListT::iterator it = tariffs.begin(); it != tariffs.end(); it++ ) {
+            pTariffSuggest->addSuggestion( WString::fromUTF8( *it ), WString::fromUTF8( *it ) );
+        }
+        tbl->elementAt( cl, 0 )->addWidget( new WLabel( WString::fromUTF8( "Тариф" ) ) );
+        tbl->elementAt( cl, 1 )->addWidget( pTariffSuggest );
+        tbl->elementAt( cl++, 1 )->addWidget( pTariffEdit );
     }
-    tbl->elementAt( cl, 0 )->addWidget( new WLabel( WString::fromUTF8( "Тариф" ) ) );
-    tbl->elementAt( cl++, 1 )->addWidget( pTariffEdit );
 
     tbl->elementAt( cl, 0 )->addWidget( new WLabel( WString::fromUTF8( "Тестовый аккаунт" ) ) );
     tbl->elementAt( cl++, 1 )->addWidget( new WCustomInPlaceEdit( WString::fromUTF8( boost::lexical_cast< std::string >( pi.pIsTrial ) ), uv ) );
