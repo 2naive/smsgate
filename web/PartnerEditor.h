@@ -7,6 +7,11 @@
 #include <Wt/WInPlaceEdit>
 #include <Wt/WLineEdit>
 #include <Wt/WCheckBox>
+#include <Wt/WTreeView>
+#include <Wt/WStandardItemModel>
+#include <Wt/WBorderLayout>
+#include <Wt/WHBoxLayout>
+
 
 class WCustomInPlaceEdit: public Wt::WInPlaceEdit {
 public:
@@ -29,6 +34,7 @@ private:
 
     Wt::WLabel* pName;
     Wt::WInPlaceEdit* pNameEditor;
+
 };
 
 class PartnerEditor: public Wt::WContainerWidget {
@@ -36,7 +42,18 @@ public:
     PartnerEditor( Wt::WContainerWidget* parent = 0 );
 
 private:
+    Wt::WStandardItemModel* model_;
+    Wt::WTreeView* treeView_;
+    Wt::WBorderLayout* root;
+    Wt::WHBoxLayout* opts;
 
+    std::vector< int > columns_width;
+    int elements_per_page;
+
+    Wt::WTreeView* buildTreeView( Wt::WStandardItemModel * model );
+    void resizeTreeView( Wt::WTreeView* tw);
+    void buildModel( Wt::WStandardItemModel* data );
+    void onChangeRoot();
 };
 
 #endif // PARTNEREDITOR_H

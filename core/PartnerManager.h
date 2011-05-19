@@ -38,21 +38,21 @@ struct PartnerInfo {
     int pPriority;
     int tzone;
 
-    PartnerInfo(string pName,
-                string pPass,
-                string pId,
-                string pCName,
-                string pManager,
-                string phone,
-                string text,
-                string tariff,
-                double pBalance,
-                double pCredit,
-                int pLimit,
-                bool pPostPay,
-                bool pIsTrial,
-                int pPriority,
-                int tzone ) {
+    PartnerInfo(string pName = "",
+                string pPass = "",
+                string pId = "",
+                string pCName = "",
+                string pManager = "",
+                string phone = "",
+                string text = "",
+                string tariff = "",
+                double pBalance = 50.0,
+                double pCredit = 0.0,
+                int pLimit = 60,
+                bool pPostPay = 0,
+                bool pIsTrial = 0,
+                int pPriority = 0,
+                int tzone = 4 ) {
         this->pName = pName;
         this->pPass = pPass;
         this->pId = pId;
