@@ -62,9 +62,12 @@ PartnerOptions::PartnerOptions( std::string _pid, Wt::WContainerWidget *parent )
 PartnerEditor::PartnerEditor( Wt::WContainerWidget* parent ):WContainerWidget( parent ) {
 
     std::list< PartnerInfo > lst = PartnerManager::get_mutable_instance().getAll();
+    WHBoxLayout* cards_layout = new WHBoxLayout();
 
     for ( std::list< PartnerInfo >::iterator it = lst.begin(); it != lst.end(); it++ ) {
         std::string pid = it->pId;
-        addWidget( new PartnerOptions( pid ) );
+        cards_layout->addWidget( new PartnerOptions( pid ) );
     }
+
+    setLayout( cards_layout );
 }
