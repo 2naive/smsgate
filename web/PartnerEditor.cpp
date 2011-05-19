@@ -147,8 +147,8 @@ void PartnerEditor::onChangeRoot() {
         opts->addWidget( new PartnerOptions( "" ) );
     }
 
-    if ( selected.size() == 1 ) {
-        Wt::WModelIndex index = *selected.begin();
+    for ( Wt::WModelIndexSet::iterator it = selected.begin(); it != selected.end(); it++ ) {
+        Wt::WModelIndex index = *it;
 
         WStandardItem* iroot = model_->itemFromIndex( index.parent() );
         WStandardItem* item = iroot->child( index.row(), 1 );
