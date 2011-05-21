@@ -203,7 +203,7 @@ PartnerOptions::PartnerOptions( std::string _pid, Wt::WContainerWidget *parent )
     WSpinBox* pLimitEdit = new WSpinBox();
     pLimitEdit->setSingleStep( 0.1 );
     pLimitEdit->setMinimum( 0 );
-    pLimitEdit->setValue( pi.pBalance );
+    pLimitEdit->setValue( pi.pLimit );
     tbl->elementAt( cl, 0 )->addWidget( new WLabel( WString::fromUTF8( "Пропускная способность" ) ) );
     tbl->elementAt( cl, 0 )->setContentAlignment( AlignMiddle );
     tbl->elementAt( cl, 1 )->setContentAlignment( AlignCenter );
