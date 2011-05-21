@@ -103,9 +103,14 @@ PartnerOptions::PartnerOptions( std::string _pid, Wt::WContainerWidget *parent )
         WCustomInPlaceEdit* pManagerEdit = new WCustomInPlaceEdit( WString::fromUTF8( pi.pManager ), uv );
         WSuggestionPopup* pManagerSuggest = new WSuggestionPopup( suggestOptions, this );
         std::list< PartnerInfo > lst = PartnerManager::get_mutable_instance().getAll();
-        pManagerSuggest->forEdit( pManagerEdit->lineEdit(), WSuggestionPopup::DropDownIcon );
+        pManagerSuggest->forEdit( pManagerEdit->lineEdit(), WSuggestionPopup::Editing | WSuggestionPopup::DropDownIcon );
+        pManagerSuggest->activated().connect( boost::bind( &PartnerOptions::onSuggestionActivated, this, pManagerSuggest, _1, pManagerEdit ) );
+        std::set< std::string > lst_unique;
         for ( std::list< PartnerInfo >::iterator it = lst.begin(); it != lst.end(); it++ ) {
-            pManagerSuggest->addSuggestion( WString::fromUTF8( it->pManager ), WString::fromUTF8( it->pManager ) );
+            lst_unique.insert( it->pManager );
+        }
+        for ( std::set< std::string >::iterator it = lst_unique.begin(); it != lst_unique.end(); it++ ) {
+            pManagerSuggest->addSuggestion( WString::fromUTF8( *it ), WString::fromUTF8( *it ) );
         }
         tbl->elementAt( cl, 0 )->addWidget( new WLabel( WString::fromUTF8( "Менеджер" ) ) );
         tbl->elementAt( cl, 1 )->addWidget( pManagerSuggest );
@@ -125,8 +130,10 @@ PartnerOptions::PartnerOptions( std::string _pid, Wt::WContainerWidget *parent )
         WCustomInPlaceEdit* pTariffEdit = new WCustomInPlaceEdit( WString::fromUTF8( pi.tariff.getName() ), uv );
         TariffManager::TariffListT tariffs = TariffManager::get_mutable_instance().tariffs_list();
         WSuggestionPopup* pTariffSuggest = new WSuggestionPopup( suggestOptions, this );
-        pTariffSuggest->forEdit( pTariffEdit->lineEdit(), WSuggestionPopup::DropDownIcon );
-        for ( TariffManager::TariffListT::iterator it = tariffs.begin(); it != tariffs.end(); it++ ) {
+        pTariffSuggest->forEdit( pTariffEdit->lineEdit(), WSuggestionPopup::Editing | WSuggestionPopup::DropDownIcon );
+        pTariffSuggest->activated().connect( boost::bind( &PartnerOptions::onSuggestionActivated, this, pTariffSuggest, _1, pTariffEdit ) );
+        std::set< std::string > tariffs_unique( tariffs.begin(), tariffs.end() );
+        for ( std::set< std::string >::iterator it = tariffs_unique.begin(); it != tariffs_unique.end(); it++ ) {
             pTariffSuggest->addSuggestion( WString::fromUTF8( *it ), WString::fromUTF8( *it ) );
         }
         tbl->elementAt( cl, 0 )->addWidget( new WLabel( WString::fromUTF8( "Тариф" ) ) );
@@ -162,6 +169,12 @@ PartnerOptions::PartnerOptions( std::string _pid, Wt::WContainerWidget *parent )
     lyt->addWidget( tbl, AlignCenter | AlignMiddle );
 
     setLayout( lyt, AlignCenter | AlignMiddle );
+}
+
+
+void PartnerOptions::onSuggestionActivated( WSuggestionPopup* sugg, int index, WCustomInPlaceEdit* widget ) {
+    WString data = boost::any_cast< WString >( sugg->model()->data( index, 1 ) );
+    widget->setText( data );
 }
 
 void PartnerOptions::onPersonalShowHide() {

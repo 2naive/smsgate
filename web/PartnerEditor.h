@@ -39,6 +39,7 @@ private:
     Wt::WText* pExpand;
 
     void onPersonalShowHide();
+    void onSuggestionActivated( Wt::WSuggestionPopup* sugg, int index, WCustomInPlaceEdit* widget );
 };
 
 class PartnerEditor: public Wt::WContainerWidget {
