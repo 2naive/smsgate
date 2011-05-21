@@ -27,8 +27,14 @@ struct PartnerInfo {
     string pId;
     string pCName;
     string pManager;
+    string pFirstName;
+    string pLastName;
+    string pMiddleName;
+    string pCompanyName;
+    string pCompanyAddress;
+    string pEmail;
     string phone;
-    string text;
+    string pContact;
     Tariff tariff;
     double pBalance;
     double pCredit;
@@ -43,8 +49,14 @@ struct PartnerInfo {
                 string pId = "",
                 string pCName = "",
                 string pManager = "",
+                string pFirstName = "",
+                string pLastName = "",
+                string pMiddleName = "",
+                string pCompanyName = "",
+                string pCompanyAddress = "",
+                string pEmail = "",
                 string phone = "",
-                string text = "",
+                string pContact = "",
                 string tariff = "",
                 double pBalance = 50.0,
                 double pCredit = 0.0,
@@ -58,8 +70,14 @@ struct PartnerInfo {
         this->pId = pId;
         this->pCName = pCName;
         this->pManager = pManager;
+        this->pFirstName = pFirstName,
+        this->pLastName = pLastName,
+        this->pMiddleName = pMiddleName,
+        this->pCompanyName = pCompanyName,
+        this->pCompanyAddress = pCompanyAddress,
+        this->pEmail = pEmail,
         this->phone = phone;
-        this->text = text;
+        this->pContact = pContact;
         try {
             this->tariff = TariffManager::get_mutable_instance().loadTariff( tariff );
         } catch ( std::exception& err ) {

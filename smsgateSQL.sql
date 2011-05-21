@@ -122,7 +122,14 @@ CREATE TABLE partners (
     plimit      INTEGER DEFAULT 60,
     postplay    BOOL DEFAULT FALSE,
     trial       BOOL DEFAULT FALSE,
-    priority    INTEGER DEFAULT 0
+    priority    INTEGER DEFAULT 0,
+    ts          INTEGER DEFAULT 4,
+    fname	TEXT NOT NULL DEFAULT '',
+    lname	TEXT NOT NULL DEFAULT '',
+    mname	TEXT NOT NULL DEFAULT '',
+    companyname	TEXT NOT NULL DEFAULT '',
+    caddress	TEXT NOT NULL DEFAULT '',
+    email	TEXT NOT NULL DEFAULT ''
 );
 
 CREATE TABLE mccmnc (

@@ -10,6 +10,8 @@
 #include <Wt/WRegExpValidator>
 #include <Wt/WIntValidator>
 #include <Wt/WSuggestionPopup>
+#include <Wt/WComboBox>
+#include <Wt/WSpinBox>
 #include <vector>
 #include <iostream>
 
@@ -41,19 +43,19 @@ PartnerOptions::PartnerOptions( std::string _pid, Wt::WContainerWidget *parent )
     tbl->elementAt( cl, 1 )->setContentAlignment( AlignRight | AlignMiddle );
     tbl->elementAt( cl++, 1 )->addWidget( saveBtn );
 
-    WCustomInPlaceEdit* pLastNameEdit = new WCustomInPlaceEdit( WString::fromUTF8( pi.phone ), uv );
+    WCustomInPlaceEdit* pLastNameEdit = new WCustomInPlaceEdit( WString::fromUTF8( pi.pLastName ), uv );
     tbl->elementAt( cl, 0 )->addWidget( new WLabel( WString::fromUTF8( "Фамилия" ) ) );
     tbl->elementAt( cl++, 1 )->addWidget( pLastNameEdit );
 
-    WCustomInPlaceEdit* pFirstNameEdit = new WCustomInPlaceEdit( WString::fromUTF8( pi.phone ), uv );
+    WCustomInPlaceEdit* pFirstNameEdit = new WCustomInPlaceEdit( WString::fromUTF8( pi.pFirstName ), uv );
     tbl->elementAt( cl, 0 )->addWidget( new WLabel( WString::fromUTF8( "Имя" ) ) );
     tbl->elementAt( cl++, 1 )->addWidget( pFirstNameEdit );
 
-    WCustomInPlaceEdit* pMiddleNameEdit = new WCustomInPlaceEdit( WString::fromUTF8( pi.phone ), uv );
+    WCustomInPlaceEdit* pMiddleNameEdit = new WCustomInPlaceEdit( WString::fromUTF8( pi.pMiddleName ), uv );
     tbl->elementAt( cl, 0 )->addWidget( new WLabel( WString::fromUTF8( "Отчество" ) ) );
     tbl->elementAt( cl++, 1 )->addWidget( pMiddleNameEdit );
 
-    WCustomInPlaceEdit* pEmailEdit = new WCustomInPlaceEdit( WString::fromUTF8( pi.phone ), uv );
+    WCustomInPlaceEdit* pEmailEdit = new WCustomInPlaceEdit( WString::fromUTF8( pi.pEmail ), uv );
     std::string email_match = "^[A-Z0-9._%-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}$";
     WRegExpValidator* pEmailValidator = new WRegExpValidator( email_match );
     pEmailValidator->setFlags( MatchCaseInsensitive );
@@ -71,10 +73,18 @@ PartnerOptions::PartnerOptions( std::string _pid, Wt::WContainerWidget *parent )
     tbl->elementAt( cl, 0 )->addWidget( new WLabel( WString::fromUTF8( "Контрольный телефон" ) ) );
     tbl->elementAt( cl++, 1 )->addWidget( pOwnerPhoneEdit );
 
-    WCustomInPlaceEdit* pPhoneEdit = new WCustomInPlaceEdit( WString::fromUTF8( pi.phone ), uv );
+    WCustomInPlaceEdit* pPhoneEdit = new WCustomInPlaceEdit( WString::fromUTF8( pi.pContact ), uv );
     pPhoneEdit->lineEdit()->setValidator( pPhoneValidator );
     tbl->elementAt( cl, 0 )->addWidget( new WLabel( WString::fromUTF8( "Контактный телефон" ) ) );
     tbl->elementAt( cl++, 1 )->addWidget( pPhoneEdit );
+
+    WCustomInPlaceEdit* pCompanyEdit = new WCustomInPlaceEdit( WString::fromUTF8( pi.pCompanyName ), uv );
+    tbl->elementAt( cl, 0 )->addWidget( new WLabel( WString::fromUTF8( "Название компании" ) ) );
+    tbl->elementAt( cl++, 1 )->addWidget( pCompanyEdit );
+
+    WCustomInPlaceEdit* pCAddressEdit = new WCustomInPlaceEdit( WString::fromUTF8( pi.pCompanyAddress ), uv );
+    tbl->elementAt( cl, 0 )->addWidget( new WLabel( WString::fromUTF8( "Адрес сайта компании" ) ) );
+    tbl->elementAt( cl++, 1 )->addWidget( pCAddressEdit );
 
     WCustomInPlaceEdit* pTimeZoneEdit = new WCustomInPlaceEdit( WString::fromUTF8( boost::lexical_cast< std::string >( pi.tzone ) ), uv );
     WIntValidator* pTimeZoneValidator = new WIntValidator( -12, 12 );
@@ -89,6 +99,10 @@ PartnerOptions::PartnerOptions( std::string _pid, Wt::WContainerWidget *parent )
     tbl->elementAt( cl, 0 )->addWidget( pExpand );
     tbl->elementAt( cl, 0 )->setContentAlignment( AlignCenter | AlignMiddle );
     cl++;
+
+    WCustomInPlaceEdit* pLoginEdit = new WCustomInPlaceEdit( WString::fromUTF8( pi.pName ), uv );
+    tbl->elementAt( cl, 0 )->addWidget( new WLabel( WString::fromUTF8( "Логин" ) ) );
+    tbl->elementAt( cl++, 1 )->addWidget( pLoginEdit );
 
     {
         Wt::WSuggestionPopup::Options suggestOptions
@@ -141,23 +155,59 @@ PartnerOptions::PartnerOptions( std::string _pid, Wt::WContainerWidget *parent )
         tbl->elementAt( cl++, 1 )->addWidget( pTariffEdit );
     }
 
+    WComboBox* pTrialEdit = new WComboBox();
+    pTrialEdit->insertItem( 0, WString::fromUTF8( "Нет" ) );
+    pTrialEdit->insertItem( 1, WString::fromUTF8( "Да" ) );
+    pi.pIsTrial ? pTrialEdit->setCurrentIndex( 1 ): pTrialEdit->setCurrentIndex( 0 );
     tbl->elementAt( cl, 0 )->addWidget( new WLabel( WString::fromUTF8( "Тестовый аккаунт" ) ) );
-    tbl->elementAt( cl++, 1 )->addWidget( new WCustomInPlaceEdit( WString::fromUTF8( boost::lexical_cast< std::string >( pi.pIsTrial ) ), uv ) );
+    tbl->elementAt( cl, 0 )->setContentAlignment( AlignMiddle );
+    tbl->elementAt( cl, 1 )->setContentAlignment( AlignCenter );
+    tbl->elementAt( cl++, 1 )->addWidget( pTrialEdit );
 
+
+    WSpinBox* pPriorityEdit = new WSpinBox();
+    pPriorityEdit->setSingleStep( 1.0 );
+    pPriorityEdit->setMinimum( 0 );
+    pPriorityEdit->setMaximum( 99 );
     tbl->elementAt( cl, 0 )->addWidget( new WLabel( WString::fromUTF8( "Приоритет" ) ) );
-    tbl->elementAt( cl++, 1 )->addWidget( new WCustomInPlaceEdit( WString::fromUTF8( boost::lexical_cast< std::string >( pi.pPriority ) ), uv ) );
+    tbl->elementAt( cl, 0 )->setContentAlignment( AlignMiddle );
+    tbl->elementAt( cl, 1 )->setContentAlignment( AlignCenter );
+    tbl->elementAt( cl++, 1 )->addWidget( pPriorityEdit );
 
+    WComboBox* pPostEdit = new WComboBox();
+    pPostEdit->insertItem( 0, WString::fromUTF8( "Нет" ) );
+    pPostEdit->insertItem( 1, WString::fromUTF8( "Да" ) );
+    pi.pPostPay ? pTrialEdit->setCurrentIndex( 1 ): pTrialEdit->setCurrentIndex( 0 );
     tbl->elementAt( cl, 0 )->addWidget( new WLabel( WString::fromUTF8( "Постоплата" ) ) );
-    tbl->elementAt( cl++, 1 )->addWidget( new WCustomInPlaceEdit( WString::fromUTF8( boost::lexical_cast< std::string >( pi.pPostPay ) ), uv ) );
+    tbl->elementAt( cl, 0 )->setContentAlignment( AlignMiddle );
+    tbl->elementAt( cl, 1 )->setContentAlignment( AlignCenter );
+    tbl->elementAt( cl++, 1 )->addWidget( pPostEdit );
 
+    WSpinBox* pBalanceEdit = new WSpinBox();
+    pBalanceEdit->setSingleStep( 0.01 );
+    pBalanceEdit->setValue( pi.pBalance );
     tbl->elementAt( cl, 0 )->addWidget( new WLabel( WString::fromUTF8( "Баланс" ) ) );
-    tbl->elementAt( cl++, 1 )->addWidget( new WCustomInPlaceEdit( WString::fromUTF8( boost::lexical_cast< std::string >( pi.pBalance ) ), uv ) );
+    tbl->elementAt( cl, 0 )->setContentAlignment( AlignMiddle );
+    tbl->elementAt( cl, 1 )->setContentAlignment( AlignCenter );
+    tbl->elementAt( cl++, 1 )->addWidget( pBalanceEdit );
 
+    WSpinBox* pCreditEdit = new WSpinBox();
+    pCreditEdit->setSingleStep( 0.01 );
+    pCreditEdit->setMinimum( 0 );
+    pCreditEdit->setValue( pi.pCredit );
     tbl->elementAt( cl, 0 )->addWidget( new WLabel( WString::fromUTF8( "Кредитный лимит" ) ) );
-    tbl->elementAt( cl++, 1 )->addWidget( new WCustomInPlaceEdit( WString::fromUTF8( boost::lexical_cast< std::string >( pi.pCredit ) ), uv ) );
+    tbl->elementAt( cl, 0 )->setContentAlignment( AlignMiddle );
+    tbl->elementAt( cl, 1 )->setContentAlignment( AlignCenter );
+    tbl->elementAt( cl++, 1 )->addWidget( pCreditEdit );
 
+    WSpinBox* pLimitEdit = new WSpinBox();
+    pLimitEdit->setSingleStep( 0.1 );
+    pLimitEdit->setMinimum( 0 );
+    pLimitEdit->setValue( pi.pBalance );
     tbl->elementAt( cl, 0 )->addWidget( new WLabel( WString::fromUTF8( "Пропускная способность" ) ) );
-    tbl->elementAt( cl++, 1 )->addWidget( new WCustomInPlaceEdit( WString::fromUTF8( boost::lexical_cast< std::string >( pi.pLimit ) ), uv ) );
+    tbl->elementAt( cl, 0 )->setContentAlignment( AlignMiddle );
+    tbl->elementAt( cl, 1 )->setContentAlignment( AlignCenter );
+    tbl->elementAt( cl++, 1 )->addWidget( pLimitEdit );
 
     if ( pid.empty() ) {
         isPersonalInfoVisible = true;
@@ -252,7 +302,7 @@ void PartnerEditor::buildModel( WStandardItemModel* data ) {
     std::list< PartnerInfo > lst = PartnerManager::get_mutable_instance().getAll();
     for ( std::list< PartnerInfo >::iterator it = lst.begin(); it != lst.end(); it++ ) {
         WStandardItem *pName,*pId;
-        pName = new WStandardItem( WString::fromUTF8( it->pCName ) );
+        pName = new WStandardItem( WString::fromUTF8( it->pName ) );
         pId = new WStandardItem( WString::fromUTF8( it->pId ) );
 
         std::vector< WStandardItem* > row;

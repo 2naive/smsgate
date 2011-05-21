@@ -70,7 +70,7 @@ void PartnerManager::loadFromDb() {
         ConnectionPTR conn = cHold.get();
         TransactionPTR tr = db.openTransaction( conn, "PartnerManager::loadFromDb" );
         std::ostringstream dbreq1;
-        dbreq1  << " SELECT pid, uname, pass, cname, manager, balance, credit, plimit, postplay, trial, priority, phone, contact, tariff, ts FROM partners;";
+        dbreq1  << " SELECT pid, uname, pass, cname, manager, balance, credit, plimit, postplay, trial, priority, phone, contact, tariff, ts, fname, lname, mname, companyname, caddress, email FROM partners;";
 
         Result res = tr->exec( dbreq1.str() );
         tr->commit();
@@ -83,9 +83,15 @@ void PartnerManager::loadFromDb() {
                                             (*dbr)[0].as<string>(),
                                             (*dbr)[3].as<string>(),
                                             (*dbr)[4].as<string>(),
+                                            (*dbr)[15].as<string>(),
+                                            (*dbr)[16].as<string>(),
+                                            (*dbr)[17].as<string>(),
+                                            (*dbr)[18].as<string>(),
+                                            (*dbr)[19].as<string>(),
+                                            (*dbr)[20].as<string>(),
                                             (*dbr)[11].as<string>(),
                                             (*dbr)[12].as<string>(),
-                                            (*dbr)[13].as<string>(),
+                                            (*dbr)[13].as<string>(),                                  
                                             (*dbr)[5].as<double>(),
                                             (*dbr)[6].as<double>(),
                                             (*dbr)[7].as<int>(),
