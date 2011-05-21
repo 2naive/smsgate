@@ -177,7 +177,7 @@ PartnerOptions::PartnerOptions( std::string _pid, Wt::WContainerWidget *parent )
     WComboBox* pPostEdit = new WComboBox();
     pPostEdit->insertItem( 0, WString::fromUTF8( "Нет" ) );
     pPostEdit->insertItem( 1, WString::fromUTF8( "Да" ) );
-    pi.pPostPay ? pTrialEdit->setCurrentIndex( 1 ): pTrialEdit->setCurrentIndex( 0 );
+    pi.pPostPay ? pPostEdit->setCurrentIndex( 1 ): pPostEdit->setCurrentIndex( 0 );
     tbl->elementAt( cl, 0 )->addWidget( new WLabel( WString::fromUTF8( "Постоплата" ) ) );
     tbl->elementAt( cl, 0 )->setContentAlignment( AlignMiddle );
     tbl->elementAt( cl, 1 )->setContentAlignment( AlignCenter );
@@ -230,12 +230,12 @@ void PartnerOptions::onSuggestionActivated( WSuggestionPopup* sugg, int index, W
 void PartnerOptions::onPersonalShowHide() {
     if ( isPersonalInfoVisible ) {
         pExpand->setText( WString::fromUTF8( "⇑Скрыть личную инфомацию⇑" ) );
-        for ( int i = 1; i < 8; i++ ) {
+        for ( int i = 1; i < 10; i++ ) {
             tbl->rowAt( i )->show();
         }
     } else {
         pExpand->setText( WString::fromUTF8( "⇓Показать личную инфомацию⇓" ) );
-        for ( int i = 1; i < 8; i++ ) {
+        for ( int i = 1; i < 10; i++ ) {
             tbl->rowAt( i )->hide();
         }
     }
