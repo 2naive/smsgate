@@ -201,6 +201,8 @@ void PartnerManager::updateToDb( PartnerInfo& pi ) {
 
     out << "parsed;";
     Logger::get_mutable_instance().smsloginfo( out.str() );
+
+    loadFromDb();
 }
 
 void PartnerManager::setPid( PartnerInfo& pi ) {
@@ -220,6 +222,5 @@ void PartnerManager::setPid( PartnerInfo& pi ) {
     }
 
     pi.pId = boost::lexical_cast< std::string >( pId_max + 1 );
-    pbox.get<1>().insert( pi );
 }
 
