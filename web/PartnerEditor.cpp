@@ -290,7 +290,6 @@ PartnerEditor::PartnerEditor( Wt::WContainerWidget* parent ):WContainerWidget( p
 
     root = new WBorderLayout();
     opts = new WHBoxLayout();
-    WVBoxLayout* tree_lyt = new WVBoxLayout();
     WPushButton* refresh= new WPushButton( WString::fromUTF8("Обновить") );
     refresh->clicked().connect( boost::bind( &PartnerEditor::onPartnersUpdated, this, "", false ) );
     refresh->setMaximumSize( WLength::Auto, WLength( 1, WLength::Centimeter ) );
@@ -304,14 +303,12 @@ PartnerEditor::PartnerEditor( Wt::WContainerWidget* parent ):WContainerWidget( p
     treeView_ = buildTreeView( model_ );
     resizeTreeView( treeView_ );
 
-    tree_lyt->addWidget( treeView_ );
-    tree_lyt->addWidget( refresh );
-
     PartnerOptions* popt = new PartnerOptions( "" );
     popt->updated().connect( this, &PartnerEditor::onPartnersUpdated );
     opts->addWidget( popt );
 
-    root->add( tree_lyt, WBorderLayout::West );
+    root->addWidget( treeView_, WBorderLayout::West );
+    root->addWidget( refresh, WBorderLayout::East );
     root->add( opts, WBorderLayout::Center );
     setLayout( root );
 }
