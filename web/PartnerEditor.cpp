@@ -23,6 +23,7 @@ PartnerOptions::PartnerOptions( std::string _pid, Wt::WContainerWidget *parent )
         pi = PartnerManager::get_mutable_instance().findById( pid );
     } catch ( ... ) {}
     WString uv = WString::fromUTF8( "Значение не задано" );
+    WString up = WString::fromUTF8( "Значение скрыто" );
 
     int cl = 0;
 
@@ -102,6 +103,10 @@ PartnerOptions::PartnerOptions( std::string _pid, Wt::WContainerWidget *parent )
     pLoginEdit = new WCustomInPlaceEdit( WString::fromUTF8( pi.pName ), uv );
     tbl->elementAt( cl, 0 )->addWidget( new WLabel( WString::fromUTF8( "Логин" ) ) );
     tbl->elementAt( cl++, 1 )->addWidget( pLoginEdit );
+
+    pPassEdit = new WCustomInPlaceEdit( WString::fromUTF8( "" ), up );
+    tbl->elementAt( cl, 0 )->addWidget( new WLabel( WString::fromUTF8( "Пароль" ) ) );
+    tbl->elementAt( cl++, 1 )->addWidget( pPassEdit );
 
     {
         Wt::WSuggestionPopup::Options suggestOptions
@@ -273,6 +278,8 @@ void PartnerOptions::onBtnSave() {
     }
 
     pi.pName = pLoginEdit->text().toUTF8();
+    if ( !pPassEdit->text().toUTF8().empty() )
+        pi.pPass = pPassEdit->text().toUTF8();
     pi.pManager = pManagerEdit->text().toUTF8();
     pi.tariff = TariffManager::get_mutable_instance().loadTariff( pTariffEdit->text().toUTF8() );
     pi.pIsTrial = ( pTrialEdit->currentIndex() == 1 );
