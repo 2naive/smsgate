@@ -117,3 +117,109 @@ void PartnerManager::loadFromDb() {
     Logger::get_mutable_instance().smsloginfo( out.str() );
 }
 
+void PartnerManager::updateToDb( PartnerInfo& pi ) {
+    boost::recursive_mutex::scoped_lock lck( pmlock );
+
+    if ( pi.pId.empty() ) {
+        setPid( pi );
+    }
+
+    PGSql& db = PGSqlConnPoolSystem::get_mutable_instance().getdb();
+
+    std::ostringstream out;
+    out << "Loading partners data ";
+    try {
+
+        PGSql::ConnectionHolder cHold( db );
+        ConnectionPTR conn = cHold.get();
+        TransactionPTR tr = db.openTransaction( conn, "PartnerManager::updateToDb" );
+        std::ostringstream dbreq1;
+        dbreq1  << "update partners set "
+                << "uname='" << pi.pName << "' , "
+                << "pass='" << pi.pPass << "' , "
+                << "cname='" << pi.pCName << "' , "
+                << "manager='" << pi.pManager << "' , "
+                << "balance='" << pi.pBalance << "' , "
+                << "credit='" << pi.pCredit << "' , "
+                << "plimit='" << pi.pLimit << "' , "
+                << "postplay='" << pi.pPostPay << "' , "
+                << "trial='" << pi.pIsTrial << "' , "
+                << "priority='" << pi.pPriority << "' , "
+                << "phone='" << pi.phone << "' , "
+                << "contact='" << pi.pContact << "' , "
+                << "tariff='" << pi.tariff.getName() << "' , "
+                << "ts='" << pi.tzone << "' , "
+                << "fname='" << pi.pFirstName << "' , "
+                << "lname='" << pi.pLastName << "' , "
+                << "mname='" << pi.pMiddleName << "' , "
+                << "companyname='" << pi.pCompanyName << "' , "
+                << "caddress='" << pi.pCompanyAddress << "' , "
+                << "email='" << pi.pEmail << "' "
+                << "WHERE pid='" << pi.pId << "' returning pid;";
+
+
+        Result res = tr->exec( dbreq1.str() );
+        tr->commit();
+        if ( res.size() == 0 ) {
+            TransactionPTR tr = db.openTransaction( conn, "PartnerManager::insertToDb" );
+            std::ostringstream dbreq1;
+            dbreq1  << "INSERT into partners "
+                    << "(pid, uname, pass, cname, manager, balance, credit, plimit, postplay, trial, priority, phone, contact, tariff, ts, fname, lname, mname, companyname, caddress, email ) "
+                    << "VALUES ("
+                    << "'" << pi.pId << "',"
+                    << "'" << pi.pName << "',"
+                    << "'" << pi.pPass << "',"
+                    << "'" << pi.pCName << "',"
+                    << "'" << pi.pManager << "',"
+                    << "'" << pi.pBalance << "',"
+                    << "'" << pi.pCredit << "',"
+                    << "'" << pi.pLimit << "',"
+                    << "'" << pi.pPostPay << "',"
+                    << "'" << pi.pIsTrial << "',"
+                    << "'" << pi.pPriority << "',"
+                    << "'" << pi.phone << "',"
+                    << "'" << pi.pContact << "',"
+                    << "'" << pi.tariff.getName() << "',"
+                    << "'" << pi.tzone << "',"
+                    << "'" << pi.pFirstName << "',"
+                    << "'" << pi.pLastName << "',"
+                    << "'" << pi.pMiddleName << "',"
+                    << "'" << pi.pCompanyName << "',"
+                    << "'" << pi.pCompanyAddress << "',"
+                    << "'" << pi.pEmail << "');";
+
+            tr->exec( dbreq1.str() );
+            tr->commit();
+        }
+    } catch ( PGSqlError & err ) {
+        out << "error; " << err.what();
+        Logger::get_mutable_instance().smslogerr( out.str() );
+    } catch ( PGBrokenConnection& err ) {
+        out << "error; " << err.what();
+        Logger::get_mutable_instance().smslogwarn( out.str() );
+    }
+
+    out << "parsed;";
+    Logger::get_mutable_instance().smsloginfo( out.str() );
+}
+
+void PartnerManager::setPid( PartnerInfo& pi ) {
+    boost::recursive_mutex::scoped_lock lck( pmlock );
+
+    pBox::nth_index<2>::type::iterator it;
+
+    int pId_max = 100;
+    for ( it = pbox.get<2>().begin(); it != pbox.get<2>().end(); it++ ) {
+        try {
+            if ( boost::lexical_cast< int >( it->pId ) > pId_max ) {
+                pId_max = boost::lexical_cast< int >( it->pId );
+            }
+        } catch ( ... ) {
+            continue;
+        }
+    }
+
+    pi.pId = boost::lexical_cast< std::string >( pId_max + 1 );
+    pbox.get<1>().insert( pi );
+}
+

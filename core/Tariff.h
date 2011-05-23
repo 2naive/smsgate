@@ -303,7 +303,7 @@ public:
     double currencyConvert( TariffCurrency from, TariffCurrency to, double price );
 
     void setName( std::string n ) { tariff.name = n; }
-    std::string getName( ) { return tariff.name; };
+    std::string getName( ) const { return tariff.name; };
 
     template<class Archive>
         void serialize(Archive & ar, const unsigned int) {

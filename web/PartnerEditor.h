@@ -11,6 +11,9 @@
 #include <Wt/WStandardItemModel>
 #include <Wt/WBorderLayout>
 #include <Wt/WHBoxLayout>
+#include <Wt/WComboBox>
+#include <Wt/WSpinBox>
+
 
 
 class WCustomInPlaceEdit: public Wt::WInPlaceEdit {
@@ -29,17 +32,39 @@ class PartnerOptions: public Wt::WContainerWidget {
 public:
     PartnerOptions( std::string pid, Wt::WContainerWidget* parent = 0 );
 
+    Wt::Signal< std::string, bool >& updated() { return updated_; }
 private:
     std::string pid;
     bool isPersonalInfoVisible;
+    Wt::Signal< std::string, bool > updated_;
 
     Wt::WTable* tbl;
     Wt::WLabel* pName;
     Wt::WInPlaceEdit* pNameEditor;
     Wt::WText* pExpand;
+    WCustomInPlaceEdit* pCNameEdit;
+    WCustomInPlaceEdit* pLastNameEdit;
+    WCustomInPlaceEdit* pFirstNameEdit;
+    WCustomInPlaceEdit* pMiddleNameEdit;
+    WCustomInPlaceEdit* pEmailEdit;
+    WCustomInPlaceEdit* pOwnerPhoneEdit;
+    WCustomInPlaceEdit* pPhoneEdit;
+    WCustomInPlaceEdit* pCompanyEdit;
+    WCustomInPlaceEdit* pCAddressEdit;
+    WCustomInPlaceEdit* pTimeZoneEdit;
+    WCustomInPlaceEdit* pLoginEdit;
+    WCustomInPlaceEdit* pManagerEdit;
+    WCustomInPlaceEdit* pTariffEdit;
+    Wt::WComboBox* pTrialEdit;
+    Wt::WSpinBox* pPriorityEdit;
+    Wt::WComboBox* pPostEdit;
+    Wt::WSpinBox* pBalanceEdit;
+    Wt::WSpinBox* pCreditEdit;
+    Wt::WSpinBox* pLimitEdit;
 
     void onPersonalShowHide();
     void onSuggestionActivated( Wt::WSuggestionPopup* sugg, int index, WCustomInPlaceEdit* widget );
+    void onBtnSave();
 };
 
 class PartnerEditor: public Wt::WContainerWidget {
@@ -58,7 +83,9 @@ private:
     Wt::WTreeView* buildTreeView( Wt::WStandardItemModel * model );
     void resizeTreeView( Wt::WTreeView* tw);
     void buildModel( Wt::WStandardItemModel* data );
+    void updateModel( Wt::WStandardItemModel* data );
     void onChangeRoot();
+    void onPartnersUpdated( std::string pid, bool );
 };
 
 #endif // PARTNEREDITOR_H

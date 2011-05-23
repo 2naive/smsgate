@@ -105,9 +105,12 @@ public:
     PartnerInfo findById( string id ) throw ( PartnerNotFoundError );
     std::list< PartnerInfo > getAll();
 
-    void loadFromDb();
+    void loadFromDb();    
+    void updateToDb( PartnerInfo& );
 
 private:
+    void setPid( PartnerInfo& );
+
     typedef boost::multi_index::multi_index_container<
                 PartnerInfo,
                 indexed_by<
