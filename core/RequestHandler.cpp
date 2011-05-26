@@ -34,8 +34,6 @@ RequestHandler::~RequestHandler() {
 
 void RequestHandler::handleRequest(const Wt::Http::Request& request, Wt::Http::Response& response) {
 
-        Logger::get_mutable_instance().smslogwarn( "RequestHandler::handleRequest started" );
-
         response.setMimeType("text/xml");
 
 	SMSRequest* req = new SMSRequest();
@@ -135,8 +133,6 @@ void RequestHandler::handleRequest(const Wt::Http::Request& request, Wt::Http::R
         }
 
         response.out() << reqptr->genReport();
-
-        Logger::get_mutable_instance().smslogwarn( "RequestHandler::handleRequest finished" );
 }
 
 

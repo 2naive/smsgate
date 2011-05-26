@@ -35,6 +35,7 @@ namespace msgqueue {
     struct IDX_ADDED_ASC{};
     struct IDX_ADDED_DESC{};
     struct IDX_PARTNER_PRIORITY{};
+    struct IDX_PARTNER{};
     struct IDX_MESSAGE_PRIORITY{};
     struct IDX_GATEWAY{};
 
@@ -43,6 +44,7 @@ namespace msgqueue {
             indexed_by<
                 sequenced< tag<SEQUENCE> >,
                 hashed_unique< tag<IDX_ID>, BOOST_MULTI_INDEX_MEMBER(MessageInfo, SMSMessage::ID, msgid), sms::MsgIDHash >,
+                hashed_non_unique< tag<IDX_PARTNER>, BOOST_MULTI_INDEX_MEMBER(MessageInfo, string, idp) >,
                 ordered_non_unique< tag<IDX_ADDED_ASC>, BOOST_MULTI_INDEX_MEMBER(MessageInfo, long, added), std::greater<long> >,
                 ordered_non_unique< tag<IDX_ADDED_DESC>, BOOST_MULTI_INDEX_MEMBER(MessageInfo, long, added), std::less<long> >,
                 ordered_non_unique< tag<IDX_PARTNER_PRIORITY>, BOOST_MULTI_INDEX_MEMBER(MessageInfo, int, partner_priority), std::less<int> >,

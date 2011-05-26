@@ -33,14 +33,6 @@ namespace sms {
         _suspended = false;
         _busy = false;
 
-        int limit = -1;
-        int interval = 10;
-        if ( optionExists( "Limit" ) )
-            limit = getOption<int>( "Limit" );
-
-        if ( optionExists( "Interval" ) )
-            interval = getOption<int>( "Interval" );
-
         if ( optionExists( "Tariff" ) ) {
             try {
                 this->tariff = TariffManager::get_mutable_instance().loadTariff( getOption<std::string>("Tariff") );
@@ -61,14 +53,6 @@ namespace sms {
         this->_gateProperties = gOptions;
         _suspended = false;
         _busy = false;
-
-        int limit = -1;
-        int interval = 10;
-        if ( optionExists( "Limit" ) )
-            limit = getOption<int>( "Limit" );
-
-        if ( optionExists( "Interval" ) )
-            interval = getOption<int>( "Interval" );
 
         if ( optionExists( "Tariff" ) ) {
             try {

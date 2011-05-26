@@ -94,6 +94,10 @@ struct PartnerInfo {
     }
 
     bool isAdmin();
+
+    bool operator < ( const PartnerInfo& r ) const {
+        return ( pPriority < r.pPriority);
+    }
 };
 
 

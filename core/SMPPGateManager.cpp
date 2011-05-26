@@ -394,9 +394,10 @@ namespace sms {
 
 
     void SMPPGateManager::timeToSend() {
-        std::ostringstream out;
+        if ( mqueue.size() == 0 )
+            return;
 
-        out << mqueue.size() << " messages in sending queue; ";
+        std::ostringstream out;
 
         std::list< msgqueue::MessageInfo > send_queue;
 
@@ -421,16 +422,30 @@ namespace sms {
             if ( ( itg->second.enabled() ) &&
                  ( !itg->second.suspended() ) &&
                  ( !busy ) ) {
-                std::list< msgqueue::MessageInfo > queue =
-                mqueue.select(
-                        msgqueue::FilterBY< msgqueue::IDX_GATEWAY, string >( itg->first ) <<
-                        msgqueue::OrderBY< msgqueue::IDX_MESSAGE_PRIORITY >() <<
-                        msgqueue::OrderBY< msgqueue::IDX_PARTNER_PRIORITY >() <<
-                        msgqueue::LimitBY( 100 ) );
+                int limit = 20;
+                try {
+                    if ( itg->second.optionExists( "Limit" ) ) {
+                        limit = itg->second.getOption< int >( "Limit" );
+                    }
+                } catch ( ... ) {}
 
-                send_queue.insert( send_queue.end(), queue.begin(), queue.end() );
+                std::list< PartnerInfo > pList = PartnerManager::get_mutable_instance().getAll();
+                std::vector< PartnerInfo > pSortedList( pList.begin(), pList.end() );
+                std::sort( pSortedList.begin(), pSortedList.end() );
 
-                out << "[" << queue.size() << "=>" << itg->first << "] ";
+                for ( int i = 0; i < pSortedList.size(); i++ ) {
+                    PartnerInfo pi = pSortedList[ i ];
+                    std::list< msgqueue::MessageInfo > queue =
+                            mqueue.select(
+                                msgqueue::FilterBY< msgqueue::IDX_GATEWAY, string >( itg->first ) <<
+                                msgqueue::FilterBY< msgqueue::IDX_PARTNER, string >( pi.pId ) <<
+                                msgqueue::OrderBY< msgqueue::IDX_ADDED_DESC >( ) <<
+                                msgqueue::LimitBY( std::min( limit, pi.pLimit ) ) );
+
+                    send_queue.insert( send_queue.end(), queue.begin(), queue.end() );
+                    if ( queue.size() )
+                        out << "Sending " << queue.size() << " messages from partner " << pi.pId << " to gateway " << itg->first;
+                }
             }
         }
 
@@ -438,7 +453,11 @@ namespace sms {
         mqueue.select(
                 msgqueue::FilterBYExpression( boost::bind( &SMPPGateManager::isExpiredACK, this, _1 ) )
                 );
-        out << queue.size() << " messages are ACK expired;";
+        if ( queue.size() ) {
+            if ( !out.str().empty() )
+                out << "\n";
+            out << "Expired ACK" << queue.size() << " messages";
+        }
         for ( std::list< msgqueue::MessageInfo >::iterator it = queue.begin(); it != queue.end(); it++ ) {
             SMSRequest::ID reqid = it->msgid.req;
             SMSRequest::PTR req;
@@ -466,7 +485,12 @@ namespace sms {
         mqueue.select(
                 msgqueue::FilterBYExpression( boost::bind( &SMPPGateManager::isExpired, this, _1 ) )
                 );
-        out << queue.size() << " messages are expired;";
+        if ( queue.size() ){
+            if ( !out.str().empty() )
+                out << "\n";
+            out << "Expired" << queue.size() << " messages";
+        }
+
         for ( std::list< msgqueue::MessageInfo >::iterator it = queue.begin(); it != queue.end(); it++ ) {
             SMSRequest::ID reqid = it->msgid.req;
             SMSRequest::PTR req;
@@ -494,7 +518,8 @@ namespace sms {
                                 std::make_pair( it->req, std::make_pair( it->msgid, it->gateway ) ), idp, ma_p, RequestTracker::OP_SubmitMessageP ) );
         }
 
-        Logger::get_mutable_instance().smsloginfo( out.str() );
+        if ( !out.str().empty() )
+            Logger::get_mutable_instance().smsloginfo( out.str() );
     }
 
     bool SMPPGateManager::isExpiredACK( const msgqueue::MessageInfo& mi) {

@@ -242,8 +242,6 @@ namespace sms {
             pres[ *it ] = p;
         }
 
-        out << "parsed;";
-        Logger::get_mutable_instance().smsloginfo( out.str() );
         return pres;
     }
 
