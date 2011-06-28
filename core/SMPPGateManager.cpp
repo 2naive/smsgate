@@ -326,8 +326,7 @@ namespace sms {
 
     void SMPPGateManager::pushToQueue( SMSRequest::PTR req, SMSMessage::ID msgid ) {
         SMSMessage::PTR msg = SMSMessageManager::get_mutable_instance().loadMessage( msgid );
-        std::list< string >gl = chooseGate( req, msgid );
-        std::set< string > gs( gl.begin(), gl.end() );
+        std::list< string > gs = chooseGate( req, msgid );
         bool onreject = false;
         bool onackexp = false;
         bool accepted = false;
@@ -366,16 +365,15 @@ namespace sms {
             throw (NoMoreGates());
 
         for ( std::list< string >::iterator it = to_remove_hist.begin(); it != to_remove_hist.end(); it++ ) {
-            gs.erase( *it );
+            std::remove( gs.begin(), gs.end(), *it );
         }
 
-        std::list< string > glist = std::list< string >( gs.begin(), gs.end() );
-        if ( glist.empty() )
+        if ( gs.empty() )
             throw (NoMoreGates());
 
 //        send( req, msgid, *glist.begin() );
 
-      mqueue.insert( req, msgid, glist );
+      mqueue.insert( req, msgid, gs );
     }
 
 
