@@ -442,7 +442,7 @@ void WStatPageData::evaluateSummary( double &price, int &total, int &delivered, 
         tr->commit();
 
         for ( Result::const_iterator it = res.begin(); it != res.end(); it++ ) {
-            SMSMessage::Status status = SMSMessage::Status( (*it)[0].as<int>() );            
+            SMSMessage::Status status = SMSMessage::Status( (*it)[0].as<int>() );
 
             if ( status == SMSMessage::Status::ST_REJECTED ) {
                 rejected += (*it)[1].as<int>();

@@ -159,6 +159,11 @@ CREATE TABLE tariffs (
     description TEXT DEFAULT ''
 );
 
+CREATE TABLE routes (
+    name        TEXT PRIMARY KEY,
+    description TEXT DEFAULT ''
+);
+
 CREATE TABLE matviews (
   mv_name NAME NOT NULL PRIMARY KEY
   , v_name NAME NOT NULL
