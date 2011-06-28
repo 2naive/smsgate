@@ -340,6 +340,7 @@ namespace sms {
                     r.getOption<Route::RouteResendOptions>( mcc, mnc ).getValues();
         if ( opt.find("OnREJECT") != opt.end() )
             onreject = true;
+        else
         if ( opt.find("OnACK_EXPIRE") != opt.end() )
             onackexp = true;
 
