@@ -352,7 +352,7 @@ namespace sms {
             // Convert "89" to 79
             to_vec::iterator it;
             for (it = to.begin(); it != to.end(); it++) {
-               if ( ( (*it)[0] == '8' ) && ( (*it)[0] == '9' ) )
+               if ( ( (*it)[0] == '8' ) && ( (*it)[1] == '9' ) )
                     (*it).replace(0, 2, "79");
             }
         }
