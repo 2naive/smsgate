@@ -21,6 +21,7 @@ set( smsgate_SRCS ${smsgate_SRCS} web/PersonalCabinet.h      web/PersonalCabinet
 set( smsgate_SRCS ${smsgate_SRCS} web/PersonalPage.h         web/PersonalPage.cpp )
 set( smsgate_SRCS ${smsgate_SRCS} web/TariffEditor.h         web/TariffEditor.cpp )
 set( smsgate_SRCS ${smsgate_SRCS} web/PartnerEditor.h        web/PartnerEditor.cpp )
+set( smsgate_SRCS ${smsgate_SRCS} web/RoutingEditor.h        web/RoutingEditor.cpp )
 set( smsgate_SRCS ${smsgate_SRCS} web/LoginBlock.h           web/LoginBlock.cpp )
 set( smsgate_SRCS ${smsgate_SRCS} web/StatisticsBlock.h      web/StatisticsBlock.cpp )
 
@@ -28,6 +29,7 @@ set( smsgate_SRCS ${smsgate_SRCS} web/WScrollTable.h         web/WScrollTable.cp
 set( smsgate_SRCS ${smsgate_SRCS} web/WHintLinePassEdit.h )
 set( smsgate_SRCS ${smsgate_SRCS} web/WHintLineEdit.h )
 set( smsgate_SRCS ${smsgate_SRCS} web/TariffOptionEditor.h )
+set( smsgate_SRCS ${smsgate_SRCS} web/RouteOptionEditor.h )
 
 #Utils
 set( smsgate_SRCS ${smsgate_SRCS} utils/Cache.h )
@@ -65,6 +67,7 @@ set( smsgate_SRCS ${smsgate_SRCS} core/SMSMessage.h          core/SMSMessage.cpp
 set( smsgate_SRCS ${smsgate_SRCS} core/SMSRequest.h          core/SMSRequest.cpp )
 set( smsgate_SRCS ${smsgate_SRCS} core/StatManager.h         core/StatManager.cpp )
 set( smsgate_SRCS ${smsgate_SRCS} core/Tariff.h              core/Tariff.cpp )
+set( smsgate_SRCS ${smsgate_SRCS} core/Route.h               core/Route.cpp )
 
 set( ghelper_SRCS ${ghelper_SRCS} core/SMPPGateFilterParser.h core/SMPPGateFilterParser.cpp )
 

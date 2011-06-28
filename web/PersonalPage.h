@@ -8,6 +8,7 @@
 
 #include "StatisticsBlock.h"
 #include "TariffEditor.h"
+#include "RoutingEditor.h"
 #include "PartnerEditor.h"
 #include "LoginBlock.h"
 #include "PartnerManager.h"
@@ -29,12 +30,14 @@ private:
     StatisticsBlock* wStatBlock;
     TariffEditor* wTariffEditor;
     PartnerEditor* wPartnerEditor;
+    RouteEditor* wRouteEditor;
 
     void buildPersonalPage( );
 
     WContainerWidget* buildStatisticsBlock( );
     WContainerWidget* buildTariffEditor( );
     WContainerWidget* buildPartnerEditor( );
+    WContainerWidget* buildRouteEditor( );
 
     void onLogin( string pId, bool isAdmin );
 };

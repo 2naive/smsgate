@@ -30,6 +30,7 @@ PersonalPage::PersonalPage( const WEnvironment& env ):
     wStatBlock = NULL;
     wTariffEditor = NULL;
     wPartnerEditor = NULL;
+    wRouteEditor = NULL;
 }
 
 void PersonalPage::onLogin(string pId, bool isAdmin) {
@@ -59,6 +60,15 @@ WContainerWidget* PersonalPage::buildTariffEditor( ) {
     return wTariffEditor;
 }
 
+WContainerWidget* PersonalPage::buildRouteEditor( ) {
+    if ( wRouteEditor ) {
+        return wRouteEditor;
+    }
+
+    wRouteEditor= new RouteEditor();
+    return wRouteEditor;
+}
+
 WContainerWidget* PersonalPage::buildPartnerEditor( ) {
     if ( wPartnerEditor ) {
         return wPartnerEditor;
@@ -74,6 +84,7 @@ void PersonalPage::buildPersonalPage( ) {
     wt->addTab( buildStatisticsBlock(), WString::fromUTF8("Статистика") );
     if ( isAdmin ) {
         wt->addTab( buildTariffEditor(), WString::fromUTF8("Редактор тарифов") );
+        wt->addTab( buildRouteEditor(), WString::fromUTF8("Редактор маршрутов") );
         wt->addTab( buildPartnerEditor(), WString::fromUTF8("Редактор партнеров") );
     }
 
