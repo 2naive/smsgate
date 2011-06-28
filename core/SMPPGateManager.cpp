@@ -338,9 +338,9 @@ namespace sms {
         Route::RouteResendOptions::ValueT opt = mnc.empty()?
                     r.getOption<Route::RouteResendOptions>( mcc ).getValues():
                     r.getOption<Route::RouteResendOptions>( mcc, mnc ).getValues();
-        if ( opt.find("OnREJECT") == opt.end() )
+        if ( opt.find("OnREJECT") != opt.end() )
             onreject = true;
-        if ( opt.find("OnACK_EXPIRE") == opt.end() )
+        if ( opt.find("OnACK_EXPIRE") != opt.end() )
             onackexp = true;
 
         SMSMessage::HistoryType::iterator it;
