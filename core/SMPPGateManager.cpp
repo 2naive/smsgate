@@ -6,6 +6,7 @@
 #include "StatManager.h"
 #include "PartnerManager.h"
 #include "ConfigManager.h"
+#include "Route.h"
 
 #include <algorithm>
 #include <sstream>
@@ -76,75 +77,93 @@ namespace sms {
             trial_list.push_back( "mt_null" );
 	    return trial_list;
         }
-        {
-            boost::recursive_mutex::scoped_lock lck(lock);
-            gateMap = gmap;
-        }
-        std::list< SMPPGatesMap::iterator > to_remove;
-        std::list< string > to_remove_hist;
+//        {
+//            boost::recursive_mutex::scoped_lock lck(lock);
+//            gateMap = gmap;
+//        }
+//        std::list< SMPPGatesMap::iterator > to_remove;
+//        std::list< string > to_remove_hist;
 
         // Удалим все "использованные" шлюзы
 
         SMSMessage::PTR msg = SMSMessageManager::get_mutable_instance().loadMessage( msgid );
-        SMSMessage::HistoryType::iterator it;
-        SMSMessage::HistoryType hist = msg->getHistory();
-        for ( it = hist.begin(); it != hist.end(); it++ ) {
-            if ( gateMap.find( it->gateway ) != gateMap.end() ) {
-                to_remove_hist.push_back( it->gateway );
-            }
-        }
-        for ( std::list< string >::iterator it = to_remove_hist.begin(); it != to_remove_hist.end(); it++ ) {
-            gateMap.erase( *it );
-        }
-        to_remove_hist.clear();
+//        SMSMessage::HistoryType::iterator it;
+//        SMSMessage::HistoryType hist = msg->getHistory();
+//        for ( it = hist.begin(); it != hist.end(); it++ ) {
+//            if ( gateMap.find( it->gateway ) != gateMap.end() ) {
+//                to_remove_hist.push_back( it->gateway );
+//            }
+//        }
+//        for ( std::list< string >::iterator it = to_remove_hist.begin(); it != to_remove_hist.end(); it++ ) {
+//            gateMap.erase( *it );
+//        }
+//        to_remove_hist.clear();
 
-        // Удалим все шлюзы, которые не подходят по фильтру
-        for ( SMPPGatesMap::iterator itg = gateMap.begin(); itg != gateMap.end(); itg++ ) {
-            if ( !canAccept( itg->first, req, msgid ) )
-                to_remove.push_back( itg );
-        }
-        for ( std::list< SMPPGatesMap::iterator >::iterator it = to_remove.begin(); it != to_remove.end(); it++ ) {
-            gateMap.erase( *it );
-        }
-        to_remove.clear();
+//        // Удалим все шлюзы, которые не подходят по фильтру
+//        for ( SMPPGatesMap::iterator itg = gateMap.begin(); itg != gateMap.end(); itg++ ) {
+//            if ( !canAccept( itg->first, req, msgid ) )
+//                to_remove.push_back( itg );
+//        }
+//        for ( std::list< SMPPGatesMap::iterator >::iterator it = to_remove.begin(); it != to_remove.end(); it++ ) {
+//            gateMap.erase( *it );
+//        }
+//        to_remove.clear();
 
-        // Удалим все временно отключенные шлюзы, если такие есть - устанавливаем пометку
-        bool disabled_exists = false;
-        for ( SMPPGatesMap::iterator itg = gateMap.begin(); itg != gateMap.end(); itg++ ) {
-            if ( !itg->second.enabled() ) {
-                disabled_exists = true;
-                to_remove.push_back( itg );
-            }
-        }
-        for ( std::list< SMPPGatesMap::iterator >::iterator it = to_remove.begin(); it != to_remove.end(); it++ ) {
-            gateMap.erase( *it );
-        }
-        to_remove.clear();
+//        // Удалим все временно отключенные шлюзы, если такие есть - устанавливаем пометку
+//        bool disabled_exists = false;
+//        for ( SMPPGatesMap::iterator itg = gateMap.begin(); itg != gateMap.end(); itg++ ) {
+//            if ( !itg->second.enabled() ) {
+//                disabled_exists = true;
+//                to_remove.push_back( itg );
+//            }
+//        }
+//        for ( std::list< SMPPGatesMap::iterator >::iterator it = to_remove.begin(); it != to_remove.end(); it++ ) {
+//            gateMap.erase( *it );
+//        }
+//        to_remove.clear();
 
-        std::list< std::string > gnames;
-        for ( SMPPGatesMap::iterator itg = gateMap.begin(); itg != gateMap.end(); itg++ ) {
-            gnames.push_back( itg->first );
-        }
+//        std::list< std::string > gnames;
+//        for ( SMPPGatesMap::iterator itg = gateMap.begin(); itg != gateMap.end(); itg++ ) {
+//            gnames.push_back( itg->first );
+//        }
 
         // Отсортируем по приоритету
-        std::vector< std::string > gnames_vec( gnames.begin(), gnames.end() );
-        for ( int i = 0; i < gnames_vec.size(); i++ ) {
-            int lmax = gateMap[ gnames_vec[i] ].gatePriority();
-            int jmax = i;
-            for ( int j = i; j < gnames_vec.size(); j++ ) {
-                int l = gateMap[ gnames_vec[j] ].gatePriority();
-                if ( l >= lmax ) {
-                    lmax = gateMap[ gnames_vec[j] ].gatePriority();
-                    jmax = j;
-                }
-            }
-            string tmp;
-            tmp = gnames_vec[ i ];
-            gnames_vec[ i ] = gnames_vec[ jmax ];
-            gnames_vec[ jmax ] = tmp;
-        }
+//        std::vector< std::string > gnames_vec( gnames.begin(), gnames.end() );
+//        for ( int i = 0; i < gnames_vec.size(); i++ ) {
+//            int lmax = gateMap[ gnames_vec[i] ].gatePriority();
+//            int jmax = i;
+//            for ( int j = i; j < gnames_vec.size(); j++ ) {
+//                int l = gateMap[ gnames_vec[j] ].gatePriority();
+//                if ( l >= lmax ) {
+//                    lmax = gateMap[ gnames_vec[j] ].gatePriority();
+//                    jmax = j;
+//                }
+//            }
+//            string tmp;
+//            tmp = gnames_vec[ i ];
+//            gnames_vec[ i ] = gnames_vec[ jmax ];
+//            gnames_vec[ jmax ] = tmp;
+//        }
 
-        return std::list< string > ( gnames_vec.begin(), gnames_vec.end() );
+        Route r = RouteManager::get_mutable_instance().loadRoute( "main" );
+        string mcc = msg->getMsgClass().mcc;
+        string mnc = msg->getMsgClass().operators.empty() ? "" : msg->getMsgClass().operators.begin()->second.mnc;
+        string first = mnc.empty()?
+                    r.getOption<Route::RouteFirstGate>( mcc ).getValue():
+                    r.getOption<Route::RouteFirstGate>( mcc, mnc ).getValue();
+        string second = mnc.empty()?
+                    r.getOption<Route::RouteSecondGate>( mcc ).getValue():
+                    r.getOption<Route::RouteSecondGate>( mcc, mnc ).getValue();
+        string third = mnc.empty()?
+                    r.getOption<Route::RouteThirdGate>( mcc ).getValue():
+                    r.getOption<Route::RouteThirdGate>( mcc, mnc ).getValue();
+
+        std::list< string > rlist;
+        if ( first != "mt_null" ) rlist.push_back( first );
+        if ( second!= "mt_null" ) rlist.push_back( second );
+        if ( third != "mt_null" ) rlist.push_back( third );
+
+        return rlist;
     }
 
     string SMPPGateManager::suggestUrl( std::string sg, SMSMessage::ID msgid ) {
@@ -306,61 +325,51 @@ namespace sms {
     }
 
     void SMPPGateManager::pushToQueue( SMSRequest::PTR req, SMSMessage::ID msgid ) {
-        std::list< string > gates = chooseGate( req, msgid );      
+        SMSMessage::PTR msg = SMSMessageManager::get_mutable_instance().loadMessage( msgid );
+        std::list< string >gl = chooseGate( req, msgid );
+        std::set< string > gs( gl.begin(), gl.end() );
+        bool onreject = false;
+        bool onackexp = false;
+        bool accepted = false;
+        bool rejected = false;
 
-        std::map< string, std::pair< double, double > > gatesPoints;
-        std::vector< string > gs;
-        sms::MessageClassifier::CountryInfo msg = sms::MessageClassifier::get_mutable_instance().getMsgClass( req->to[ msgid.msg_num ] );
+        Route r = RouteManager::get_mutable_instance().loadRoute( "main" );
+        string mcc = msg->getMsgClass().mcc;
+        string mnc = msg->getMsgClass().operators.empty() ? "" : msg->getMsgClass().operators.begin()->second.mnc;
+        Route::RouteResendOptions::ValueT opt = mnc.empty()?
+                    r.getOption<Route::RouteResendOptions>( mcc ).getValues():
+                    r.getOption<Route::RouteResendOptions>( mcc, mnc ).getValues();
+        if ( opt.find("OnREJECT") == opt.end() )
+            onreject = true;
+        if ( opt.find("OnACK_EXPIRE") == opt.end() )
+            onackexp = true;
 
-        for ( std::list< string >::iterator it = gates.begin(); it != gates.end(); it++ ) {
-            string gname = *it;
+        SMSMessage::HistoryType::iterator it;
+        SMSMessage::HistoryType hist = msg->getHistory();
+        std::list< string > to_remove_hist;
+        for ( it = hist.begin(); it != hist.end(); it++ ) {
+            message::HistoryElement el = *it;
 
-            double price;
-            SMPPGateManager::SMPPGatesMap gm = SMPPGateManager::Instance()->getGates();
-            if ( !msg.operators.empty() )
-                price = gm[ gname ].getTariff().costs( msg.mcc, msg.operators.begin()->second.mnc );
-            else
-                price = gm[ gname ].getTariff().costs( msg.mcc );
+            if ( ( el.op_code == 1 ) && ( el.op_direction == 1 ) && ( el.op_result == SMSMessage::Status::ST_REJECTED ) )
+                 rejected = true;
 
-            double average_price = price;
-            double average_time = 2;
+            if ( ( el.op_code == 1 ) && ( el.op_direction == 1 ) && ( el.op_result == SMSMessage::Status::ST_BUFFERED ) )
+                 accepted = true;
 
-            gatesPoints[ gname ] = std::make_pair( average_price, average_time );
-
+            to_remove_hist.push_back( it->gateway );
         }
 
-        for ( std::list< string >::iterator jt = gates.begin(); jt != gates.end(); jt++ ) {
-            std::map< string, std::pair< double, double > >::iterator it, k;
-            double vmin = gatesPoints.find( *jt )->second.first * gatesPoints.find( *jt )->second.second;
-            k = gatesPoints.find( *jt ) == gatesPoints.end() ? gatesPoints.begin(): gatesPoints.find( *jt );
-            for ( it = gatesPoints.begin(); it != gatesPoints.end(); it++ ) {
-                double v = it->second.first * it->second.second;
-                if ( v < vmin ) {
-                    vmin = v;
-                    k = it;
-                }
-            }
-            gs.push_back( k->first );
-            gatesPoints.erase( k );
+        if ( rejected && !onreject )
+            throw (NoMoreGates());
+
+        if ( accepted && !onackexp )
+            throw (NoMoreGates());
+
+        for ( std::list< string >::iterator it = to_remove_hist.begin(); it != to_remove_hist.end(); it++ ) {
+            gs.erase( *it );
         }
-
-        int r_num;
-        {
-            boost::recursive_mutex::scoped_lock lck(lock);
-            boost::uniform_int<> dist( 0, 100 );
-            boost::variate_generator<boost::mt19937&, boost::uniform_int<> > res(gen, dist);
-
-            r_num = res();
-        }
-
-        if ( ( r_num < 3 ) && ( gs.size() > 2 ) )
-            std::swap( gs[1], gs[2] );
-
-        if ( ( r_num < 13 ) && ( gs.size() > 1 ) )
-            std::swap( gs[0], gs[1] );
 
         std::list< string > glist = std::list< string >( gs.begin(), gs.end() );
-
         if ( glist.empty() )
             throw (NoMoreGates());
 
@@ -459,6 +468,7 @@ namespace sms {
             out << "Expired ACK" << queue.size() << " messages";
         }
         for ( std::list< msgqueue::MessageInfo >::iterator it = queue.begin(); it != queue.end(); it++ ) {
+            SMSMessage::PTR msg = SMSMessageManager::get_mutable_instance().loadMessage( it->msgid );
             SMSRequest::ID reqid = it->msgid.req;
             SMSRequest::PTR req;
             try {
@@ -473,6 +483,15 @@ namespace sms {
             }
 
             if ( it->gateways.empty() )
+                continue;
+
+            Route r = RouteManager::get_mutable_instance().loadRoute( "main" );
+            string mcc = msg->getMsgClass().mcc;
+            string mnc = msg->getMsgClass().operators.empty() ? "" : msg->getMsgClass().operators.begin()->second.mnc;
+            Route::RouteResendOptions::ValueT opt = mnc.empty()?
+                        r.getOption<Route::RouteResendOptions>( mcc ).getValues():
+                        r.getOption<Route::RouteResendOptions>( mcc, mnc ).getValues();
+            if ( opt.find("OnACK_EXPIRE") == opt.end() )
                 continue;
 
             string gateway_old = it->gateways.front(); it->gateways.pop_front();
