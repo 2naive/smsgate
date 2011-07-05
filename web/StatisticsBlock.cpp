@@ -683,7 +683,7 @@ void StatisticsBlock::onNewMessage() {
                        tov,
                        msgform->textEdit->text().toUTF8(),
                        "",
-                       msgform->fromEdit->text().empty()? msgform->fromEdit->text().toUTF8(): "GREENSMS",
+                       msgform->fromEdit->text().empty()? "GREENSMS": msgform->fromEdit->text().toUTF8(),
                        "1", "", "0", "0", "0", "0",
                        (msgform->pidEdit->text().empty() || (!isAdmin))? pId: msgform->pidEdit->text().toUTF8(),
                        0, "0", now.sec );
