@@ -115,6 +115,7 @@ private:
 
     void onMoreInfo(const Wt::WMouseEvent& e, SMSMessage::ID msgid );
     void onSummaryShow();
+    void onNewMessage();
     void onPageUpdate( Wt::WSpinBox* page );
     void onPageInc( Wt::WSpinBox* page );
     void onPageDec( Wt::WSpinBox* page );

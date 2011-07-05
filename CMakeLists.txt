@@ -23,6 +23,7 @@ set( smsgate_SRCS ${smsgate_SRCS} web/TariffEditor.h         web/TariffEditor.cp
 set( smsgate_SRCS ${smsgate_SRCS} web/PartnerEditor.h        web/PartnerEditor.cpp )
 set( smsgate_SRCS ${smsgate_SRCS} web/RoutingEditor.h        web/RoutingEditor.cpp )
 set( smsgate_SRCS ${smsgate_SRCS} web/LoginBlock.h           web/LoginBlock.cpp )
+set( smsgate_SRCS ${smsgate_SRCS} web/SendMessageForm        web/SendMessageForm.cpp )
 set( smsgate_SRCS ${smsgate_SRCS} web/StatisticsBlock.h      web/StatisticsBlock.cpp )
 
 set( smsgate_SRCS ${smsgate_SRCS} web/WScrollTable.h         web/WScrollTable.cpp )

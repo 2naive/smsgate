@@ -17,6 +17,8 @@
 #include "MessageClassifier.h"
 #include "SMSMessage.h"
 #include "PartnerManager.h"
+#include "SendMessageForm.h"
+#include "RequestTracker.h"
 
 using namespace Wt;
 using namespace std;
@@ -44,6 +46,7 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             WLineEdit* pid;
             WLineEdit* phone;
             WDatePicker* date_from, *date_to;
+            WLabel* newMessage;
             WLineEdit* text;
             WComboBox* status;
             WTable* date;
@@ -78,6 +81,10 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             date->elementAt(1, 0)->addWidget( new WLabel( WString::fromUTF8("По") ) );
             date->elementAt(1, 1)->addWidget( date_to );
             date->addStyleClass("datetable");
+            //New message link
+            newMessage = new WLabel( WString::fromUTF8( "Отправить сообщение" ) );
+            newMessage->addStyleClass( "link" );
+            newMessage->clicked().connect( ppage, &StatisticsBlock::onNewMessage );
             //Message text field
             text = new WLineEdit();
             text->setMinimumSize( WLength( 80, WLength::Percentage ), WLength::Auto );
@@ -185,7 +192,7 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             r.push_back( text );
             r.push_back( status );
             r.push_back( country );
-            r.push_back( NULL );
+            r.push_back( newMessage );
             r.push_back( NULL );
             r.push_back( controlBlock );
 
@@ -639,6 +646,57 @@ void StatisticsBlock::onReportBtnClicked( RowInfo row ) {
     }
 
     onPageUpdate( row.page );
+}
+
+void StatisticsBlock::onNewMessage() {
+    WDialog summary;
+    summary.setWindowTitle( WString::fromUTF8("Создать сообщение") );
+    summary.setTitleBarEnabled( true );
+
+    SendMessageForm* msgform = new SendMessageForm( );
+    msgform->cancelBtn->clicked().connect( &summary, &WDialog::reject );
+    msgform->sendBtn->clicked().connect( &summary, &WDialog::accept );
+    if (!isAdmin) {
+        msgform->gateway->hide();
+    }
+
+    summary.contents()->addWidget( msgform );
+
+    while ( 1 ) {
+
+        WDialog::DialogCode r=summary.exec();
+        if ( r == WDialog::Rejected )
+            return;
+
+        boost::xtime now;
+        boost::xtime_get( &now, boost::TIME_UTC );
+
+        SMSRequest* req = new SMSRequest();
+        SMSRequest::PTR reqptr = SMSRequest::PTR( req );
+        PartnerInfo p = PartnerManager::get_mutable_instance().findById( pId );
+        std::string to=msgform->toEdit->text().toUTF8();
+        to_vec tov;
+        utils::Tokenize( to, tov, ",");
+        try {
+            req->parse(  p.pName,
+                       p.pPass,
+                       tov,
+                       msgform->textEdit->text().toUTF8(),
+                       "",
+                       msgform->fromEdit->text().empty()? msgform->fromEdit->text().toUTF8(): "GREENSMS",
+                       "1", "", "0", "0", "0", "0",
+                       (msgform->pidEdit->text().empty() || (!isAdmin))? pId: msgform->pidEdit->text().toUTF8(),
+                       0, "0", now.sec );
+            if ( req->getErr().getCode() == ERR_OK ) {
+                RequestTracker::Instance()->registerRequest( reqptr );
+                break;
+            }
+        } catch ( SMSError& err ) {
+            msgform->textEdit->setText( WString::fromUTF8( msgform->textEdit->text().toUTF8() + string("\n\nОшибка:") + err.getDescr() ) );
+        }
+        msgform->textEdit->setText( WString::fromUTF8( msgform->textEdit->text().toUTF8() + string("\n\nОшибка:") + req->getErr().getDescr() ) );
+
+    }
 }
 
 void StatisticsBlock::onSummaryShow() {
