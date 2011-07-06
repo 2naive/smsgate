@@ -68,7 +68,7 @@ namespace sms {
     }
 
     SMSError SMSRequest::checkPass(const std::string& str) const {
-        char allowed[] = "abcdefghijklmnopqrstuvwxyz0123456789_~()*@";
+        char allowed[] = "abcdefghijklmnopqrstuvwxyz0123456789_~()*@+";
 
         if (str.length() == 0) {
             return SMSError(ERR_PARAM, "Empty password");

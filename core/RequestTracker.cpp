@@ -697,7 +697,7 @@ void RequestTracker::DelayedEventLoop() {
 
             boost::xtime xt;
             boost::xtime_get(&xt, boost::TIME_UTC);
-            xt.sec++;
+            xt.nsec+=1e6;
             boost::thread::sleep(xt);
         } catch ( FailureError& err ) {
             Logger::get_mutable_instance().smslogerr( "Fatal error happened: " + boost::diagnostic_information( err ) );
@@ -745,7 +745,7 @@ void RequestTracker::OutboxPartnerEventLoop( ) {
 
             boost::xtime xt;
             boost::xtime_get(&xt, boost::TIME_UTC);
-            xt.sec++;
+            xt.nsec+=1e6;
             boost::thread::sleep(xt);
         } catch ( FailureError& err ) {
             Logger::get_mutable_instance().smslogerr( "Fatal error happened: " + boost::diagnostic_information( err ) );
@@ -780,7 +780,7 @@ void RequestTracker::OutboxEventLoop( ) {
 
             boost::xtime xt;
             boost::xtime_get(&xt, boost::TIME_UTC);
-            xt.sec++;
+            xt.nsec+=1e6;
             boost::thread::sleep(xt);
         } catch ( FailureError& err ) {
             Logger::get_mutable_instance().smslogerr( "Fatal error happened: " + boost::diagnostic_information( err ) );
