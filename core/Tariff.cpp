@@ -282,6 +282,7 @@ TariffManager::~TariffManager() {
 }
 
 Tariff TariffManager::loadTariff(std::string name) {
+    boost::recursive_mutex::scoped_lock lck(lock);
     return tmap[ name ];
 }
 
@@ -305,6 +306,7 @@ void TariffManager::updateTariffList() {
             _tmap.insert( std::make_pair( (*dbr)[0].as<std::string>(), Tariff( (*dbr)[0].as<std::string>(), (*dbr)[1].as<std::string>() ) ) );
         }
 
+        boost::recursive_mutex::scoped_lock lck(lock);
         tlist = _tlist;
         tmap = _tmap;
 
@@ -377,5 +379,6 @@ void TariffManager::removeTariff( std::string name ) {
 
 
 TariffManager::TariffListT TariffManager::tariffs_list() {
+    boost::recursive_mutex::scoped_lock lck(lock);
     return tlist;
 }

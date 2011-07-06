@@ -658,6 +658,7 @@ void StatisticsBlock::onNewMessage() {
     msgform->sendBtn->clicked().connect( &summary, &WDialog::accept );
     if (!isAdmin) {
         msgform->gateway->hide();
+        msgform->pidEdit->hide();
     }
 
     summary.contents()->addWidget( msgform );
