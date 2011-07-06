@@ -13,6 +13,7 @@
 #include <boost/serialization/set.hpp>
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
+#include <boost/thread/recursive_mutex.hpp>
 
 #include <boost/mpl/for_each.hpp>
 #include <boost/mpl/string.hpp>
@@ -387,6 +388,7 @@ private:
     int updateTimerID;
 
     PGSql& db;
+    boost::recursive_mutex lock;
 };
 
 #endif // ROUTE_H

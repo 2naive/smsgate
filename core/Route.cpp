@@ -143,6 +143,7 @@ RouteManager::~RouteManager() {
 }
 
 Route RouteManager::loadRoute(std::string name) {
+    boost::recursive_mutex::scoped_lock lck(lock);
     return tmap[ name ];
 }
 
@@ -165,6 +166,8 @@ void RouteManager::updateRouteList() {
             _tlist.push_back( (*dbr)[0].as<std::string>() );
             _tmap.insert( std::make_pair( (*dbr)[0].as<std::string>(), Route( (*dbr)[0].as<std::string>(), (*dbr)[1].as<std::string>() ) ) );
         }
+
+        boost::recursive_mutex::scoped_lock lck(lock);
 
         tlist = _tlist;
         tmap = _tmap;
@@ -238,5 +241,6 @@ void RouteManager::removeRoute( std::string name ) {
 
 
 RouteManager::RouteListT RouteManager::routes_list() {
+    boost::recursive_mutex::scoped_lock lck(lock);
     return tlist;
 }

@@ -387,6 +387,7 @@ private:
     int updateTimerID;
 
     PGSql& db;
+    boost::recursive_mutex lock;
 };
 
 #endif // TARIFF_H
