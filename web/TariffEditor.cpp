@@ -381,7 +381,7 @@ void TariffEditor::recursivePrintCsv( std::ostream& out, sms::MessageClassifier:
 
         price = sdouble2string( item->child( i, 2 )->text().toUTF8() );
         price_s = sdouble2string( item->child( i, 3 )->text().toUTF8() );
-        price_c = sdouble2string( item->child( i, 4 )->text().toUTF8() );
+        price_c = item->child( i, 4 )->text().toUTF8();
 
         if ( price.find( '.' ) != price.npos ) {
             price[ price.find( '.' ) ] = ',';
