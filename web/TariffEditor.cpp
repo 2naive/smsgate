@@ -360,7 +360,7 @@ void TariffEditor::exportToCsv() {
 
     WStandardItem* item = model_->invisibleRootItem();
 
-    fout << "Страна;Оператор;MCC/MNC;\"Цена, руб\";\"Цена, ориг\"" << endl;
+    fout << "Страна;Оператор;MCC/MNC;\"Цена, руб\";\"Цена, ориг\";\"Валюта, ориг\"" << endl;
     recursivePrintCsv( fout, comap, item );
 
     fout.close();
@@ -381,8 +381,14 @@ void TariffEditor::recursivePrintCsv( std::ostream& out, sms::MessageClassifier:
 
         price = sdouble2string( item->child( i, 2 )->text().toUTF8() );
         price_s = sdouble2string( item->child( i, 3 )->text().toUTF8() );
-        price_c = item->child( i, 4 )->text().toUTF8();
 
+        if ( price.find( '.' ) != price.npos ) {
+            price[ price.find( '.' ) ] = ',';
+        }
+
+        if ( price_s.find( '.' ) != price_s.npos ) {
+            price_s[ price_s.find( '.' ) ] = ',';
+        }
 
         if ( mnc.empty() ) {
 //            sms::MessageClassifier::CountryInfo ci = map[ mcc ];
@@ -404,8 +410,9 @@ void TariffEditor::recursivePrintCsv( std::ostream& out, sms::MessageClassifier:
         out << "\"" << ci.cName << "\"" << ";";     // Country name
         out << "\"" << oi.getName() << "\"" << ";"; // Network name
         out << "\"" << mcc << mnc << "\"" << ";";   // MCCMNC
-        out << "\"" << price << "руб\"" << ";";     // Price
-        out << "\"" << price_s << price_c << "\"" << ";";     // Price
+        out << "\"" << price << "\"" << ";";        // Price
+        out << "\"" << price_s << "\"" << ";";      // Price
+        out << "\"" << price_c << "\"" << ";";      // Price
         out << endl;
 
     }
