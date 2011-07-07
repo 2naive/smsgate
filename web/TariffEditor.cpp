@@ -353,7 +353,7 @@ void TariffEditor::exportToCsv() {
 
     csv->setFileName( "/tmp/123.csv" );
     csv->setMimeType( "text/txt" );
-    csv->suggestFileName( "report.csv" );
+    csv->suggestFileName( "tariff.csv" );
 
     sms::MessageClassifier::CountryOperatorMapT comap = sms::MessageClassifier::get_mutable_instance().getCOMap();
     ofstream fout( "/tmp/123.csv" );
@@ -385,7 +385,6 @@ void TariffEditor::recursivePrintCsv( std::ostream& out, sms::MessageClassifier:
             out << "\"" << ci.cName << "\"" << ";";     // Country name
             out << ";";                                 // Network name
             out << mcc << ";";                          // MCC
-            out << ";";                                 // MNC
             out << price << ";";                        // Price
             out << endl;
 
@@ -400,8 +399,7 @@ void TariffEditor::recursivePrintCsv( std::ostream& out, sms::MessageClassifier:
         sms::MessageClassifier::OperatorInfo oi = map[ mcc ].operators[ mnc ];
         out << "\"" << ci.cName << "\"" << ";";     // Country name
         out << "\"" << oi.getName() << "\"" << ";"; // Network name
-        out << mcc << ";";                          // MCC
-        out << mnc << ";";                          // MNC
+        out << mcc << mnc << ";";                   // MCCMNC
         out << price << ";";                        // Price
         out << endl;
 
