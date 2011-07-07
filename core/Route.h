@@ -265,6 +265,20 @@ public:
                             >
                         > RouteThirdGate;
 
+    typedef RouteOption<
+                            boost::mpl::string< 'R','o','u','t','i','n','g',' ','P','o','l','i','c','y' >,
+                            RouteValueChoise
+                            <
+                                boost::mpl::vector<
+                                    boost::mpl::string< 'n','o','r','m','a','l' >,
+                                    boost::mpl::string< 'f','a','s','t' >,
+                                    boost::mpl::string< 'c','h','e','a','p' >,
+                                    boost::mpl::string< 'd','i','s','a','b','l','e','d' >
+                                >,
+                                boost::mpl::string< 'n','o','r','m','a','l' >
+                            >
+                        > UserRouteFirstGate;
+
     struct RouteOperatorInfo {
         std::map< std::string, std::string > options;
 
@@ -366,6 +380,8 @@ private:
     void removeOption( std::string name );
     void removeOption( std::string name, std::string country );
     void removeOption( std::string name, std::string country, std::string oper );
+
+    friend class RouteManager;
 };
 
 class RouteManager: public boost::serialization::singleton< RouteManager > {
@@ -378,9 +394,9 @@ public:
 
     void updateRouteList();
     Route loadRoute( std::string name );
-    void saveRoute( std::string name, Route t );
+    void saveRoute( std::string name, std::string owner, Route t );
     void removeRoute( std::string name );
-    RouteListT routes_list();
+    RouteListT routes_list( std::string owner);
 
 private:
     RouteListT tlist;

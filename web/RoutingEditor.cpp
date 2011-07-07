@@ -3,6 +3,7 @@
 #include "Route.h"
 #include "MessageClassifier.h"
 #include "utils.h"
+#include "PartnerManager.h"
 
 #include <string>
 #include <algorithm>
@@ -14,12 +15,16 @@
 using namespace Wt;
 using namespace std;
 
-RouteEditor::RouteEditor( WContainerWidget* parent ): WContainerWidget( parent ) {
+RouteEditor::RouteEditor( std::string _userid, WContainerWidget* parent ): WContainerWidget( parent ) {
+    userid = _userid;
+    PartnerInfo user = PartnerManager::get_mutable_instance().findById( userid );
     columns_width.push_back(270);
     columns_width.push_back(70);
     columns_width.push_back(90);
-    columns_width.push_back(90);
-    columns_width.push_back(90);
+    if ( user.ownerId.empty() ) {
+        columns_width.push_back(90);
+        columns_width.push_back(90);
+    }
     elements_per_page = 25;
 
     model_ = new WStandardItemModel();
@@ -52,10 +57,14 @@ RouteEditor::RouteEditor( WContainerWidget* parent ): WContainerWidget( parent )
     updateBtn->clicked().connect( this, &RouteEditor::onChangeRoot );
     updateBtn->clicked().connect( this, &RouteEditor::onRouteUpdate );
 
-    recendEditor = new RecendEditor( &route );
-    firstgwEditor = new FirstgwEditor( &route );
-    secondgwEditor = new SecondgwEditor( &route );
-    thirdgwEditor = new ThirdgwEditor( &route );
+    if ( user.ownerId.empty() ) {
+        recendEditor = new RecendEditor( &route );
+        firstgwEditor = new FirstgwEditor( &route );
+        secondgwEditor = new SecondgwEditor( &route );
+        thirdgwEditor = new ThirdgwEditor( &route );
+    } else {
+        ufirstgwEditor = new UserFirstgwEditor( &route );
+    }
 
     WGridLayout* loadSaveLayout = new WGridLayout();
     loadSaveLayout->addWidget( tlistBox, 0, 0 );
@@ -70,10 +79,14 @@ RouteEditor::RouteEditor( WContainerWidget* parent ): WContainerWidget( parent )
     loadSaveBox->setLayout( loadSaveLayout, AlignCenter | AlignMiddle );
 
     WGridLayout* routeOptionsLayout = new WGridLayout();
-    routeOptionsLayout->addLayout( recendEditor, 0, 0 );
-    routeOptionsLayout->addLayout( firstgwEditor, 0, 1 );
-    routeOptionsLayout->addLayout( secondgwEditor, 1, 0 );
-    routeOptionsLayout->addLayout( thirdgwEditor, 1, 1 );
+    if ( user.ownerId.empty() ) {
+        routeOptionsLayout->addLayout( recendEditor, 0, 0 );
+        routeOptionsLayout->addLayout( firstgwEditor, 0, 1 );
+        routeOptionsLayout->addLayout( secondgwEditor, 1, 0 );
+        routeOptionsLayout->addLayout( thirdgwEditor, 1, 1 );
+    } else {
+        routeOptionsLayout->addLayout( ufirstgwEditor, 0, 0 );
+    }
 
     WGroupBox* routeOptionsBox = new WGroupBox( WString::fromUTF8( "Тарифные опции" ) );
     routeOptionsBox->setLayout( routeOptionsLayout, AlignCenter | AlignMiddle);
@@ -90,16 +103,23 @@ RouteEditor::RouteEditor( WContainerWidget* parent ): WContainerWidget( parent )
 
 void RouteEditor::buildModel( WStandardItemModel* data, Route& route, bool clear ) {
     sms::MessageClassifier::CountryOperatorMapT comap = sms::MessageClassifier::get_mutable_instance().getCOMap();
+    PartnerInfo user = PartnerManager::get_mutable_instance().findById( userid );
 
     if ( clear ) {
         data->clear();
-        data->insertColumns(0, 5);
+        if ( user.ownerId.empty() ) {
+            data->insertColumns(0, 5);
+        } else {
+             data->insertColumns(0, 3);
+        }
 
         data->setHeaderData(0, Horizontal, WString::fromUTF8("Страна/Оператор"));
         data->setHeaderData(1, Horizontal, WString::fromUTF8("MCC/MNC"));
         data->setHeaderData(2, Horizontal, WString::fromUTF8("1й шлюз"));
-        data->setHeaderData(3, Horizontal, WString::fromUTF8("2й шлюз"));
-        data->setHeaderData(4, Horizontal, WString::fromUTF8("3й шлюз"));
+        if ( user.ownerId.empty() ) {
+            data->setHeaderData(3, Horizontal, WString::fromUTF8("2й шлюз"));
+            data->setHeaderData(4, Horizontal, WString::fromUTF8("3й шлюз"));
+        }
 
         for( sms::MessageClassifier::CountryOperatorMapT::iterator it = comap.begin(); it != comap.end(); it++ ) {
             sms::MessageClassifier::CountryInfo cinfo = it->second;
@@ -111,16 +131,22 @@ void RouteEditor::buildModel( WStandardItemModel* data, Route& route, bool clear
 
             country = new WStandardItem( string( "resources/flags/" ) + cinfo.cCode + ".png", WString::fromUTF8( cinfo.cName ) );
             mcc = new WStandardItem( WString::fromUTF8( cinfo.mcc ) );
-            firstgw = new WStandardItem( WString::fromUTF8( route.getOption<Route::RouteFirstGate>( cinfo.mcc ).getValue() ) );
-            secondgw = new WStandardItem( WString::fromUTF8( route.getOption<Route::RouteSecondGate>( cinfo.mcc ).getValue() ) );
-            thirdgw = new WStandardItem( WString::fromUTF8( route.getOption<Route::RouteThirdGate>( cinfo.mcc ).getValue() ) );
+            if ( user.ownerId.empty() ) {
+                firstgw = new WStandardItem( WString::fromUTF8( route.getOption<Route::RouteFirstGate>( cinfo.mcc ).getValue() ) );
+                secondgw = new WStandardItem( WString::fromUTF8( route.getOption<Route::RouteSecondGate>( cinfo.mcc ).getValue() ) );
+                thirdgw = new WStandardItem( WString::fromUTF8( route.getOption<Route::RouteThirdGate>( cinfo.mcc ).getValue() ) );
+            } else {
+                firstgw = new WStandardItem( WString::fromUTF8( route.getOption<Route::UserRouteFirstGate>( cinfo.mcc ).getValue() ) );
+            }
 
             std::vector< WStandardItem* > row;
             row.push_back( country );
             row.push_back( mcc );
             row.push_back( firstgw );
-            row.push_back( secondgw );
-            row.push_back( thirdgw );
+            if ( user.ownerId.empty() ) {
+                row.push_back( secondgw );
+                row.push_back( thirdgw );
+            }
 
             for ( sms::MessageClassifier::CountryInfo::OperatorMapT::iterator gt = cinfo.operators.begin(); gt != cinfo.operators.end(); gt++ ) {
                 sms::MessageClassifier::OperatorInfo info = gt->second;
@@ -133,16 +159,22 @@ void RouteEditor::buildModel( WStandardItemModel* data, Route& route, bool clear
 
                 op = new WStandardItem( WString::fromUTF8( info.getName() ) );
                 code = new WStandardItem( WString::fromUTF8( info.getCode() ) );
-                firstgw = new WStandardItem( WString::fromUTF8( route.getOption<Route::RouteFirstGate>( info.mcc, info.mnc ).getValue() ) );
-                secondgw = new WStandardItem( WString::fromUTF8( route.getOption<Route::RouteSecondGate>( info.mcc, info.mnc ).getValue() ) );
-                thirdgw = new WStandardItem( WString::fromUTF8( route.getOption<Route::RouteThirdGate>( info.mcc, info.mnc ).getValue() ) );
+                if ( user.ownerId.empty() ) {
+                    firstgw = new WStandardItem( WString::fromUTF8( route.getOption<Route::RouteFirstGate>( info.mcc, info.mnc ).getValue() ) );
+                    secondgw = new WStandardItem( WString::fromUTF8( route.getOption<Route::RouteSecondGate>( info.mcc, info.mnc ).getValue() ) );
+                    thirdgw = new WStandardItem( WString::fromUTF8( route.getOption<Route::RouteThirdGate>( info.mcc, info.mnc ).getValue() ) );
+                } else {
+                    firstgw = new WStandardItem( WString::fromUTF8( route.getOption<Route::UserRouteFirstGate>( info.mcc, info.mnc ).getValue() ) );
+                }
 
                 std::vector< WStandardItem* > row;
                 row.push_back( op );
                 row.push_back( code );
                 row.push_back( firstgw );
-                row.push_back( secondgw );
-                row.push_back( thirdgw );
+                if ( user.ownerId.empty() ) {
+                    row.push_back( secondgw );
+                    row.push_back( thirdgw );
+                }
 
                 country->appendRow( row );
             }
@@ -154,10 +186,17 @@ void RouteEditor::buildModel( WStandardItemModel* data, Route& route, bool clear
     for ( int row = 0; row < data->rowCount(); row++ ) {
         WStandardItem* root_item = data->item( row, 0 );
         {
-            WStandardItem* imsi_item = data->item( row, 1 );
-            WStandardItem* firstgw_item = data->item( row, 2 );
-            WStandardItem* secondgw_item = data->item( row, 3 );
-            WStandardItem* thirdgw_item = data->item( row, 4 );
+            WStandardItem* imsi_item;
+            WStandardItem* firstgw_item;
+            WStandardItem* secondgw_item;
+            WStandardItem* thirdgw_item;
+
+            imsi_item = data->item( row, 1 );
+            firstgw_item = data->item( row, 2 );
+            if ( user.ownerId.empty() ) {
+                secondgw_item = data->item( row, 3 );
+                thirdgw_item = data->item( row, 4 );
+            }
 
             std::string imsi = imsi_item->text().toUTF8();
             std::string mcc = imsi.substr( 0, 3 );
@@ -171,17 +210,27 @@ void RouteEditor::buildModel( WStandardItemModel* data, Route& route, bool clear
 //                ruprice_item->setText( WString::fromUTF8( price_rur_text ) );
 //            }
 
-            firstgw_item->setText( WString::fromUTF8( route.getOption<Route::RouteFirstGate>( mcc ).getValue() ) );
-            secondgw_item->setText( WString::fromUTF8( route.getOption<Route::RouteSecondGate>( mcc ).getValue() ) );
-            thirdgw_item->setText( WString::fromUTF8( route.getOption<Route::RouteThirdGate>( mcc ).getValue() ) );
-
+            if ( user.ownerId.empty() ) {
+                firstgw_item->setText( WString::fromUTF8( route.getOption<Route::RouteFirstGate>( mcc ).getValue() ) );
+                secondgw_item->setText( WString::fromUTF8( route.getOption<Route::RouteSecondGate>( mcc ).getValue() ) );
+                thirdgw_item->setText( WString::fromUTF8( route.getOption<Route::RouteThirdGate>( mcc ).getValue() ) );
+            } else {
+                firstgw_item->setText( WString::fromUTF8( route.getOption<Route::UserRouteFirstGate>( mcc ).getValue() ) );
+            }
         }
 
         for ( int subrow = 0; subrow < root_item->rowCount(); subrow++ ) {
-            WStandardItem* imsi_item = root_item->child( subrow, 1 );
-            WStandardItem* firstgw_item = root_item->child( subrow, 2 );
-            WStandardItem* secondgw_item = root_item->child( subrow, 3 );
-            WStandardItem* thirdgw_item = root_item->child( subrow, 4 );
+            WStandardItem* imsi_item;
+            WStandardItem* firstgw_item;
+            WStandardItem* secondgw_item;
+            WStandardItem* thirdgw_item;
+
+            imsi_item = root_item->child( subrow, 1 );
+            firstgw_item = root_item->child( subrow, 2 );
+            if ( user.ownerId.empty() ) {
+                secondgw_item = root_item->child( subrow, 3 );
+                thirdgw_item = root_item->child( subrow, 4 );
+            }
 
             std::string imsi = imsi_item->text().toUTF8();
             std::string mcc = imsi.substr( 0, 3 );
@@ -195,9 +244,13 @@ void RouteEditor::buildModel( WStandardItemModel* data, Route& route, bool clear
 //                ruprice_item->setText( WString::fromUTF8( price_rur_text ) );
 //            }
 
-            firstgw_item->setText( WString::fromUTF8( route.getOption<Route::RouteFirstGate>( mcc, mnc ).getValue() ) );
-            secondgw_item->setText( WString::fromUTF8( route.getOption<Route::RouteSecondGate>( mcc, mnc ).getValue() ) );
-            thirdgw_item->setText( WString::fromUTF8( route.getOption<Route::RouteThirdGate>( mcc, mnc ).getValue() ) );
+            if ( user.ownerId.empty() ) {
+                firstgw_item->setText( WString::fromUTF8( route.getOption<Route::RouteFirstGate>( mcc, mnc ).getValue() ) );
+                secondgw_item->setText( WString::fromUTF8( route.getOption<Route::RouteSecondGate>( mcc, mnc ).getValue() ) );
+                thirdgw_item->setText( WString::fromUTF8( route.getOption<Route::RouteThirdGate>( mcc, mnc ).getValue() ) );
+            } else {
+                firstgw_item->setText( WString::fromUTF8( route.getOption<Route::UserRouteFirstGate>( mcc, mnc ).getValue() ) );
+            }
         }
     }
 
@@ -276,16 +329,18 @@ void RouteEditor::onRouteUpdate() {
 }
 
 void RouteEditor::onRouteSave() {
+    PartnerInfo user = PartnerManager::get_mutable_instance().findById( userid );
     std::string name = nameBox->text().toUTF8();
     route.setName( name );
-    RouteManager::get_mutable_instance().saveRoute( name, route );
+    RouteManager::get_mutable_instance().saveRoute( name, user.ownerId.empty()? "": userid, route );
 
     tlistRebuild();
 }
 
 void RouteEditor::tlistRebuild() {
+    PartnerInfo user = PartnerManager::get_mutable_instance().findById( userid );
     tlistBox->clear();
-    std::list< std::string > tlist = RouteManager::get_mutable_instance().routes_list();
+    std::list< std::string > tlist = RouteManager::get_mutable_instance().routes_list( user.ownerId.empty()? "": userid );
 
     for ( std::list< std::string >::iterator it = tlist.begin(); it != tlist.end(); it++ ) {
         tlistBox->addItem( WString::fromUTF8( *it ) );
@@ -294,12 +349,17 @@ void RouteEditor::tlistRebuild() {
 
 void RouteEditor::onChangeRoot() {
     Wt::WModelIndexSet selected = treeView_->selectedIndexes();
+    PartnerInfo user = PartnerManager::get_mutable_instance().findById( userid );
 
     if ( selected.empty() ) {
-        recendEditor->setCurPosRoot();
-        firstgwEditor->setCurPosRoot();
-        secondgwEditor->setCurPosRoot();
-        thirdgwEditor->setCurPosRoot();
+        if ( user.ownerId.empty() ) {
+            recendEditor->setCurPosRoot();
+            firstgwEditor->setCurPosRoot();
+            secondgwEditor->setCurPosRoot();
+            thirdgwEditor->setCurPosRoot();
+        } else {
+            ufirstgwEditor->setCurPosRoot();
+        }
     }
 
     if ( selected.size() == 1 ) {
@@ -314,15 +374,24 @@ void RouteEditor::onChangeRoot() {
         std::string mnc = mccmnc.substr( 3, mccmnc.length()-3 );
 
         if ( mnc.empty() ) {
-            recendEditor->setCurPosCountry( mcc );
-            firstgwEditor->setCurPosCountry( mcc );
-            secondgwEditor->setCurPosCountry( mcc );
-            thirdgwEditor->setCurPosCountry( mcc );
+            if ( user.ownerId.empty() ) {
+                recendEditor->setCurPosCountry(mcc);
+                firstgwEditor->setCurPosCountry(mcc);
+                secondgwEditor->setCurPosCountry(mcc);
+                thirdgwEditor->setCurPosCountry(mcc);
+            } else {
+                ufirstgwEditor->setCurPosCountry(mcc);
+            }
+
         } else {
-            recendEditor->setCurPosOperator( mcc, mnc );
-            firstgwEditor->setCurPosOperator( mcc, mnc );
-            secondgwEditor->setCurPosOperator( mcc, mnc );
-            thirdgwEditor->setCurPosOperator( mcc, mnc );
+            if ( user.ownerId.empty() ) {
+                recendEditor->setCurPosOperator( mcc, mnc );
+                firstgwEditor->setCurPosOperator( mcc, mnc );
+                secondgwEditor->setCurPosOperator( mcc, mnc );
+                thirdgwEditor->setCurPosOperator( mcc, mnc );
+            } else {
+                ufirstgwEditor->setCurPosOperator( mcc, mnc );
+            }
         }
     }
 }

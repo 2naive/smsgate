@@ -65,7 +65,7 @@ WContainerWidget* PersonalPage::buildRouteEditor( ) {
         return wRouteEditor;
     }
 
-    wRouteEditor= new RouteEditor();
+    wRouteEditor= new RouteEditor( pId );
     return wRouteEditor;
 }
 

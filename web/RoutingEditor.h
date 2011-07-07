@@ -40,9 +40,11 @@ typedef roe::RouteOptionEditor< Route::RouteFirstGate, roe::MultiChoiseAdaptor< 
 typedef roe::RouteOptionEditor< Route::RouteSecondGate, roe::MultiChoiseAdaptor< Route::RouteSecondGate> > SecondgwEditor;
 typedef roe::RouteOptionEditor< Route::RouteThirdGate, roe::MultiChoiseAdaptor< Route::RouteThirdGate> > ThirdgwEditor;
 
+typedef roe::RouteOptionEditor< Route::UserRouteFirstGate, roe::MultiChoiseAdaptor< Route::UserRouteFirstGate> > UserFirstgwEditor;
+
 class RouteEditor: public Wt::WContainerWidget {
 public:
-    RouteEditor( WContainerWidget* parent = 0 );
+    RouteEditor( std::string _userid, WContainerWidget* parent = 0 );
 private:
     Wt::WStandardItemModel* model_;
     Wt::WTreeView* treeView_;
@@ -53,7 +55,8 @@ private:
     FirstgwEditor* firstgwEditor;
     SecondgwEditor* secondgwEditor;
     ThirdgwEditor* thirdgwEditor;
-
+    UserFirstgwEditor* ufirstgwEditor;
+    std::string userid;
 
     std::vector< int > columns_width;
     int elements_per_page;

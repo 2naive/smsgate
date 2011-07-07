@@ -181,8 +181,9 @@ void RouteManager::updateRouteList() {
     }
 }
 
-void RouteManager::saveRoute( std::string name, Route t ) {
+void RouteManager::saveRoute( std::string name, std::string owner, Route t ) {
     std::ostringstream out;
+    t.setOption( string("ownerid"), owner );
     try {
         std::ostringstream r;
 
@@ -240,7 +241,13 @@ void RouteManager::removeRoute( std::string name ) {
 }
 
 
-RouteManager::RouteListT RouteManager::routes_list() {
+RouteManager::RouteListT RouteManager::routes_list( std::string owner ) {
     boost::recursive_mutex::scoped_lock lck(lock);
-    return tlist;
+    RouteListT res;
+    for ( RouteMapT::iterator it = tmap.begin(); it != tmap.end(); it++ ) {
+        if ( owner.empty() || ( it->second.hasOption( "ownerid" ) && ( it->second.getOption( "ownerid" ) == owner ) ) ) {
+            res.push_back( it->first );
+        }
+    }
+    return res;
 }
