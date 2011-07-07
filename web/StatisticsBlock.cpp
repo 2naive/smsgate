@@ -288,6 +288,7 @@ void WStatPageData::prepareRequest( ) {
 
     initialized = true;
 
+    PartnerInfo user = PartnerManager::get_mutable_instance().findById( ppage->pId );
     // create temp view according setup filters
     try {
         PGSql::ConnectionHolder cHold( db );
@@ -299,7 +300,12 @@ void WStatPageData::prepareRequest( ) {
         req     <<  "SELECT message_status.\"REQUESTID\", message_status.\"MESSAGEID\", \"TXT\", \"FROM\", \"PID\", message_status.\"WHEN\" AS REQUESTDATE, "
                 <<  "\"STATUS\", message_status.\"TO\", \"PARTS\", \"COUNTRY\", \"COUNTRYCODE\", \"OPERATOR\", \"OPERATORCODE\", \"REGION\", "
                 <<  "message_status.\"WHEN\" AS DELIVERYDATE, \"PARTNERPRICE\", \"OURPRICE\" "
-                <<  "FROM smsrequest, message_status WHERE smsrequest.\"REQUESTID\"=message_status.\"REQUESTID\"  ";
+                <<  "FROM smsrequest, message_status ";
+        if ( !( user.ownerId.empty() || ( user.pId == pid_value) ) )
+            req << ", partners ";
+        req     << "WHERE smsrequest.\"REQUESTID\"=message_status.\"REQUESTID\" ";
+        if ( !( user.ownerId.empty() || (user.pId == pid_value) ) )
+            req <<  "AND \"PID\"=partners.pid ";
         if ( pid_filter )
             req <<  "AND \"PID\"='" << tr->esc( pid_value ) << "' ";
         if ( phone_filter )
@@ -314,6 +320,8 @@ void WStatPageData::prepareRequest( ) {
             req <<  "AND \"COUNTRY\"='" << tr->esc(country_value) << "' ";
         if ( status_filter )
             req <<  "AND \"STATUS\"='" << status_value() << "' ";
+        if ( !( user.ownerId.empty() || (user.pId == pid_value) ) )
+            req << "AND partners.ownerid='" << tr->esc( ppage->pId ) << "' ";
         req << "ORDER BY smsrequest.\"WHEN\" DESC;";
 
 
