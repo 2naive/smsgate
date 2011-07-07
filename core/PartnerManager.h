@@ -25,6 +25,7 @@ struct PartnerInfo {
     string pName;
     string pPass;
     string pId;
+    string ownerId;
     string pCName;
     string pManager;
     string pFirstName;
@@ -47,6 +48,7 @@ struct PartnerInfo {
     PartnerInfo(string pName = "",
                 string pPass = "",
                 string pId = "",
+                string ownerId = "",
                 string pCName = "",
                 string pManager = "",
                 string pFirstName = "",
@@ -68,6 +70,7 @@ struct PartnerInfo {
         this->pName = pName;
         this->pPass = pPass;
         this->pId = pId;
+        this->ownerId = ownerId;
         this->pCName = pCName;
         this->pManager = pManager;
         this->pFirstName = pFirstName,
@@ -107,7 +110,7 @@ public:
     PartnerManager();
     PartnerInfo findByName( string pName ) throw ( PartnerNotFoundError );
     PartnerInfo findById( string id ) throw ( PartnerNotFoundError );
-    std::list< PartnerInfo > getAll();
+    std::list< PartnerInfo > getAll( std::string ownerid );
 
     void loadFromDb();    
     void updateToDb( PartnerInfo& );

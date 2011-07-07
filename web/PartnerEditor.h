@@ -30,11 +30,12 @@ public:
 
 class PartnerOptions: public Wt::WContainerWidget {
 public:
-    PartnerOptions( std::string pid, Wt::WContainerWidget* parent = 0 );
+    PartnerOptions( std::string _userid, std::string pid, Wt::WContainerWidget* parent = 0 );
 
     Wt::Signal< std::string, bool >& updated() { return updated_; }
 private:
     std::string pid;
+    std::string userid;
     bool isPersonalInfoVisible;
     Wt::Signal< std::string, bool > updated_;
 
@@ -70,7 +71,7 @@ private:
 
 class PartnerEditor: public Wt::WContainerWidget {
 public:
-    PartnerEditor( Wt::WContainerWidget* parent = 0 );
+    PartnerEditor( std::string _userid, Wt::WContainerWidget* parent = 0 );
 
 private:
     Wt::WStandardItemModel* model_;
@@ -80,6 +81,7 @@ private:
 
     std::vector< int > columns_width;
     int elements_per_page;
+    std::string userid;
 
     Wt::WTreeView* buildTreeView( Wt::WStandardItemModel * model );
     void resizeTreeView( Wt::WTreeView* tw);

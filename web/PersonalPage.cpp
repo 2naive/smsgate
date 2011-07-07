@@ -74,7 +74,7 @@ WContainerWidget* PersonalPage::buildPartnerEditor( ) {
         return wPartnerEditor;
     }
 
-    wPartnerEditor= new PartnerEditor();
+    wPartnerEditor= new PartnerEditor( pId );
     return wPartnerEditor;
 }
 

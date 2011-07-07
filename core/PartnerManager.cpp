@@ -45,14 +45,15 @@ PartnerInfo PartnerManager::findById( string id ) throw ( PartnerNotFoundError )
 
 }
 
-std::list< PartnerInfo > PartnerManager::getAll() {
+std::list< PartnerInfo > PartnerManager::getAll( std::string ownerid ) {
     boost::recursive_mutex::scoped_lock lck( pmlock );
     std::list< PartnerInfo > pi;
 
     pBox::nth_index<2>::type::iterator it;
 
     for ( it = pbox.get<2>().begin(); it != pbox.get<2>().end(); it++ ) {
-        pi.push_back( *it );
+        if ( ( ownerid.empty() ) || ( it->ownerId == ownerid ) )
+            pi.push_back( *it );
     }
 
     return pi;
@@ -70,7 +71,7 @@ void PartnerManager::loadFromDb() {
         ConnectionPTR conn = cHold.get();
         TransactionPTR tr = db.openTransaction( conn, "PartnerManager::loadFromDb" );
         std::ostringstream dbreq1;
-        dbreq1  << " SELECT pid, uname, pass, cname, manager, balance, credit, plimit, postplay, trial, priority, phone, contact, tariff, ts, fname, lname, mname, companyname, caddress, email FROM partners;";
+        dbreq1  << " SELECT pid, uname, pass, cname, manager, balance, credit, plimit, postplay, trial, priority, phone, contact, tariff, ts, fname, lname, mname, companyname, caddress, email, ownerid FROM partners;";
 
         Result res = tr->exec( dbreq1.str() );
         tr->commit();
@@ -81,6 +82,7 @@ void PartnerManager::loadFromDb() {
                                             (*dbr)[1].as<string>(),
                                             (*dbr)[2].as<string>(),
                                             (*dbr)[0].as<string>(),
+                                            (*dbr)[20].as<string>(),
                                             (*dbr)[3].as<string>(),
                                             (*dbr)[4].as<string>(),
                                             (*dbr)[15].as<string>(),
@@ -136,6 +138,7 @@ void PartnerManager::updateToDb( PartnerInfo& pi ) {
         std::ostringstream dbreq1;
         dbreq1  << "update partners set "
                 << "uname='" << tr->esc( pi.pName ) << "' , "
+                << "ownerid='" << tr->esc( pi.ownerId ) << "' , "
                 << "pass='" << tr->esc( pi.pPass ) << "' , "
                 << "cname='" << tr->esc( pi.pCName ) << "' , "
                 << "manager='" << tr->esc( pi.pManager ) << "' , "
@@ -164,11 +167,12 @@ void PartnerManager::updateToDb( PartnerInfo& pi ) {
             TransactionPTR tr = db.openTransaction( conn, "PartnerManager::insertToDb" );
             std::ostringstream dbreq1;
             dbreq1  << "INSERT into partners "
-                    << "(pid, uname, pass, cname, manager, balance, credit, plimit, postplay, trial, priority, phone, contact, tariff, ts, fname, lname, mname, companyname, caddress, email ) "
+                    << "(pid, uname, pass, ownerid, cname, manager, balance, credit, plimit, postplay, trial, priority, phone, contact, tariff, ts, fname, lname, mname, companyname, caddress, email ) "
                     << "VALUES ("
                     << "'" << tr->esc( pi.pId ) << "',"
                     << "'" << tr->esc( pi.pName ) << "',"
                     << "'" << tr->esc( pi.pPass ) << "',"
+                    << "'" << tr->esc( pi.ownerId ) << "',"
                     << "'" << tr->esc( pi.pCName ) << "',"
                     << "'" << tr->esc( pi.pManager ) << "',"
                     << "'" << ( pi.pBalance ) << "',"

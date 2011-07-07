@@ -15,12 +15,14 @@
 
 using namespace Wt;
 
-PartnerOptions::PartnerOptions( std::string _pid, Wt::WContainerWidget *parent ): WContainerWidget( parent ), updated_( this ) {
+PartnerOptions::PartnerOptions( std::string _userid, std::string _pid, Wt::WContainerWidget *parent ): WContainerWidget( parent ), updated_( this ) {
+    userid = _userid;
     pid = _pid;
-    PartnerInfo pi;
+    PartnerInfo pi, user;
 
+    user = PartnerManager::get_mutable_instance().findById( userid );
     try {
-        pi = PartnerManager::get_mutable_instance().findById( pid );
+        pi = PartnerManager::get_mutable_instance().findById( pid );        
     } catch ( ... ) {}
     WString uv = WString::fromUTF8( "Значение не задано" );
     WString up = WString::fromUTF8( "Значение скрыто" );
@@ -120,7 +122,7 @@ PartnerOptions::PartnerOptions( std::string _pid, Wt::WContainerWidget *parent )
 
         pManagerEdit = new WCustomInPlaceEdit( WString::fromUTF8( pi.pManager ), uv );
         WSuggestionPopup* pManagerSuggest = new WSuggestionPopup( suggestOptions, this );
-        std::list< PartnerInfo > lst = PartnerManager::get_mutable_instance().getAll();
+        std::list< PartnerInfo > lst = PartnerManager::get_mutable_instance().getAll( user.ownerId.empty()? "": user.pId );
         pManagerSuggest->forEdit( pManagerEdit->lineEdit(), WSuggestionPopup::Editing | WSuggestionPopup::DropDownIcon );
         pManagerSuggest->activated().connect( boost::bind( &PartnerOptions::onSuggestionActivated, this, pManagerSuggest, _1, pManagerEdit ) );
         std::set< std::string > lst_unique;
@@ -293,8 +295,8 @@ void PartnerOptions::onBtnSave() {
     updated_.emit( pid, isNew );
 }
 
-PartnerEditor::PartnerEditor( Wt::WContainerWidget* parent ):WContainerWidget( parent ) {
-
+PartnerEditor::PartnerEditor( std::string _userid, Wt::WContainerWidget* parent ):WContainerWidget( parent ) {
+    userid = _userid;
     root = new WBorderLayout();
     opts = new WHBoxLayout();
     WPushButton* refresh= new WPushButton( WString::fromUTF8("Обновить") );
@@ -310,7 +312,7 @@ PartnerEditor::PartnerEditor( Wt::WContainerWidget* parent ):WContainerWidget( p
     treeView_ = buildTreeView( model_ );
     resizeTreeView( treeView_ );
 
-    PartnerOptions* popt = new PartnerOptions( "" );
+    PartnerOptions* popt = new PartnerOptions( userid, "" );
     popt->updated().connect( this, &PartnerEditor::onPartnersUpdated );
     opts->addWidget( popt );
 
@@ -350,13 +352,14 @@ void PartnerEditor::resizeTreeView( WTreeView* tw) {
 }
 
 void PartnerEditor::buildModel( WStandardItemModel* data ) {
+    PartnerInfo user = PartnerManager::get_mutable_instance().findById( userid );
     data->clear();
     data->insertColumns(0, columns_width.size());
 
     data->setHeaderData(0, Horizontal, WString::fromUTF8("Партнер"));
     data->setHeaderData(1, Horizontal, WString::fromUTF8("PID"));
 
-    std::list< PartnerInfo > lst = PartnerManager::get_mutable_instance().getAll();
+    std::list< PartnerInfo > lst = PartnerManager::get_mutable_instance().getAll( user.ownerId.empty()? "": user.pId );
     for ( std::list< PartnerInfo >::iterator it = lst.begin(); it != lst.end(); it++ ) {
         WStandardItem *pName,*pId;
         pName = new WStandardItem( WString::fromUTF8( it->pName ) );
@@ -371,6 +374,7 @@ void PartnerEditor::buildModel( WStandardItemModel* data ) {
 }
 
 void PartnerEditor::updateModel( WStandardItemModel* data ) {
+    PartnerInfo user = PartnerManager::get_mutable_instance().findById( userid );
     std::set< std::string > partners;
     for ( int row = 0; row < data->rowCount(); row++ ) {
         WStandardItem* login_item = data->item( row, 0 );
@@ -383,7 +387,7 @@ void PartnerEditor::updateModel( WStandardItemModel* data ) {
         } catch ( ... ) {}
     }
 
-    std::list< PartnerInfo > lst = PartnerManager::get_mutable_instance().getAll();
+    std::list< PartnerInfo > lst = PartnerManager::get_mutable_instance().getAll( user.ownerId.empty()? "": user.pId );
     for ( std::list< PartnerInfo >::iterator it = lst.begin(); it != lst.end(); it++ ) {
         if ( partners.find( it->pId ) == partners.end() ) {
             WStandardItem *pName,*pId;
@@ -408,7 +412,7 @@ void PartnerEditor::onChangeRoot() {
     }
 
     if ( selected.empty() ) {
-        PartnerOptions* popt = new PartnerOptions( "" );
+        PartnerOptions* popt = new PartnerOptions( userid, "" );
         popt->updated().connect( this, &PartnerEditor::onPartnersUpdated );
         opts->addWidget( popt );
     }
@@ -421,7 +425,7 @@ void PartnerEditor::onChangeRoot() {
 
         std::string pId = item->text().toUTF8();
 
-        PartnerOptions* popt = new PartnerOptions( pId );
+        PartnerOptions* popt = new PartnerOptions( userid, pId );
         popt->updated().connect( this, &PartnerEditor::onPartnersUpdated );
         opts->addWidget( popt );
     }

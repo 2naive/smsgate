@@ -129,7 +129,8 @@ CREATE TABLE partners (
     mname	TEXT NOT NULL DEFAULT '',
     companyname	TEXT NOT NULL DEFAULT '',
     caddress	TEXT NOT NULL DEFAULT '',
-    email	TEXT NOT NULL DEFAULT ''
+    email	TEXT NOT NULL DEFAULT '',
+    ownerid	TEXT DEFAULT 'system'
 );
 
 CREATE TABLE mccmnc (
@@ -156,12 +157,14 @@ CREATE TABLE preffix_map (
 
 CREATE TABLE tariffs (
     name        TEXT PRIMARY KEY,
-    description TEXT DEFAULT ''
+    description TEXT DEFAULT '',
+    ownerid	TEXT DEFAULT 'system'
 );
 
 CREATE TABLE routes (
     name        TEXT PRIMARY KEY,
-    description TEXT DEFAULT ''
+    description TEXT DEFAULT '',
+    ownerid	TEXT DEFAULT 'system'
 );
 
 CREATE TABLE matviews (
