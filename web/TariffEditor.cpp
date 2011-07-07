@@ -373,7 +373,7 @@ void TariffEditor::recursivePrintCsv( std::ostream& out, sms::MessageClassifier:
         string mccmnc = item->child( i, 1 )->text().toUTF8();
         std::string mcc;
         std::string mnc;
-        string price;
+        string price, price_s, price_c;
 
         if ( mccmnc.size()< 3 ) continue;
         mcc = mccmnc.substr(0, 3);
