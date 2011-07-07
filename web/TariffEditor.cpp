@@ -360,7 +360,7 @@ void TariffEditor::exportToCsv() {
 
     WStandardItem* item = model_->invisibleRootItem();
 
-    fout << "Country;Network;MCC/MNC;Price;" << endl;
+    fout << "Страна;Оператор;MCC/MNC;Цена, руб;Цена, ориг" << endl;
     recursivePrintCsv( fout, comap, item );
 
     fout.close();
@@ -380,15 +380,17 @@ void TariffEditor::recursivePrintCsv( std::ostream& out, sms::MessageClassifier:
         mnc = mccmnc.substr(3, mccmnc.length()-3);
 
         price = sdouble2string( item->child( i, 2 )->text().toUTF8() );
+        price_s = sdouble2string( item->child( i, 3 )->text().toUTF8() );
+        price_c = sdouble2string( item->child( i, 4 )->text().toUTF8() );
 
 
         if ( mnc.empty() ) {
-            sms::MessageClassifier::CountryInfo ci = map[ mcc ];
-            out << "\"" << ci.cName << "\"" << ";";     // Country name
-            out << ";";                                 // Network name
-            out << "\"" << mcc << "\"" << ";";                          // MCC
-            out << "\"" << price << "\"" << ";";                        // Price
-            out << endl;
+//            sms::MessageClassifier::CountryInfo ci = map[ mcc ];
+//            out << "\"" << ci.cName << "\"" << ";";     // Country name
+//            out << ";";                                 // Network name
+//            out << "\"" << mcc << "\"" << ";";          // MCC
+//            out << "\"" << price << "\"" << ";";        // Price
+//            out << endl;
 
             if ( !item->child( i, 0 )->hasChildren() )
                 continue;
@@ -402,7 +404,8 @@ void TariffEditor::recursivePrintCsv( std::ostream& out, sms::MessageClassifier:
         out << "\"" << ci.cName << "\"" << ";";     // Country name
         out << "\"" << oi.getName() << "\"" << ";"; // Network name
         out << "\"" << mcc << mnc << "\"" << ";";   // MCCMNC
-        out << "\"" << price << "\"" << ";";           // Price
+        out << "\"" << price << "руб\"" << ";";     // Price
+        out << "\"" << price_s << price_c << "\"" << ";";     // Price
         out << endl;
 
     }
