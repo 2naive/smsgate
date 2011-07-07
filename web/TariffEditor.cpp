@@ -360,7 +360,7 @@ void TariffEditor::exportToCsv() {
 
     WStandardItem* item = model_->invisibleRootItem();
 
-    fout << "Страна;Оператор;MCC/MNC;Цена, руб;Цена, ориг" << endl;
+    fout << "Страна;Оператор;MCC/MNC;\"Цена, руб\";\"Цена, ориг\"" << endl;
     recursivePrintCsv( fout, comap, item );
 
     fout.close();
@@ -380,8 +380,8 @@ void TariffEditor::recursivePrintCsv( std::ostream& out, sms::MessageClassifier:
         mnc = mccmnc.substr(3, mccmnc.length()-3);
 
         price = sdouble2string( item->child( i, 2 )->text().toUTF8() );
-        price_s = sdouble2string( item->child( i, 3 )->text().toUTF8() );
-        price_c = sdouble2string( item->child( i, 4 )->text().toUTF8() );
+        price_s = double2string( item->child( i, 3 )->text().toUTF8() );
+        price_c = item->child( i, 4 )->text().toUTF8();
 
 
         if ( mnc.empty() ) {
