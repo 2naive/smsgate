@@ -360,7 +360,7 @@ void TariffEditor::exportToCsv() {
 
     WStandardItem* item = model_->invisibleRootItem();
 
-    fout << "Страна;Оператор;MCC/MNC;\"Цена, руб\";\"Цена, ориг\";\"Валюта, ориг\"" << endl;
+    fout << utils::StringUtf8ToCp1251( "Страна;Оператор;MCC/MNC;\"Цена, руб\";\"Цена, ориг\";\"Валюта, ориг\"" ) << endl;
     recursivePrintCsv( fout, comap, item );
 
     fout.close();
