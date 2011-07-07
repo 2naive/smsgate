@@ -370,7 +370,6 @@ void TariffEditor::exportToCsv() {
 void TariffEditor::recursivePrintCsv( std::ostream& out, sms::MessageClassifier::CountryOperatorMapT& map, Wt::WStandardItem* item ) {
     for ( int i = 0; i < item->rowCount(); i++ ) {
         string mccmnc = item->child( i, 1 )->text().toUTF8();
-        vector< string > to_vec;
         std::string mcc;
         std::string mnc;
         string price;
@@ -396,9 +395,6 @@ void TariffEditor::recursivePrintCsv( std::ostream& out, sms::MessageClassifier:
             recursivePrintCsv( out, map, item->child( i, 0 ) );
             continue;
         }
-
-        // Is Network
-        mnc = to_vec[1];
 
         sms::MessageClassifier::CountryInfo ci = map[ mcc ];
         sms::MessageClassifier::OperatorInfo oi = map[ mcc ].operators[ mnc ];
