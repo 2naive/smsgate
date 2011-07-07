@@ -41,7 +41,7 @@ typedef TariffOptionEditor< Tariff::TariffCurrency, MultiChoiseAdaptor< Tariff::
 
 class TariffEditor: public Wt::WContainerWidget {
 public:
-    TariffEditor( WContainerWidget* parent = 0 );
+    TariffEditor( std::string _userid, WContainerWidget* parent = 0 );
 private:
     Wt::WStandardItemModel* model_;
     Wt::WTreeView* treeView_;
@@ -52,6 +52,7 @@ private:
     PaidStatusesEditor* paidStatuses;
     UnknownPolicyEditor* unknownPolicy;
     CurrencyEditor* currencyEditor;
+    std::string userid;
 
     struct import_controls {
         Wt::WLabel* netcode_helper;

@@ -56,7 +56,7 @@ WContainerWidget* PersonalPage::buildTariffEditor( ) {
         return wTariffEditor;
     }
 
-    wTariffEditor= new TariffEditor();
+    wTariffEditor= new TariffEditor( pId );
     return wTariffEditor;
 }
 

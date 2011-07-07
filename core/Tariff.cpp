@@ -319,8 +319,9 @@ void TariffManager::updateTariffList() {
     }
 }
 
-void TariffManager::saveTariff( std::string name, Tariff t ) {
+void TariffManager::saveTariff( std::string name, std::string owner, Tariff t ) {
     std::ostringstream out;
+    t.setOption( string("ownerid"), owner );
     try {
         std::ostringstream r;
 
@@ -378,7 +379,13 @@ void TariffManager::removeTariff( std::string name ) {
 }
 
 
-TariffManager::TariffListT TariffManager::tariffs_list() {
+TariffManager::TariffListT TariffManager::tariffs_list( std::string owner ) {
     boost::recursive_mutex::scoped_lock lck(lock);
-    return tlist;
+    TariffListT res;
+    for ( TariffMapT::iterator it = tmap.begin(); it != tmap.end(); it++ ) {
+        if ( owner.empty() || ( it->second.hasOption( "ownerid" ) && ( it->second.getOption( "ownerid" ) == owner ) ) ) {
+            res.push_back( it->first );
+        }
+    }
+    return res;
 }

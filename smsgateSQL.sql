@@ -109,7 +109,7 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER insert_price_change BEFORE INSERT ON dlrs FOR EACH ROW EXECUTE PROCEDURE insert_dlr();
 
 CREATE TABLE partners (
-    pid         INTEGER PRIMARY KEY,
+    pid         TEXT PRIMARY KEY,
     uname       TEXT NOT NULL,
     pass        TEXT NOT NULL,
     cname       TEXT NOT NULL,

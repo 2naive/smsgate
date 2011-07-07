@@ -365,6 +365,8 @@ private:
     void removeOption( std::string name );
     void removeOption( std::string name, std::string country );
     void removeOption( std::string name, std::string country, std::string oper );
+
+    friend class TariffManager;
 };
 
 class TariffManager: public boost::serialization::singleton< TariffManager > {
@@ -377,9 +379,9 @@ public:
 
     void updateTariffList();
     Tariff loadTariff( std::string name );
-    void saveTariff( std::string name, Tariff t );
+    void saveTariff( std::string name, std::string owner, Tariff t );
     void removeTariff( std::string name );
-    TariffListT tariffs_list();
+    TariffListT tariffs_list( std::string owner );
 
 private:
     TariffListT tlist;

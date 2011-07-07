@@ -1,6 +1,7 @@
 #include "TariffEditor.h"
 #include "MessageClassifier.h"
 #include "utils.h"
+#include "PartnerManager.h"
 
 #include <string>
 #include <algorithm>
@@ -12,7 +13,8 @@
 using namespace Wt;
 using namespace std;
 
-TariffEditor::TariffEditor( WContainerWidget* parent ): WContainerWidget( parent ) {
+TariffEditor::TariffEditor( std::string _userid, WContainerWidget* parent ): WContainerWidget( parent ) {
+    userid = _userid;
     columns_width.push_back(270);
     columns_width.push_back(70);
     columns_width.push_back(90);
@@ -672,14 +674,16 @@ void TariffEditor::onTariffUpdate() {
 void TariffEditor::onTariffSave() {
     std::string name = nameBox->text().toUTF8();
     tariff.setName( name );
-    TariffManager::get_mutable_instance().saveTariff( name, tariff );
+    PartnerInfo user = PartnerManager::get_mutable_instance().findById( userid );
+    TariffManager::get_mutable_instance().saveTariff( name, user.ownerId.empty()? "": userid, tariff );
 
     tlistRebuild();
 }
 
 void TariffEditor::tlistRebuild() {
     tlistBox->clear();
-    std::list< std::string > tlist = TariffManager::get_mutable_instance().tariffs_list();
+    PartnerInfo user = PartnerManager::get_mutable_instance().findById( userid );
+    std::list< std::string > tlist = TariffManager::get_mutable_instance().tariffs_list(user.ownerId.empty()? "": userid);
 
     for ( std::list< std::string >::iterator it = tlist.begin(); it != tlist.end(); it++ ) {
         tlistBox->addItem( WString::fromUTF8( *it ) );

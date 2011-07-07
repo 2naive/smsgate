@@ -148,7 +148,7 @@ PartnerOptions::PartnerOptions( std::string _userid, std::string _pid, Wt::WCont
            };
 
         pTariffEdit = new WCustomInPlaceEdit( WString::fromUTF8( pi.tariff.getName() ), uv );
-        TariffManager::TariffListT tariffs = TariffManager::get_mutable_instance().tariffs_list();
+        TariffManager::TariffListT tariffs = TariffManager::get_mutable_instance().tariffs_list(user.ownerId.empty()? "": userid);
         WSuggestionPopup* pTariffSuggest = new WSuggestionPopup( suggestOptions, this );
         pTariffSuggest->forEdit( pTariffEdit->lineEdit(), WSuggestionPopup::Editing | WSuggestionPopup::DropDownIcon );
         pTariffSuggest->activated().connect( boost::bind( &PartnerOptions::onSuggestionActivated, this, pTariffSuggest, _1, pTariffEdit ) );
