@@ -664,7 +664,8 @@ void StatisticsBlock::onNewMessage() {
     SendMessageForm* msgform = new SendMessageForm( );
     msgform->cancelBtn->clicked().connect( &summary, &WDialog::reject );
     msgform->sendBtn->clicked().connect( &summary, &WDialog::accept );
-    if (!isAdmin) {
+    PartnerInfo user=PartnerManager::get_mutable_instance().findById( pId );
+    if ( !user.ownerId.empty() ) {
         msgform->gateway->hide();
         msgform->pidEdit->hide();
     }
