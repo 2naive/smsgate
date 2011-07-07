@@ -549,7 +549,9 @@ void WStatPageData::execute( int lnl, int lnr, RowList &data ) {
             row.push_back( new WLabel( WString::fromUTF8( __country ) ) );
             row.push_back( new WLabel( WString::fromUTF8( __region ) ) );
             row.push_back( new WLabel( WString::fromUTF8( __price ) ) );
-            if ( ppage->isAdmin ) {
+
+            PartnerInfo userid = PartnerManager::get_mutable_instance().findById( ppage->pId );
+            if ( userid.ownerId.empty() ) {
                 sprintf( ps, "%0.2f ( %+0.2f )", ourprice, price - ourprice );
                 string __ourprice = ps;
 
@@ -782,6 +784,9 @@ StatisticsBlock::StatisticsBlock( string pId_, bool isAdmin, const Wt::WEnvironm
 }
 
 void StatisticsBlock::onMoreInfo(const WMouseEvent &e, SMSMessage::ID msgid ) {
+    PartnerInfo userid = PartnerManager::get_mutable_instance().findById( pId );
+    if ( !userid.ownerId.empty() )
+        return;
     WPopupMenu* popup = new WPopupMenu();
     int ts = PartnerManager::get_mutable_instance().findById( pId ).tzone;
     try {
