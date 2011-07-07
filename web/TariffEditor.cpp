@@ -360,6 +360,7 @@ void TariffEditor::exportToCsv() {
 
     WStandardItem* item = model_->invisibleRootItem();
 
+    fout << "Country;Network;MCC/MNC;Price;" << endl;
     recursivePrintCsv( fout, comap, item );
 
     fout.close();
@@ -368,7 +369,6 @@ void TariffEditor::exportToCsv() {
 }
 
 void TariffEditor::recursivePrintCsv( std::ostream& out, sms::MessageClassifier::CountryOperatorMapT& map, Wt::WStandardItem* item ) {
-    out << "Country;Network;MCC/MNC;Price;" << endl;
     for ( int i = 0; i < item->rowCount(); i++ ) {
         string mccmnc = item->child( i, 1 )->text().toUTF8();
         std::string mcc;
