@@ -82,7 +82,7 @@ void PartnerManager::loadFromDb() {
                                             (*dbr)[1].as<string>(),
                                             (*dbr)[2].as<string>(),
                                             (*dbr)[0].as<string>(),
-                                            (*dbr)[20].as<string>(),
+                                            (*dbr)[21].as<string>(),
                                             (*dbr)[3].as<string>(),
                                             (*dbr)[4].as<string>(),
                                             (*dbr)[15].as<string>(),
