@@ -380,6 +380,8 @@ void TariffEditor::recursivePrintCsv( std::ostream& out, sms::MessageClassifier:
 
         price = sdouble2string( item->child( i, 2 )->text().toUTF8() );
 
+        out << "Country;Network;MCC/MNC;Price;" << endl;
+
         if ( mnc.empty() ) {
             sms::MessageClassifier::CountryInfo ci = map[ mcc ];
             out << "\"" << ci.cName << "\"" << ";";     // Country name
