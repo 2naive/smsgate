@@ -374,15 +374,14 @@ void TariffEditor::recursivePrintCsv( std::ostream& out, sms::MessageClassifier:
         std::string mcc;
         std::string mnc;
         string price;
-        sms::utils::Tokenize( mccmnc, to_vec, ":" );
-        bool isCountry = (to_vec.size() == 1);
 
-        mcc = to_vec[0];
-        if ( mcc.empty() ) continue;
+        if ( mccmnc.size()< 3 ) continue;
+        mcc = mccmnc.substr(0, 3);
+        mnc = mccmnc.substr(3, mccmnc.length()-3);
 
         price = sdouble2string( item->child( i, 2 )->text().toUTF8() );
 
-        if ( isCountry ) {
+        if ( mnc.empty() ) {
             sms::MessageClassifier::CountryInfo ci = map[ mcc ];
             out << "\"" << ci.cName << "\"" << ";";     // Country name
             out << ";";                                 // Network name
