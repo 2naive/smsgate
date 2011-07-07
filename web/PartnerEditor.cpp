@@ -257,7 +257,8 @@ void PartnerOptions::onBtnSave() {
         return;
 
     bool isNew = true;
-    PartnerInfo pi;
+    PartnerInfo pi, user;
+    user = PartnerManager::get_mutable_instance().findById( userid );
     try {
             pi = PartnerManager::get_mutable_instance().findById( pid );
             isNew = false;
@@ -272,6 +273,7 @@ void PartnerOptions::onBtnSave() {
     pi.pContact = pPhoneEdit->text().toUTF8();
     pi.pCompanyName = pCompanyEdit->text().toUTF8();
     pi.pCompanyAddress = pCAddressEdit->text().toUTF8();
+    pi.ownerId = user.ownerId.empty()? "system": user.ownerId;
 
     try {
         pi.tzone = boost::lexical_cast< int >( pTimeZoneEdit->text().toUTF8() );
