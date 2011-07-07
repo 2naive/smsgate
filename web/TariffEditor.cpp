@@ -368,6 +368,7 @@ void TariffEditor::exportToCsv() {
 }
 
 void TariffEditor::recursivePrintCsv( std::ostream& out, sms::MessageClassifier::CountryOperatorMapT& map, Wt::WStandardItem* item ) {
+    out << "Country;Network;MCC/MNC;Price;" << endl;
     for ( int i = 0; i < item->rowCount(); i++ ) {
         string mccmnc = item->child( i, 1 )->text().toUTF8();
         std::string mcc;
@@ -380,14 +381,13 @@ void TariffEditor::recursivePrintCsv( std::ostream& out, sms::MessageClassifier:
 
         price = sdouble2string( item->child( i, 2 )->text().toUTF8() );
 
-        out << "Country;Network;MCC/MNC;Price;" << endl;
 
         if ( mnc.empty() ) {
             sms::MessageClassifier::CountryInfo ci = map[ mcc ];
             out << "\"" << ci.cName << "\"" << ";";     // Country name
             out << ";";                                 // Network name
-            out << mcc << ";";                          // MCC
-            out << price << ";";                        // Price
+            out << "\"" << mcc << "\"" << ";";                          // MCC
+            out << "\"" << price << "\"" << ";";                        // Price
             out << endl;
 
             if ( !item->child( i, 0 )->hasChildren() )
@@ -401,8 +401,8 @@ void TariffEditor::recursivePrintCsv( std::ostream& out, sms::MessageClassifier:
         sms::MessageClassifier::OperatorInfo oi = map[ mcc ].operators[ mnc ];
         out << "\"" << ci.cName << "\"" << ";";     // Country name
         out << "\"" << oi.getName() << "\"" << ";"; // Network name
-        out << mcc << mnc << ";";                   // MCCMNC
-        out << price << ";";                        // Price
+        out << "\"" << mcc << mnc << "\"" << ";";   // MCCMNC
+        out << "\"" << price << "\"" << ";";           // Price
         out << endl;
 
     }
