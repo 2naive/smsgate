@@ -437,7 +437,7 @@ namespace sms {
                     }
                 } catch ( ... ) {}
 
-                std::list< PartnerInfo > pList = PartnerManager::get_mutable_instance().getAll();
+                std::list< PartnerInfo > pList = PartnerManager::get_mutable_instance().getAll( "" );
                 std::vector< PartnerInfo > pSortedList( pList.begin(), pList.end() );
                 std::sort( pSortedList.begin(), pSortedList.end() );
 
