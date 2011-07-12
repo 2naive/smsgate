@@ -5,6 +5,7 @@
 #include <Wt/WGridLayout>
 
 #include <Wt/WImage>
+#include <Wt/WText>
 #include <Wt/WApplication>
 #include <Wt/WEnvironment>
 
@@ -51,7 +52,7 @@ LoginBlock::LoginBlock( WContainerWidget* parent ):
     okBtn->setMaximumSize( WLength::Auto, WLength( 20, WLength::Pixel ) );
     okBtn->clicked().connect(SLOT(this, LoginBlock::onLoginEvent));
 
-    WLabel* cinfo = new WText( contacts );
+    WText* cinfo = new WText( contacts );
     cinfo->setStyleClass( "contacts" );
 
     WGridLayout *wLoginGrp = new WGridLayout();
