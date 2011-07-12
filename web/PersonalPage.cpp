@@ -17,7 +17,7 @@ PersonalPage::PersonalPage( const WEnvironment& env ):
     WApplication( env )
 {   
     if ( ( env.hostName() == "vs-sms.ru" ) || ( env.hostName() == "www.vs-sms.ru" ) ) {
-        setTitle( WString::fromUTF8("VISTREAM") );
+        setTitle( WString::fromUTF8("Vistream | SMS рассылка в г.Саратов") );
     } else {
         setTitle( WString::fromUTF8("GreenSMS: Личный кабинет") );
     }
