@@ -17,9 +17,9 @@ PersonalPage::PersonalPage( const WEnvironment& env ):
     WApplication( env )
 {   
     if ( ( env.hostName() == "vs-sms.ru" ) || ( env.hostName() == "www.vs-sms.ru" ) ) {
-        setTitle( WString::fromUTF8("ViStream: Личный кабинет ") );
+        setTitle( WString::fromUTF8("VISTREAM") );
     } else {
-        setTitle( WString::fromUTF8("GreenSMS: Личный кабинет ") );
+        setTitle( WString::fromUTF8("GreenSMS: Личный кабинет") );
     }
 
     setCssTheme("polished");
