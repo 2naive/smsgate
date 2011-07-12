@@ -364,7 +364,10 @@ void PartnerEditor::buildModel( WStandardItemModel* data ) {
     std::list< PartnerInfo > lst = PartnerManager::get_mutable_instance().getAll( user.ownerId.empty()? "": user.pId );
     for ( std::list< PartnerInfo >::iterator it = lst.begin(); it != lst.end(); it++ ) {
         WStandardItem *pName,*pId;
-        pName = new WStandardItem( WString::fromUTF8( it->pName ) );
+        if ( ( it->ownerId != "system" ) && ( !it->ownerId.empty() ) ) {
+            PartnerInfo owner = PartnerManager::get_mutable_instance().findById( it->ownerId );
+            pName = new WStandardItem( WString::fromUTF8( owner.pName+string(".")+it->pName ) );
+        }
         pId = new WStandardItem( WString::fromUTF8( it->pId ) );
 
         std::vector< WStandardItem* > row;
