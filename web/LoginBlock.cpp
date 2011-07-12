@@ -5,6 +5,8 @@
 #include <Wt/WGridLayout>
 
 #include <Wt/WImage>
+#include <Wt/WApplication>
+#include <Wt/WEnvironment>
 
 using namespace Wt;
 using namespace std;
@@ -19,7 +21,13 @@ LoginBlock::LoginBlock( WContainerWidget* parent ):
     WString unameMsg = WString::fromUTF8( "login" );
     WString passMsg = WString::fromUTF8( "password" );
 
-    WString contacts = WString::fromUTF8( "sms@greensms.ru    +7 (495) 973 13 05" );
+    WEnvironment env = WApplication::instance()->environment();
+    WString contacts;
+    if ( ( env.hostName() == "vs-sms.ru" ) || ( env.hostName() == "www.vs-sms.ru" ) ) {
+        contacts = WString::fromUTF8( "vistream@bk.ru  +7(8452)674522   +7(8452)652377" );
+    } else {
+        contacts = WString::fromUTF8( "sms@greensms.ru    +7 (495) 973 13 05" );
+    }
 
     failedMsgLabel = new WLabel( failedMsg );
 
