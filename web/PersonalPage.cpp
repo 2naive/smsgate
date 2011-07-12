@@ -15,8 +15,13 @@ WApplication *createPersonalPage(const WEnvironment& env) {
 
 PersonalPage::PersonalPage( const WEnvironment& env ):
     WApplication( env )
-{
-    setTitle( WString::fromUTF8("GreenSMS: Личный кабинет ") );
+{   
+    if ( ( env.hostName() == "vs-sms.ru" ) || ( env.hostName() == "www.vs-sms.ru" ) ) {
+        setTitle( WString::fromUTF8("ViStream: Личный кабинет ") );
+    } else {
+        setTitle( WString::fromUTF8("GreenSMS: Личный кабинет ") );
+    }
+
     setCssTheme("polished");
     this->useStyleSheet( "/resources/css/PersonalPage.css" );
 
