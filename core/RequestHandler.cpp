@@ -61,17 +61,40 @@ void RequestHandler::handleRequest(const Wt::Http::Request& request, Wt::Http::R
               string tz 		= request.getParameter("tz")       	? *request.getParameter("tz")           : e;
         const string dlr		= request.getParameter("dlr")  		? *request.getParameter("dlr")		: zero;
               string pid		= request.getParameter("idp")  		? *request.getParameter("idp")		: e;
+        const string piduser		= request.getParameter("idpuser")  	? *request.getParameter("idpuser")		: e;
         const int    priority           = request.getParameter("priority")  	? atoi( request.getParameter("priority")->c_str() ) : 0;
         const string garant		= request.getParameter("garant")  	? *request.getParameter("garant")	: zero;
 
 	to_vec tov;
 	Tokenize( to, tov, ",");
 
+        PartnerInfo ptnr;
         try {
-            PartnerInfo ptnr = PartnerManager::get_mutable_instance().findByName( uname );
-            if ( ptnr.pId != "1" ) { pid = ptnr.pId; }
+            ptnr = PartnerManager::get_mutable_instance().findByName( uname );
+            pid = ptnr.pId;
         } catch ( PartnerNotFoundError& e ) {
             Logger::get_mutable_instance().smslogwarn( string("Unknown user is requesting status: [") + uname + string(":") + pass + "]");
+            return;
+        }
+
+        if ( ptnr.ownerId.empty() && !piduser.empty() ) {
+            try {
+                ptnr = PartnerManager::get_mutable_instance().findByName( piduser );
+                pid = ptnr.pId;
+            } catch ( PartnerNotFoundError& e ) {
+                Logger::get_mutable_instance().smslogwarn( string("Unknown user is requesting status: [") + uname + string(":") + pass + "]");
+                return;
+            }
+        }
+
+        if ( ptnr.ownerId.empty() && !pid.empty() ) {
+            try {
+                ptnr = PartnerManager::get_mutable_instance().findById( pid );
+                pid = ptnr.pId;
+            } catch ( PartnerNotFoundError& e ) {
+                Logger::get_mutable_instance().smslogwarn( string("Unknown user is requesting status: [") + uname + string(":") + pass + "]");
+                return;
+            }
         }
 
         try {

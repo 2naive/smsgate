@@ -390,39 +390,50 @@ void RequestTracker::parseMarkUndeliveredEvent( SMSRequest::PTR req, SMSMessage:
 }
 
 
-void RequestTracker::parseDeliveryNotify( SMSRequest::PTR req, SMSMessage::ID msgid ) {
-    std::string idp = req->pid;
+void RequestTracker::parseDeliveryNotify( SMSMessage::ID msgid ) {
+    SMSMessage::PTR msg = SMSMessageManager::get_mutable_instance().loadMessage( msgid );
+    std::string idp = msg->pid;
     int rdelay = ConfigManager::Instance()->getProperty<int>( "system.resendtimeout" ); // TODO
     unsigned int ma_p = 0;
 
-    SMSMessage::PTR msg = SMSMessageManager::get_mutable_instance().loadMessage( msgid );
-
-    std::ostringstream out, url, url2;
+    std::ostringstream out, url;
     out << "OP_DeliveryNotify ID=" << msgid.to_str() << " ";
 
     try {
-        {
-            SMSMessage::PTR msg = SMSMessageManager::get_mutable_instance().loadMessage( msgid );
-            url << "http://ftp.smsonline.ru/sys/jane-dlr.cgi?" <<
-                    "phone=" << req->to[ msg->getID().msg_num ] <<
-                    "&tid=" << req->tid  <<
-                    "&from=" << utils::UrlEncodeString(req->from)  <<
-                    "&status=" << msg->getStatus()();
-            url2<< "http://smsdelivery.odnoklassniki.ru:8040/dlr/?" <<
-                    "phone=" << req->to[ msg->getID().msg_num ] <<
-                    "&sms_id=" << req->tid  <<
-                    "&from=" << utils::UrlEncodeString(req->from)  <<
-                    "&dlr_status=" << msg->getStatus()();
+        int kcode = 32;
+        switch ( msg->getStatus()() ) {
+        case SMSMessage::Status::ST_DELIVERED:
+            kcode = 1;//delivery success
+            break;
+        case SMSMessage::Status::ST_NOT_DELIVERED:
+            kcode = 2;//delivery failure
+            break;
+        case SMSMessage::Status::ST_EXPIRED:
+            kcode = 2;//delivery failure
+            break;
+        case SMSMessage::Status::ST_PREPARING:
+            kcode = 4;//message buffered
+            break;
+        case SMSMessage::Status::ST_BUFFERED:
+            kcode = 8;//smsc submit
+            break;
+        case SMSMessage::Status::ST_REJECTED:
+            kcode = 16;//smsc reject
+            break;
+
+            url << "127.0.0.1:13016/" <<
+                   "?dlr-mid=" << msgid.to_str() <<
+                   "&dlr-mask=" << kcode;
+            // http://127.0.0.1:13016/?dlr-mid=131113146111443104.0&dlr-mask=1
         }
 
-        HttpClient::Response resp = kannel.get( url.str() );
-        if ( ( req->pid == "745" ) && ( req->from == "Odkl.ru" ) ) {
-            HttpClient::Response resp = kannel.get( url2.str() );
+        if ( msg->tid == "smpp" ) {
+            kannel.get( url.str() );
         }
 
     } catch ( HttpError err ) {
         out << "Retrying;\n" << boost::diagnostic_information( err );
-        del_queue.push( SMSOperation::create<OP_DeliveryNotify>( std::make_pair( req, msgid ), idp, ma_p, OP_DeliveryNotifyP ), rdelay );
+        del_queue.push( SMSOperation::create<OP_DeliveryNotify>( msgid, idp, ma_p, OP_DeliveryNotifyP ), rdelay );
         Logger::get_mutable_instance().smslogwarn( out.str() );
         return;
     }
@@ -501,12 +512,14 @@ void RequestTracker::parseNewHistoryElement( SMSMessage::ID msg_id, SMSMessage::
             if ( element.op_result == SMSMessage::Status::ST_REJECTED ) {
                 if ( element.op_code == 2 ) {
                     msg->setStatus( element.op_result );
+                    parseDeliveryNotify( msg_id );
                     out << "updated";
                 } else {
                     out << "ignored";
                 }
             } else {
                 msg->setStatus( element.op_result );
+                parseDeliveryNotify( msg_id );
                 out << "updated";
             }
         } else {
@@ -631,7 +644,7 @@ void RequestTracker::MainEventLoop( ) {
 
                 if ( op.type() == OP_DeliveryNotify ) {
                     //Timer::Instance()->addSingleEvent( boost::bind( &RequestTracker::parseDeliveryNotify, this, op.get<OP_DeliveryNotify>().first, op.get<OP_DeliveryNotify>().second ), 0 );
-                    parseDeliveryNotify( op.get<OP_DeliveryNotify>().first, op.get<OP_DeliveryNotify>().second );
+                    parseDeliveryNotify( op.get<OP_DeliveryNotify>() );
                 }
 
 

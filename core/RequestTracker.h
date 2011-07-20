@@ -74,7 +74,7 @@ public:
     std::pair< SMSRequest::PTR, SMSMessage::ID >,
     std::pair< std::pair< SMSRequest::PTR, SMSMessage::ID >, string >,
     std::pair< SMSMessage::ID, SMSMessage::HistoryElement >,
-    std::pair< SMSRequest::PTR, SMSMessage::ID >
+    SMSMessage::ID
     >::Type
     > SMSOperation;
 
@@ -131,7 +131,7 @@ private:
     void parseMessage2kannelEvent( SMSRequest::PTR req, SMSMessage::ID msg );
     void parseCheckDeliveryEvent( SMSRequest::PTR req, SMSMessage::ID msg );
     void parseCheckAckEvent( SMSRequest::PTR req, SMSMessage::ID msg, string gname );
-    void parseDeliveryNotify( SMSRequest::PTR req, SMSMessage::ID msg );
+    void parseDeliveryNotify( SMSMessage::ID msg );
     void parseNewDelivery( SMSMessage::ID msg_id, DeliveryInfo info );
     void parseNewHistoryElement( SMSMessage::ID msg_id, SMSMessage::HistoryElement element );
     void pushToSendingQueue( SMSRequest::PTR req, SMSMessage::ID msg, unsigned int ma_p = 0, unsigned char mi_p = 0 );
