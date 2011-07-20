@@ -421,11 +421,11 @@ void RequestTracker::parseDeliveryNotify( SMSMessage::ID msgid ) {
             kcode = 16;//smsc reject
             break;
 
-            url << "127.0.0.1:13016/" <<
-                   "?dlr-mid=" << msgid.to_str() <<
-                   "&dlr-mask=" << kcode;
-            // http://127.0.0.1:13016/?dlr-mid=131113146111443104.0&dlr-mask=1
         }
+        url << "127.0.0.1:13016/" <<
+               "?dlr-mid=" << msgid.to_str() <<
+               "&dlr-mask=" << kcode;
+        // http://127.0.0.1:13016/?dlr-mid=131113146111443104.0&dlr-mask=1
 
         if ( msg->tid == "smpp" ) {
             kannel.get( url.str() );
