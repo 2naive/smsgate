@@ -413,14 +413,18 @@ void RequestTracker::parseDeliveryNotify( SMSMessage::ID msgid ) {
             break;
         case SMSMessage::Status::ST_PREPARING:
             kcode = 4;//message buffered
+            return;
             break;
         case SMSMessage::Status::ST_BUFFERED:
             kcode = 8;//smsc submit
+            return;
             break;
         case SMSMessage::Status::ST_REJECTED:
             kcode = 16;//smsc reject
             break;
-
+        default:
+            return;
+            break;
         }
         url << "127.0.0.1:13016/" <<
                "?dlr-mid=" << msgid.to_str() <<
