@@ -87,6 +87,7 @@ CREATE TABLE dlrs (
     status TEXT,
     boxc TEXT
 );
+CREATE INDEX dlrs_oid on dlrs( oid );
 CREATE INDEX dlrs_smsc on dlrs( smsc );
 CREATE INDEX dlrs_ts on dlrs( ts );
 CREATE INDEX dlrs_source on dlrs( source );

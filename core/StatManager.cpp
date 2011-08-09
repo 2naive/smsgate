@@ -18,8 +18,8 @@
 #include <boost/serialization/vector.hpp>
 
 const int on1SecondUpdateInterval = 1;
-const int on1MinuteUpdateInterval = 1;
-const int on1HourUpdateInterval = 60;
+const int on1MinuteUpdateInterval = 10;
+const int on1HourUpdateInterval = 10*60;
 const int on1DayUpdateInterval = 60*60;
 const int onCountryInfoUpdateInterval = 60*30;
 
@@ -165,21 +165,21 @@ namespace sms {
                                 << "\"WHEN\" BETWEEN " << from << " AND " << to << " UNION ALL ";
 
                     req_req     << "select SUM ( \"PARTS\" ) from message_status where "
-                                << "\"WHEN\" BETWEEN " << from << " AND " << to << "AND "
+                                << "\"WHEN\" BETWEEN " << from << " AND " << to << " AND "
                                 << "NOT \"STATUS\" IN ( 3, 4 )  UNION ALL ";
 
                     req_req     << "select SUM ( \"PARTS\" ) from message_status where "
-                                << "\"WHEN\" BETWEEN " << from << " AND " << to << "AND "
+                                << "\"WHEN\" BETWEEN " << from << " AND " << to << " AND "
                                 << "\"STATUS\" IN ( 0, -1, -2, -3 ) UNION ALL ";
 
                     req_req     << "select SUM ( \"PARTS\" ) from message_status where "
-                                << "\"WHEN\" BETWEEN " << from << " AND " << to << "AND "
+                                << "\"WHEN\" BETWEEN " << from << " AND " << to << " AND "
                                 << "\"STATUS\"=0;";
 
                 } else {
                     req_req     << "select SUM ( \"PARTS\" ) from message_status where ( \"REQUESTID\", \"MESSAGEID\" ) IN ( "
                                 << "select \"REQUESTID\", \"MESSAGEID\" from message_history where "
-                                << "\"WHEN\" BETWEEN " << from << " AND " << to << "AND "
+                                << "\"WHEN\" BETWEEN " << from << " AND " << to << " AND "
                                 << "\"GATEWAY\"='" << *it << "' AND "
                                 << "\"OP_CODE\"=0 AND \"OP_DIRECTION\"=0 ) "
                                 << " AND \"WHEN\" BETWEEN " << from << " AND " << to << " "
@@ -187,7 +187,7 @@ namespace sms {
 
                     req_req     << "select SUM ( \"PARTS\" ) from message_status where ( \"REQUESTID\", \"MESSAGEID\" ) IN ( "
                                 << "select \"REQUESTID\", \"MESSAGEID\" from message_history where "
-                                << "\"WHEN\" BETWEEN " << from << " AND " << to << "AND "
+                                << "\"WHEN\" BETWEEN " << from << " AND " << to << " AND "
                                 << "\"GATEWAY\"='" << *it << "' AND "
                                 << "\"OP_CODE\"=1 AND \"OP_DIRECTION\"=1 AND \"OP_RESULT\"=1 )  "
                                 << " AND \"WHEN\" BETWEEN " << from << " AND " << to << " "
@@ -195,11 +195,11 @@ namespace sms {
 
                     req_req     << "select SUM ( \"PARTS\" ) from message_status where ( \"REQUESTID\", \"MESSAGEID\" ) IN ( "
                                 << "select \"REQUESTID\", \"MESSAGEID\" from message_history where "
-                                << "\"WHEN\" BETWEEN " << from << " AND " << to << "AND "
+                                << "\"WHEN\" BETWEEN " << from << " AND " << to << " AND "
                                 << "\"GATEWAY\"='" << *it << "' AND "
                                 << "\"OP_CODE\"=0 AND \"OP_DIRECTION\"=0 INTERSECT "
                                 << "select \"REQUESTID\", \"MESSAGEID\" from message_history where "
-                                << "\"WHEN\" BETWEEN " << from << " AND " << to << "AND "
+                                << "\"WHEN\" BETWEEN " << from << " AND " << to << " AND "
                                 << "\"GATEWAY\"='" << *it << "' AND "
                                 << "\"OP_CODE\"=1 AND \"OP_DIRECTION\"=1 AND \"OP_RESULT\" IN (0, -1, -2, -3) )  "
                                 << " AND \"WHEN\" BETWEEN " << from << " AND " << to << " "
@@ -207,11 +207,11 @@ namespace sms {
 
                     req_req     << "select SUM ( \"PARTS\" ) from message_status where ( \"REQUESTID\", \"MESSAGEID\" ) IN ( "
                                 << "select \"REQUESTID\", \"MESSAGEID\" from message_history where "
-                                << "\"WHEN\" BETWEEN " << from << " AND " << to << "AND "
+                                << "\"WHEN\" BETWEEN " << from << " AND " << to << " AND "
                                 << "\"GATEWAY\"='" << *it << "' AND "
                                 << "\"OP_CODE\"=0 AND \"OP_DIRECTION\"=0 INTERSECT "
                                 << "select \"REQUESTID\", \"MESSAGEID\" from message_history where "
-                                << "\"WHEN\" BETWEEN " << from << " AND " << to << "AND "
+                                << "\"WHEN\" BETWEEN " << from << " AND " << to << " AND "
                                 << "\"GATEWAY\"='" << *it << "' AND "
                                 << "\"OP_CODE\"=1 AND \"OP_DIRECTION\"=1 AND \"OP_RESULT\"=0 ) "
                                     << " AND \"WHEN\" BETWEEN " << from << " AND " << to << " "

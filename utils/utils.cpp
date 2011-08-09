@@ -213,6 +213,10 @@ namespace sms {
             return StringRecodeFromTo(src, "CP1251", "UCS-2BE");
         }
 
+        std::string StringUcs2beToUtf8(const std::string src) throw ( ParamError) {
+            return StringRecodeFromTo(src, "UCS-2BE", "UTF-8");
+        }
+
         char HexChar2Dec(char c1) {
             char a = tolower(c1);
             if ((a >= 'a') && (a <= 'f'))

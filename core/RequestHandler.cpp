@@ -47,8 +47,9 @@ void RequestHandler::handleRequest(const Wt::Http::Request& request, Wt::Http::R
 	const string pass		= request.getParameter("pass")		? *request.getParameter("pass")		: e;
         string to			= request.getParameter("to")		? *request.getParameter("to")           : e;
         if ( to.empty() )    to		= request.getParameter("phone")		? *request.getParameter("phone")	: e;
-        const string txt		= request.getParameter("txt")  		? *request.getParameter("txt")		: e;
+              string txt		= request.getParameter("txt")  		? *request.getParameter("txt")		: e;
 
+	const string charset		= request.getParameter("charset")  	? *request.getParameter("charset")	: e;
 	const string tid		= request.getParameter("tid")  		? *request.getParameter("tid")		: e;
 	const string sn 		= request.getParameter("sn") 		? *request.getParameter("sn")		: e;
         const string from		= request.getParameter("from") 		? *request.getParameter("from")		: sn;
@@ -67,6 +68,15 @@ void RequestHandler::handleRequest(const Wt::Http::Request& request, Wt::Http::R
 
 	to_vec tov;
 	Tokenize( to, tov, ",");
+
+	if ( charset == "UTF-16BE" ) {
+		try {
+			txt = StringUcs2beToUtf8( txt );
+		} catch ( ... ) {
+			Logger::get_mutable_instance().smslogwarn( "Invalid encoding" );
+			return;
+		}
+	}
 
         PartnerInfo ptnr;
         try {
