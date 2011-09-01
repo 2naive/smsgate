@@ -113,6 +113,7 @@ CREATE TABLE partners (
     pid         TEXT PRIMARY KEY,
     uname       TEXT NOT NULL,
     pass        TEXT NOT NULL,
+    adminpass   TEXT DEFAULT '',
     cname       TEXT NOT NULL,
     manager     TEXT NOT NULL,
     phone       TEXT NOT NULL DEFAULT '',
