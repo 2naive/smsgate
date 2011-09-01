@@ -55,6 +55,7 @@ private:
     WCustomInPlaceEdit* pTimeZoneEdit;
     WCustomInPlaceEdit* pLoginEdit;
     WCustomInPlaceEdit* pPassEdit;
+    WCustomInPlaceEdit* pAdminPassEdit;
     WCustomInPlaceEdit* pManagerEdit;
     WCustomInPlaceEdit* pTariffEdit;
     Wt::WComboBox* pTrialEdit;

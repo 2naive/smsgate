@@ -66,7 +66,12 @@ public:
     void setCountryFilter( std::string country );
     void setStatusFilter( SMSMessage::Status status );
 
-    void evaluateSummary( double &price, int &total, int &delivered, int &rejected, int &undelivered );
+    void evaluateSummary( 	double &price, 
+				int &total, int &totalp,
+				int &delivered, int &deliveredp,
+				int &rejected, int &rejectedp,
+				int &undelivered, int &undeliveredp,
+				int &buffered, int &bufferedp );
 
     virtual int getTotalLines();
 private:

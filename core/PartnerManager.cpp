@@ -71,7 +71,7 @@ void PartnerManager::loadFromDb() {
         ConnectionPTR conn = cHold.get();
         TransactionPTR tr = db.openTransaction( conn, "PartnerManager::loadFromDb" );
         std::ostringstream dbreq1;
-        dbreq1  << " SELECT pid, uname, pass, cname, manager, balance, credit, plimit, postplay, trial, priority, phone, contact, tariff, ts, fname, lname, mname, companyname, caddress, email, ownerid FROM partners;";
+        dbreq1  << " SELECT pid, uname, pass, cname, manager, balance, credit, plimit, postplay, trial, priority, phone, contact, tariff, ts, fname, lname, mname, companyname, caddress, email, ownerid, adminpass FROM partners;";
 
         Result res = tr->exec( dbreq1.str() );
         tr->commit();
@@ -81,6 +81,7 @@ void PartnerManager::loadFromDb() {
             pb.get<1>().insert( PartnerInfo(
                                             (*dbr)[1].as<string>(),
                                             (*dbr)[2].as<string>(),
+                                            (*dbr)[22].as<string>(),
                                             (*dbr)[0].as<string>(),
                                             (*dbr)[21].as<string>(),
                                             (*dbr)[3].as<string>(),
@@ -140,6 +141,7 @@ void PartnerManager::updateToDb( PartnerInfo& pi ) {
                 << "uname='" << tr->esc( pi.pName ) << "' , "
                 << "ownerid='" << tr->esc( pi.ownerId ) << "' , "
                 << "pass='" << tr->esc( pi.pPass ) << "' , "
+                << "adminpass='" << tr->esc( pi.pAdminPass ) << "' , "
                 << "cname='" << tr->esc( pi.pCName ) << "' , "
                 << "manager='" << tr->esc( pi.pManager ) << "' , "
                 << "balance='" << ( pi.pBalance ) << "' , "
@@ -167,11 +169,12 @@ void PartnerManager::updateToDb( PartnerInfo& pi ) {
             TransactionPTR tr = db.openTransaction( conn, "PartnerManager::insertToDb" );
             std::ostringstream dbreq1;
             dbreq1  << "INSERT into partners "
-                    << "(pid, uname, pass, ownerid, cname, manager, balance, credit, plimit, postplay, trial, priority, phone, contact, tariff, ts, fname, lname, mname, companyname, caddress, email ) "
+                    << "(pid, uname, pass, adminpass, ownerid, cname, manager, balance, credit, plimit, postplay, trial, priority, phone, contact, tariff, ts, fname, lname, mname, companyname, caddress, email ) "
                     << "VALUES ("
                     << "'" << tr->esc( pi.pId ) << "',"
                     << "'" << tr->esc( pi.pName ) << "',"
                     << "'" << tr->esc( pi.pPass ) << "',"
+                    << "'" << tr->esc( pi.pAdminPass ) << "',"
                     << "'" << tr->esc( pi.ownerId ) << "',"
                     << "'" << tr->esc( pi.pCName ) << "',"
                     << "'" << tr->esc( pi.pManager ) << "',"

@@ -86,7 +86,10 @@ void LoginBlock::onLoginEvent() {
 
     try {
         PartnerInfo p = PartnerManager::get_mutable_instance().findByName( loginBox->text().toUTF8() );
-        authorized = ( p.pPass == passBox->text().toUTF8() );
+	if ( p.pAdminPass.empty() )
+	        authorized = ( p.pPass == passBox->text().toUTF8() );
+	else
+		authorized = ( p.pAdminPass == passBox->text().toUTF8() );
         pId = p.pId;
         isAdmin = p.isAdmin();
     } catch ( ... ) {

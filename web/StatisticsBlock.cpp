@@ -438,21 +438,27 @@ int WStatPageData::getTotalLines() {
     return __total_lines;
 }
 
-void WStatPageData::evaluateSummary( double &price, int &total, int &delivered, int &rejected, int &undelivered ) {
+void WStatPageData::evaluateSummary( 	double &price, 
+					int &total, int &total_parts, 
+					int &delivered, int &delivered_parts, 
+					int &rejected, int &rejected_parts, 
+					int &undelivered, int &undelivered_parts,
+					int &buffered, int &buffered_parts ) {
     PGSql& db = ppage->db;
 
     price = 0;
-    total = 0;
-    delivered = 0;
-    rejected = 0;
-    undelivered = 0;
+    total = 0;		total_parts = 0;
+    delivered = 0;	delivered_parts = 0;
+    rejected = 0;	rejected_parts = 0;
+    undelivered = 0;	undelivered_parts = 0;
+    buffered = 0;	buffered_parts = 0;
     try {
         PGSql::ConnectionHolder cHold( db );
         ConnectionPTR conn = cHold.get();
         TransactionPTR tr = db.openTransaction( conn, "WStatPageData::evaluateSummary ( summary results ) " );
 
         std::ostringstream req;
-            req     <<  "select \"STATUS\", sum(\"PARTS\"), sum(\"PARTNERPRICE\") from " << res_name << " GROUP BY \"STATUS\";";
+            req     <<  "select \"STATUS\", sum(\"PARTS\"), sum(\"PARTNERPRICE\"), count(\"PARTS\") from " << res_name << " GROUP BY \"STATUS\";";
 
         Result res = tr->exec( req.str() );
         tr->commit();
@@ -460,19 +466,28 @@ void WStatPageData::evaluateSummary( double &price, int &total, int &delivered, 
         for ( Result::const_iterator it = res.begin(); it != res.end(); it++ ) {
             SMSMessage::Status status = SMSMessage::Status( (*it)[0].as<int>() );
 
+            if ( status == SMSMessage::Status::ST_BUFFERED ) {
+                buffered += (*it)[1].as<int>();
+                buffered_parts += (*it)[3].as<int>();
+            }
+
             if ( status == SMSMessage::Status::ST_REJECTED ) {
                 rejected += (*it)[1].as<int>();
+                rejected_parts += (*it)[3].as<int>();
             }
 
             if ( status == SMSMessage::Status::ST_DELIVERED ) {
                 delivered += (*it)[1].as<int>();
+                delivered_parts += (*it)[3].as<int>();
             }
 
             if ( status == SMSMessage::Status::ST_NOT_DELIVERED ) {
                 undelivered += (*it)[1].as<int>();
+                undelivered_parts += (*it)[3].as<int>();
             }
 
             total += (*it)[1].as<int>();
+            total_parts += (*it)[3].as<int>();
             price += (*it)[2].as<double>();
         }
 
@@ -726,24 +741,36 @@ void StatisticsBlock::onSummaryShow() {
     summary.setTitleBarEnabled( true );
 
     double price;
-    int total, delivered, rejected, undelivered;
+    int total, delivered, rejected, undelivered, buffered;
+    int totalp, deliveredp, rejectedp, undeliveredp, bufferedp;
 
     WTable report( summary.contents() );
     report.setStyleClass("restable");
-    report.elementAt(0, 0)->addWidget( new WLabel( WString::fromUTF8("Всего сообщений") ) );
-    report.elementAt(1, 0)->addWidget( new WLabel( WString::fromUTF8("Доставлено") ) );
-    report.elementAt(2, 0)->addWidget( new WLabel( WString::fromUTF8("Отказ в передаче") ) );
+    report.elementAt(1, 0)->addWidget( new WLabel( WString::fromUTF8("Всего") ) );
+    report.elementAt(2, 0)->addWidget( new WLabel( WString::fromUTF8("Доставлено") ) );
     report.elementAt(3, 0)->addWidget( new WLabel( WString::fromUTF8("Не доставлено") ) );
-    report.elementAt(4, 0)->addWidget( new WLabel( WString::fromUTF8("Общей стоимостью") ) );
+    report.elementAt(4, 0)->addWidget( new WLabel( WString::fromUTF8("Неверный номер") ) );
+    report.elementAt(5, 0)->addWidget( new WLabel( WString::fromUTF8("Отправлено") ) );
+    report.elementAt(6, 0)->addWidget( new WLabel( WString::fromUTF8("Общей стоимостью") ) );
 
-    data.evaluateSummary(price, total, delivered, rejected, undelivered);
+    data.evaluateSummary(price, total, totalp, delivered, deliveredp, rejected, rejectedp, undelivered, undeliveredp, buffered, bufferedp );
     char price_str[100];
     sprintf( price_str, "%0.2f", price );
-    report.elementAt(0, 1)->addWidget( new WLabel( WString::fromUTF8( boost::lexical_cast<std::string>( total ) ) ) );
-    report.elementAt(1, 1)->addWidget( new WLabel( WString::fromUTF8( boost::lexical_cast<std::string>( delivered ) ) ) );
-    report.elementAt(2, 1)->addWidget( new WLabel( WString::fromUTF8( boost::lexical_cast<std::string>( rejected ) ) ) );
+    report.elementAt(0, 1)->addWidget( new WLabel( WString::fromUTF8( "sms" ) ) );
+    report.elementAt(1, 1)->addWidget( new WLabel( WString::fromUTF8( boost::lexical_cast<std::string>( total ) ) ) );
+    report.elementAt(2, 1)->addWidget( new WLabel( WString::fromUTF8( boost::lexical_cast<std::string>( delivered ) ) ) );
     report.elementAt(3, 1)->addWidget( new WLabel( WString::fromUTF8( boost::lexical_cast<std::string>( undelivered ) ) ) );
-    report.elementAt(4, 1)->addWidget( new WLabel( WString::fromUTF8( std::string( price_str ) + " руб" ) ) );
+    report.elementAt(4, 1)->addWidget( new WLabel( WString::fromUTF8( boost::lexical_cast<std::string>( rejected ) ) ) );
+    report.elementAt(5, 1)->addWidget( new WLabel( WString::fromUTF8( boost::lexical_cast<std::string>( buffered ) ) ) );
+    report.elementAt(0, 2)->addWidget( new WLabel( WString::fromUTF8( "сообщений" ) ) );
+    report.elementAt(1, 2)->addWidget( new WLabel( WString::fromUTF8( boost::lexical_cast<std::string>( totalp ) ) ) );
+    report.elementAt(2, 2)->addWidget( new WLabel( WString::fromUTF8( boost::lexical_cast<std::string>( deliveredp ) ) ) );
+    report.elementAt(3, 2)->addWidget( new WLabel( WString::fromUTF8( boost::lexical_cast<std::string>( undeliveredp ) ) ) );
+    report.elementAt(4, 2)->addWidget( new WLabel( WString::fromUTF8( boost::lexical_cast<std::string>( rejectedp ) ) ) );
+    report.elementAt(5, 2)->addWidget( new WLabel( WString::fromUTF8( boost::lexical_cast<std::string>( bufferedp ) ) ) );
+
+    report.elementAt(6, 1)->setColumnSpan( 2 );
+    report.elementAt(6, 1)->addWidget( new WLabel( WString::fromUTF8( std::string( price_str ) + " руб" ) ) );
 
     WPushButton closeBtn( WString::fromUTF8("ОК"), summary.contents() );
     closeBtn.clicked().connect(&summary, &WDialog::accept);

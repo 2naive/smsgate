@@ -18,8 +18,8 @@
 #include <boost/serialization/vector.hpp>
 
 const int on1SecondUpdateInterval = 1;
-const int on1MinuteUpdateInterval = 10;
-const int on1HourUpdateInterval = 10*60;
+const int on1MinuteUpdateInterval = 1;
+const int on1HourUpdateInterval = 60;
 const int on1DayUpdateInterval = 60*60;
 const int onCountryInfoUpdateInterval = 60*30;
 

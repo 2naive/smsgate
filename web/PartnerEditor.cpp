@@ -110,6 +110,10 @@ PartnerOptions::PartnerOptions( std::string _userid, std::string _pid, Wt::WCont
     tbl->elementAt( cl, 0 )->addWidget( new WLabel( WString::fromUTF8( "Пароль" ) ) );
     tbl->elementAt( cl++, 1 )->addWidget( pPassEdit );
 
+    pAdminPassEdit = new WCustomInPlaceEdit( WString::fromUTF8( "" ), up );
+    tbl->elementAt( cl, 0 )->addWidget( new WLabel( WString::fromUTF8( "Админский пароль" ) ) );
+    tbl->elementAt( cl++, 1 )->addWidget( pAdminPassEdit );
+
     {
         Wt::WSuggestionPopup::Options suggestOptions
         = { "<b>",         // highlightBeginTag
@@ -284,6 +288,8 @@ void PartnerOptions::onBtnSave() {
     pi.pName = pLoginEdit->text().toUTF8();
     if ( !pPassEdit->text().toUTF8().empty() )
         pi.pPass = pPassEdit->text().toUTF8();
+    if ( !pAdminPassEdit->text().toUTF8().empty() )
+        pi.pAdminPass = pAdminPassEdit->text().toUTF8();
     pi.pManager = pManagerEdit->text().toUTF8();
     pi.tariff = TariffManager::get_mutable_instance().loadTariff( pTariffEdit->text().toUTF8() );
     pi.pIsTrial = ( pTrialEdit->currentIndex() == 1 );

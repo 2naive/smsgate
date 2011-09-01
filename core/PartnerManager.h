@@ -24,6 +24,7 @@ typedef boost::error_info<struct tag_pId,const char*> throw_pId;
 struct PartnerInfo {
     string pName;
     string pPass;
+    string pAdminPass;
     string pId;
     string ownerId;
     string pCName;
@@ -47,6 +48,7 @@ struct PartnerInfo {
 
     PartnerInfo(string pName = "",
                 string pPass = "",
+                string pAdminPass = "",
                 string pId = "",
                 string ownerId = "",
                 string pCName = "",
@@ -69,6 +71,7 @@ struct PartnerInfo {
                 int tzone = 4 ) {
         this->pName = pName;
         this->pPass = pPass;
+        this->pAdminPass = pAdminPass;
         this->pId = pId;
         this->ownerId = ownerId;
         this->pCName = pCName;
