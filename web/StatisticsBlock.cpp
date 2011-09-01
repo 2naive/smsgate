@@ -92,6 +92,7 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             status = new WComboBox();
             status->addItem(WString::fromUTF8("Любой"));
             status->addItem(WString::fromUTF8("Доставлено"));
+            //status->addItem(WString::fromUTF8("Отправлено"));
             status->addItem(WString::fromUTF8("Не доставлено"));
             status->addItem(WString::fromUTF8("Неверный номер"));
             //Country input field

@@ -231,6 +231,8 @@ public:
                                     boost::mpl::string< 'm','t','_','b','e','e','p','s','e','n','d' >,
                                     boost::mpl::string< 'm','t','_','s','m','s','t','_','r','u' >,
                                     boost::mpl::string< 'm','t','_','s','m','s','t','_','f','r' >,
+                                    boost::mpl::string< 'm','t','_','s','m','s','t','_','r','u','s' >,
+                                    boost::mpl::string< 'm','t','_','s','m','s','t','_','z','r' >,
                                     boost::mpl::string< 'm','t','_','i','f','r','e','e' >
                                 >,
                                 boost::mpl::string< 'm','t','_','n','u','l','l' >
@@ -247,6 +249,8 @@ public:
                                     boost::mpl::string< 'm','t','_','b','e','e','p','s','e','n','d' >,
                                     boost::mpl::string< 'm','t','_','s','m','s','t','_','r','u' >,
                                     boost::mpl::string< 'm','t','_','s','m','s','t','_','f','r' >,
+                                    boost::mpl::string< 'm','t','_','s','m','s','t','_','r','u','s' >,
+                                    boost::mpl::string< 'm','t','_','s','m','s','t','_','z','r' >,
                                     boost::mpl::string< 'm','t','_','i','f','r','e','e' >
                                 >,
                                 boost::mpl::string< 'm','t','_','n','u','l','l' >
@@ -262,6 +266,8 @@ public:
                                     boost::mpl::string< 'm','t','_','b','e','e','p','s','e','n','d' >,
                                     boost::mpl::string< 'm','t','_','s','m','s','t','_','r','u' >,
                                     boost::mpl::string< 'm','t','_','s','m','s','t','_','f','r' >,
+                                    boost::mpl::string< 'm','t','_','s','m','s','t','_','r','u','s' >,
+                                    boost::mpl::string< 'm','t','_','s','m','s','t','_','z','r' >,
                                     boost::mpl::string< 'm','t','_','i','f','r','e','e' >
                                 >,
                                 boost::mpl::string< 'm','t','_','n','u','l','l' >
