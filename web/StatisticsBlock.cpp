@@ -92,7 +92,7 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             status = new WComboBox();
             status->addItem(WString::fromUTF8("Любой"));
             status->addItem(WString::fromUTF8("Доставлено"));
-            //status->addItem(WString::fromUTF8("Отправлено"));
+            status->addItem(WString::fromUTF8("Отправлено"));
             status->addItem(WString::fromUTF8("Не доставлено"));
             status->addItem(WString::fromUTF8("Неверный номер"));
             //Country input field
@@ -623,10 +623,14 @@ void StatisticsBlock::onReportBtnClicked( RowInfo row ) {
     }
 
     if ( row.status->currentIndex() == 2 ) {
-        data.setStatusFilter( SMSMessage::Status( SMSMessage::Status::ST_NOT_DELIVERED ) );
+        data.setStatusFilter( SMSMessage::Status( SMSMessage::Status::ST_BUFFERED ) );
     }
 
     if ( row.status->currentIndex() == 3 ) {
+        data.setStatusFilter( SMSMessage::Status( SMSMessage::Status::ST_NOT_DELIVERED ) );
+    }
+
+    if ( row.status->currentIndex() == 4 ) {
         data.setStatusFilter( SMSMessage::Status( SMSMessage::Status::ST_REJECTED ) );
     }
 
