@@ -69,15 +69,14 @@ void RequestHandler::handleRequest(const Wt::Http::Request& request, Wt::Http::R
 	to_vec tov;
 	Tokenize( to, tov, ",");
 
-	if ( charset == "UTF-16BE" ) {
+	if ( !charset.empty() ) {
 		try {
-			string orig = txt;
-			string txt2 = StringRecodeFromTo( orig, "UCS-2BE", "UTF-8" );
-            		Logger::get_mutable_instance().smslogwarn( string("Received UTF-16BE string: [") + txt2 + "] from [" + orig + "]");
+			txt = StringRecodeFromTo( txt, charset, "UTF-8" );
 		} catch ( ... ) {
 			Logger::get_mutable_instance().smslogwarn( "Invalid encoding" );
 			return;
 		}
+		utf = 1;
 	}
 
         PartnerInfo ptnr;
