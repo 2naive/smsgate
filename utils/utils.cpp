@@ -136,7 +136,7 @@ namespace sms {
             size_t origdst = dstsize;
             char* srcbuf = new char[ srcsize+1 ];
             char* destbuf = new char[ dstsize ];
-            strcpy(srcbuf, src.c_str());
+            memcpy(srcbuf, src.c_str(), srcsize+1);
 
             #ifdef _LIBICONV_VERSION
                 const char* srcb = srcbuf;
