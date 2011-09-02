@@ -414,7 +414,7 @@ namespace sms {
             boost::recursive_mutex::scoped_lock lck(lock);
             gateMap = gmap;
         }
-        StatManager::gNamePropMap p = StatManager::Instance()->get1MinuteStatsSMPPGate();
+        StatManager::gNamePropMap p = StatManager::Instance()->get5MinuteStatsSMPPGate();
         for ( SMPPGatesMap::iterator itg = gateMap.begin(); itg != gateMap.end(); itg++ ) {
             bool busy = false;
             if ( ( p[ itg->first ].requests >= p[ itg->first ].acks + ( p[ itg->first ].responses - p[ itg->first ].deliveres ) + p[ itg->first ].acks / 10 + 1) // 10% bonus

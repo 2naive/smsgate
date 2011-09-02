@@ -80,6 +80,7 @@ namespace sms {
 
         void on1SecondUpdateSMPPGate();
         void on1MinuteUpdateSMPPGate();
+        void on5MinuteUpdateSMPPGate();
         void on1HourUpdateSMPPGate();
         void on1DayUpdateSMPPGate();
 
@@ -91,6 +92,7 @@ namespace sms {
 
         gNamePropMap get1SecondStatsSMPPGate( );
         gNamePropMap get1MinuteStatsSMPPGate( );
+        gNamePropMap get5MinuteStatsSMPPGate( );
         gNamePropMap get1HourStatsSMPPGate( );
         gNamePropMap get1DayStatsSMPPGate( );
 
@@ -109,6 +111,7 @@ namespace sms {
             {
                 ar & BOOST_SERIALIZATION_NVP(on1SecondStatsSMPPGate);
                 ar & BOOST_SERIALIZATION_NVP(on1MinuteStatsSMPPGate);
+                ar & BOOST_SERIALIZATION_NVP(on5MinuteStatsSMPPGate);
                 ar & BOOST_SERIALIZATION_NVP(on1HourStatsSMPPGate);
                 ar & BOOST_SERIALIZATION_NVP(on1DayStatsSMPPGate);
 
@@ -121,6 +124,7 @@ private:
 
         gNamePropMap on1SecondStatsSMPPGate;
         gNamePropMap on1MinuteStatsSMPPGate;
+        gNamePropMap on5MinuteStatsSMPPGate;
         gNamePropMap on1HourStatsSMPPGate;
         gNamePropMap on1DayStatsSMPPGate;
 
@@ -128,6 +132,7 @@ private:
 
         int on1SecondHandlerSMPPGate;
         int on1MinuteHandlerSMPPGate;
+        int on5MinuteHandlerSMPPGate;
         int on1HourHandlerSMPPGate;
         int on1DayHandlerSMPPGate;
         int onCountryInfoHandler;

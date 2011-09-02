@@ -7,6 +7,7 @@
 #include <iostream>
 #include <ctime>
 #include <clocale>
+#include <algorithm>
 
 namespace sms {
 
@@ -127,9 +128,10 @@ namespace sms {
         }
 
         std::string StringRecodeFromTo(std::string src, const std::string from, std::string to) throw ( ParamError) {
-            string res = src;
+            string res;
+	    string tmpres;
             int err;
-            size_t srcsize = src.length();
+            size_t srcsize = src.size();
             size_t dstsize = srcsize * 3;
             size_t origdst = dstsize;
             char* srcbuf = new char[ srcsize+1 ];
@@ -186,8 +188,9 @@ namespace sms {
                 }
             }
 
-            res = std::string(destbuf, origdst - dstsize);
-            err = res.length();
+            tmpres = std::string(destbuf, origdst - dstsize);
+	    res.resize( tmpres.size() );
+	    copy( tmpres.begin(), tmpres.end(), res.begin() );
 
             delete [] srcbuf;
             delete [] destbuf;
@@ -211,10 +214,6 @@ namespace sms {
 
         std::string StringCp1251ToUcs2be(const std::string src) throw ( ParamError) {
             return StringRecodeFromTo(src, "CP1251", "UCS-2BE");
-        }
-
-        std::string StringUcs2beToUtf8(const std::string src) throw ( ParamError) {
-            return StringRecodeFromTo(src, "UCS-2BE", "UTF-8");
         }
 
         char HexChar2Dec(char c1) {

@@ -66,6 +66,7 @@ void MonitoringHandler::handleRequest(const Wt::Http::Request& request, Wt::Http
 
         StatManager::gNamePropMap s1sec = StatManager::Instance()->get1SecondStatsSMPPGate();
         StatManager::gNamePropMap s1min = StatManager::Instance()->get1MinuteStatsSMPPGate();
+        StatManager::gNamePropMap s5min = StatManager::Instance()->get5MinuteStatsSMPPGate();
         StatManager::gNamePropMap s1hour = StatManager::Instance()->get1HourStatsSMPPGate();
         StatManager::gNamePropMap s1day = StatManager::Instance()->get1DayStatsSMPPGate();
 
@@ -95,6 +96,23 @@ void MonitoringHandler::handleRequest(const Wt::Http::Request& request, Wt::Http
         response.out() << "1 Minute stats: ";
         response.out() << "</td>";
         for ( StatManager::gNamePropMap::iterator it = s1min.begin(); it != s1min.end(); it++ ) {
+            response.out() << "<td>";
+            response.out() << "[" << it->first<< "]<br>";
+            response.out() << "RQT:   " << it->second.requests << "<br>";
+            response.out() << "ACK:        " << it->second.acks << "<br>";
+            response.out() << "Rsp:  " << it->second.responses << "<br>";
+            response.out() << "Dlr: " << it->second.deliveres << "<br>";
+            //        response.out() << "ADT: " << it->second.deliverytime << "<br>";
+            response.out() << "DLV (" << it->second.deliveres*100 / ( it->second.requests == 0 ? 1: it->second.requests ) << "%)" << "<br>";
+            response.out() << "</td>";
+        }
+        response.out() << "</tr>";
+
+        response.out() << "<tr>";
+        response.out() << "<td>";
+        response.out() << "5 Minute stats: ";
+        response.out() << "</td>";
+        for ( StatManager::gNamePropMap::iterator it = s5min.begin(); it != s5min.end(); it++ ) {
             response.out() << "<td>";
             response.out() << "[" << it->first<< "]<br>";
             response.out() << "RQT:   " << it->second.requests << "<br>";

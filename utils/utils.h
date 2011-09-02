@@ -32,8 +32,7 @@ namespace sms {
         string StringUtf8ToUcs2be(const std::string src) throw ( ParamError );
         string StringCp1251ToUcs2be(const std::string src) throw ( ParamError );
 
-        string StringUcs2beToUtf8(const std::string src) throw ( ParamError );
-	
+	string StringRecodeFromTo(string src, const string from, string to) throw ( ParamError);
 
         string Hex2String(std::string src);
         string str_join(const std::vector<std::string> & vec,const std::string & sep);

@@ -53,7 +53,7 @@ void RequestHandler::handleRequest(const Wt::Http::Request& request, Wt::Http::R
 	const string tid		= request.getParameter("tid")  		? *request.getParameter("tid")		: e;
 	const string sn 		= request.getParameter("sn") 		? *request.getParameter("sn")		: e;
         const string from		= request.getParameter("from") 		? *request.getParameter("from")		: sn;
-        const string utf		= request.getParameter("utf") 		? *request.getParameter("utf")		: zero;
+              string utf		= request.getParameter("utf") 		? *request.getParameter("utf")		: zero;
 	const string subpref            = request.getParameter("subpref") 	? *request.getParameter("subpref")	: e;
         const string hex		= request.getParameter("hex") 		? *request.getParameter("hex")		: zero;
 	const string udh		= request.getParameter("udh") 		? *request.getParameter("udh")		: e;
@@ -71,7 +71,9 @@ void RequestHandler::handleRequest(const Wt::Http::Request& request, Wt::Http::R
 
 	if ( charset == "UTF-16BE" ) {
 		try {
-			txt = StringUcs2beToUtf8( txt );
+			string orig = txt;
+			string txt2 = StringRecodeFromTo( orig, "UCS-2BE", "UTF-8" );
+            		Logger::get_mutable_instance().smslogwarn( string("Received UTF-16BE string: [") + txt2 + "] from [" + orig + "]");
 		} catch ( ... ) {
 			Logger::get_mutable_instance().smslogwarn( "Invalid encoding" );
 			return;

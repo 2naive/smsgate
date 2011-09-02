@@ -19,6 +19,7 @@
 
 const int on1SecondUpdateInterval = 1;
 const int on1MinuteUpdateInterval = 1;
+const int on5MinuteUpdateInterval = 1;
 const int on1HourUpdateInterval = 60;
 const int on1DayUpdateInterval = 60*60;
 const int onCountryInfoUpdateInterval = 60*30;
@@ -33,6 +34,8 @@ namespace sms {
                 boost::bind( &StatManager::on1SecondUpdateSMPPGate, this ), on1SecondUpdateInterval );
         on1MinuteHandlerSMPPGate = Timer::Instance()->addPeriodicEvent(
                 boost::bind( &StatManager::on1MinuteUpdateSMPPGate, this ), on1MinuteUpdateInterval );
+        on5MinuteHandlerSMPPGate = Timer::Instance()->addPeriodicEvent(
+                boost::bind( &StatManager::on5MinuteUpdateSMPPGate, this ), on5MinuteUpdateInterval );
         on1HourHandlerSMPPGate = Timer::Instance()->addPeriodicEvent(
                 boost::bind( &StatManager::on1HourUpdateSMPPGate, this ), on1HourUpdateInterval );
         on1DayHandlerSMPPGate = Timer::Instance()->addPeriodicEvent(
@@ -47,6 +50,7 @@ namespace sms {
 
         Timer::Instance()->addSingleEvent( boost::bind( &StatManager::on1SecondUpdateSMPPGate, this ), 0 );
         Timer::Instance()->addSingleEvent( boost::bind( &StatManager::on1MinuteUpdateSMPPGate, this ), 0 );
+        Timer::Instance()->addSingleEvent( boost::bind( &StatManager::on5MinuteUpdateSMPPGate, this ), 0 );
         Timer::Instance()->addSingleEvent( boost::bind( &StatManager::on1HourUpdateSMPPGate, this ), 0 );
         Timer::Instance()->addSingleEvent( boost::bind( &StatManager::on1DayUpdateSMPPGate, this ), 0 );
         Timer::Instance()->addSingleEvent( boost::bind( &StatManager::onCountryInfoUpdate, this ), 0 );
@@ -61,6 +65,7 @@ namespace sms {
 
         on1SecondStatsSMPPGate = orig.on1SecondStatsSMPPGate;
         on1MinuteStatsSMPPGate = orig.on1MinuteStatsSMPPGate;
+        on5MinuteStatsSMPPGate = orig.on5MinuteStatsSMPPGate;
         on1HourStatsSMPPGate = orig.on1HourStatsSMPPGate;
         on1DayStatsSMPPGate = orig.on1DayStatsSMPPGate;
 
@@ -68,6 +73,8 @@ namespace sms {
                 boost::bind( &StatManager::on1SecondUpdateSMPPGate, this ), on1SecondUpdateInterval );
         on1MinuteHandlerSMPPGate = Timer::Instance()->addPeriodicEvent(
                 boost::bind( &StatManager::on1MinuteUpdateSMPPGate, this ), on1MinuteUpdateInterval );
+        on5MinuteHandlerSMPPGate = Timer::Instance()->addPeriodicEvent(
+                boost::bind( &StatManager::on5MinuteUpdateSMPPGate, this ), on5MinuteUpdateInterval );
         on1HourHandlerSMPPGate = Timer::Instance()->addPeriodicEvent(
                 boost::bind( &StatManager::on1HourUpdateSMPPGate, this ), on1HourUpdateInterval );
         on1DayHandlerSMPPGate = Timer::Instance()->addPeriodicEvent(
@@ -77,6 +84,7 @@ namespace sms {
 
         Timer::Instance()->addSingleEvent( boost::bind( &StatManager::on1SecondUpdateSMPPGate, this ), 0 );
         Timer::Instance()->addSingleEvent( boost::bind( &StatManager::on1MinuteUpdateSMPPGate, this ), 0 );
+        Timer::Instance()->addSingleEvent( boost::bind( &StatManager::on5MinuteUpdateSMPPGate, this ), 0 );
         Timer::Instance()->addSingleEvent( boost::bind( &StatManager::on1HourUpdateSMPPGate, this ), 0 );
         Timer::Instance()->addSingleEvent( boost::bind( &StatManager::on1DayUpdateSMPPGate, this ), 0 );
         Timer::Instance()->addSingleEvent( boost::bind( &StatManager::onCountryInfoUpdate, this ), 0 );
@@ -86,6 +94,7 @@ namespace sms {
         boost::recursive_mutex::scoped_lock lck(lock);
         Timer::Instance()->cancelEvent( on1SecondHandlerSMPPGate );
         Timer::Instance()->cancelEvent( on1MinuteHandlerSMPPGate );
+        Timer::Instance()->cancelEvent( on5MinuteHandlerSMPPGate );
         Timer::Instance()->cancelEvent( on1HourHandlerSMPPGate );
         Timer::Instance()->cancelEvent( on1DayHandlerSMPPGate );
         Timer::Instance()->cancelEvent( onCountryInfoHandler );
@@ -100,6 +109,11 @@ namespace sms {
     StatManager::gNamePropMap StatManager::get1MinuteStatsSMPPGate(){
         boost::recursive_mutex::scoped_lock lck(lock);
         return on1MinuteStatsSMPPGate;
+    }
+
+    StatManager::gNamePropMap StatManager::get5MinuteStatsSMPPGate(){
+        boost::recursive_mutex::scoped_lock lck(lock);
+        return on5MinuteStatsSMPPGate;
     }
 
     StatManager::gNamePropMap StatManager::get1HourStatsSMPPGate() {
@@ -412,6 +426,12 @@ namespace sms {
         gNamePropMap p = onUpdateDeltaSMPPGate( 60 );
         boost::recursive_mutex::scoped_lock lck(lock);
         on1MinuteStatsSMPPGate = p;
+    }
+
+    void StatManager::on5MinuteUpdateSMPPGate() {
+        gNamePropMap p = onUpdateDeltaSMPPGate( 5*60 );
+        boost::recursive_mutex::scoped_lock lck(lock);
+        on5MinuteStatsSMPPGate = p;
     }
 
     void StatManager::on1HourUpdateSMPPGate() {
