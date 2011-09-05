@@ -512,6 +512,9 @@ void RequestTracker::parseNewHistoryElement( SMSMessage::ID msg_id, SMSMessage::
 
         msg->addHistoryElement( element );
 
+        if ( ( element.op_result == SMSMessage::Status::ST_REJECTED ) && ( element.when - msg->when > 14*60*60 ) ) {
+            element.op_result = SMSMessage::Status::ST_NOT_DELIVERED;
+        }
         if ( element.op_result == SMSMessage::Status::ST_REJECTED ) {
             parseDeliveryNotify( msg_id );
         }
