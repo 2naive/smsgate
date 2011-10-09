@@ -233,7 +233,8 @@ public:
                                     boost::mpl::string< 'm','t','_','s','m','s','t','_','f','r' >,
                                     boost::mpl::string< 'm','t','_','s','m','s','t','_','r','u','s' >,
                                     boost::mpl::string< 'm','t','_','s','m','s','t','_','z','r' >,
-                                    boost::mpl::string< 'm','t','_','i','f','r','e','e' >
+                                    boost::mpl::string< 'm','t','_','i','f','r','e','e' >,
+                                    boost::mpl::string< 'm','t','_','r','o','u','t','e','s','m','s' >
                                 >,
                                 boost::mpl::string< 'm','t','_','n','u','l','l' >
                             >
@@ -251,7 +252,8 @@ public:
                                     boost::mpl::string< 'm','t','_','s','m','s','t','_','f','r' >,
                                     boost::mpl::string< 'm','t','_','s','m','s','t','_','r','u','s' >,
                                     boost::mpl::string< 'm','t','_','s','m','s','t','_','z','r' >,
-                                    boost::mpl::string< 'm','t','_','i','f','r','e','e' >
+                                    boost::mpl::string< 'm','t','_','i','f','r','e','e' >,
+                                    boost::mpl::string< 'm','t','_','r','o','u','t','e','s','m','s' >
                                 >,
                                 boost::mpl::string< 'm','t','_','n','u','l','l' >
                             >
@@ -268,11 +270,48 @@ public:
                                     boost::mpl::string< 'm','t','_','s','m','s','t','_','f','r' >,
                                     boost::mpl::string< 'm','t','_','s','m','s','t','_','r','u','s' >,
                                     boost::mpl::string< 'm','t','_','s','m','s','t','_','z','r' >,
-                                    boost::mpl::string< 'm','t','_','i','f','r','e','e' >
+                                    boost::mpl::string< 'm','t','_','i','f','r','e','e' >,
+                                    boost::mpl::string< 'm','t','_','r','o','u','t','e','s','m','s' >
                                 >,
                                 boost::mpl::string< 'm','t','_','n','u','l','l' >
                             >
                         > RouteThirdGate;
+
+    typedef RouteOption<
+                            boost::mpl::string< '1','g','w',' ','S','L','I','P','P','A','G','E' >,
+                            RouteValueChoise
+                            <
+                                boost::mpl::vector<
+                                    boost::mpl::string< '0','.','0','1' >,
+                                    boost::mpl::string< '0','.','0','2' >,
+                                    boost::mpl::string< '0','.','0','3' >,
+                                    boost::mpl::string< '0','.','0','5' >,
+                                    boost::mpl::string< '0','.','1','0' >,
+                                    boost::mpl::string< '0','.','2','0' >,
+                                    boost::mpl::string< '0','.','3','0' >,
+                                    boost::mpl::string< '0','.','5','0' >
+                                >,
+                                boost::mpl::string< '0','.','0','0' >
+                            >
+                        > FirstGwSlippage;
+
+    typedef RouteOption<
+                            boost::mpl::string< '2','g','w',' ','S','L','I','P','P','A','G','E' >,
+                            RouteValueChoise
+                            <
+                                boost::mpl::vector<
+                                    boost::mpl::string< '0','.','0','1' >,
+                                    boost::mpl::string< '0','.','0','2' >,
+                                    boost::mpl::string< '0','.','0','3' >,
+                                    boost::mpl::string< '0','.','0','5' >,
+                                    boost::mpl::string< '0','.','1','0' >,
+                                    boost::mpl::string< '0','.','2','0' >,
+                                    boost::mpl::string< '0','.','3','0' >,
+                                    boost::mpl::string< '0','.','5','0' >
+                                >,
+                                boost::mpl::string< '0','.','0','0' >
+                            >
+                        > SecondGwSlippage;
 
     typedef RouteOption<
                             boost::mpl::string< 'R','o','u','t','i','n','g',' ','P','o','l','i','c','y' >,

@@ -62,6 +62,8 @@ RouteEditor::RouteEditor( std::string _userid, WContainerWidget* parent ): WCont
         firstgwEditor = new FirstgwEditor( &route );
         secondgwEditor = new SecondgwEditor( &route );
         thirdgwEditor = new ThirdgwEditor( &route );
+        firstSlippageEditor = new FirstGwSlippageEditor( &route );
+        secondSlippageEditor = new SecondGwSlippageEditor( &route );
     } else {
         ufirstgwEditor = new UserFirstgwEditor( &route );
     }
@@ -84,6 +86,8 @@ RouteEditor::RouteEditor( std::string _userid, WContainerWidget* parent ): WCont
         routeOptionsLayout->addLayout( firstgwEditor, 0, 1 );
         routeOptionsLayout->addLayout( secondgwEditor, 1, 0 );
         routeOptionsLayout->addLayout( thirdgwEditor, 1, 1 );
+        routeOptionsLayout->addLayout( firstSlippageEditor, 2, 0 );
+        routeOptionsLayout->addLayout( secondSlippageEditor, 2, 1 );
     } else {
         routeOptionsLayout->addLayout( ufirstgwEditor, 0, 0 );
     }
@@ -357,6 +361,8 @@ void RouteEditor::onChangeRoot() {
             firstgwEditor->setCurPosRoot();
             secondgwEditor->setCurPosRoot();
             thirdgwEditor->setCurPosRoot();
+            firstSlippageEditor->setCurPosRoot();
+            secondSlippageEditor->setCurPosRoot();
         } else {
             ufirstgwEditor->setCurPosRoot();
         }
@@ -379,6 +385,8 @@ void RouteEditor::onChangeRoot() {
                 firstgwEditor->setCurPosCountry(mcc);
                 secondgwEditor->setCurPosCountry(mcc);
                 thirdgwEditor->setCurPosCountry(mcc);
+                firstSlippageEditor->setCurPosCountry(mcc);
+                secondSlippageEditor->setCurPosCountry(mcc);
             } else {
                 ufirstgwEditor->setCurPosCountry(mcc);
             }
@@ -389,6 +397,8 @@ void RouteEditor::onChangeRoot() {
                 firstgwEditor->setCurPosOperator( mcc, mnc );
                 secondgwEditor->setCurPosOperator( mcc, mnc );
                 thirdgwEditor->setCurPosOperator( mcc, mnc );
+                firstSlippageEditor->setCurPosOperator( mcc, mnc );
+                secondSlippageEditor->setCurPosOperator( mcc, mnc );
             } else {
                 ufirstgwEditor->setCurPosOperator( mcc, mnc );
             }

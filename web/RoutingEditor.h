@@ -40,6 +40,9 @@ typedef roe::RouteOptionEditor< Route::RouteFirstGate, roe::MultiChoiseAdaptor< 
 typedef roe::RouteOptionEditor< Route::RouteSecondGate, roe::MultiChoiseAdaptor< Route::RouteSecondGate> > SecondgwEditor;
 typedef roe::RouteOptionEditor< Route::RouteThirdGate, roe::MultiChoiseAdaptor< Route::RouteThirdGate> > ThirdgwEditor;
 
+typedef roe::RouteOptionEditor< Route::FirstGwSlippage, roe::MultiChoiseAdaptor< Route::FirstGwSlippage> > FirstGwSlippageEditor;
+typedef roe::RouteOptionEditor< Route::SecondGwSlippage, roe::MultiChoiseAdaptor< Route::SecondGwSlippage> > SecondGwSlippageEditor;
+
 typedef roe::RouteOptionEditor< Route::UserRouteFirstGate, roe::MultiChoiseAdaptor< Route::UserRouteFirstGate> > UserFirstgwEditor;
 
 class RouteEditor: public Wt::WContainerWidget {
@@ -55,6 +58,8 @@ private:
     FirstgwEditor* firstgwEditor;
     SecondgwEditor* secondgwEditor;
     ThirdgwEditor* thirdgwEditor;
+    FirstGwSlippageEditor* firstSlippageEditor;
+    SecondGwSlippageEditor* secondSlippageEditor;
     UserFirstgwEditor* ufirstgwEditor;
     std::string userid;
 
