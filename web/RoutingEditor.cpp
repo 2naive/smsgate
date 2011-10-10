@@ -83,11 +83,11 @@ RouteEditor::RouteEditor( std::string _userid, WContainerWidget* parent ): WCont
     WGridLayout* routeOptionsLayout = new WGridLayout();
     if ( user.ownerId.empty() ) {
         routeOptionsLayout->addLayout( recendEditor, 0, 0 );
-        routeOptionsLayout->addLayout( firstgwEditor, 0, 1 );
-        routeOptionsLayout->addLayout( secondgwEditor, 1, 0 );
+        routeOptionsLayout->addLayout( firstgwEditor, 1, 0 );
+        routeOptionsLayout->addLayout( secondgwEditor, 0, 1 );
         routeOptionsLayout->addLayout( thirdgwEditor, 1, 1 );
-        routeOptionsLayout->addLayout( firstSlippageEditor, 2, 0 );
-        routeOptionsLayout->addLayout( secondSlippageEditor, 2, 1 );
+        routeOptionsLayout->addLayout( firstSlippageEditor, 0, 2 );
+        routeOptionsLayout->addLayout( secondSlippageEditor, 1, 2 );
     } else {
         routeOptionsLayout->addLayout( ufirstgwEditor, 0, 0 );
     }

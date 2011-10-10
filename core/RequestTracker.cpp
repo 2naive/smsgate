@@ -120,7 +120,7 @@ RequestTracker::RequestTracker():
 
     // Установить статус "недоставлен" для всех сообщений с промежуточным статусом старее суток
     Timer::Instance()->addSingleEvent( boost::bind( &RequestTracker::markUndelivered, this ), 0 );
-
+    srand ( time(NULL) );
 }
 
 RequestTracker::~RequestTracker() {

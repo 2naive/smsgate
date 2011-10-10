@@ -159,9 +159,22 @@ namespace sms {
                     r.getOption<Route::RouteThirdGate>( mcc, mnc ).getValue();
 
         std::list< string > rlist;
-        if ( first != "mt_null" ) rlist.push_back( first );
-        if ( second!= "mt_null" ) rlist.push_back( second );
-        if ( third != "mt_null" ) rlist.push_back( third );
+        std::list< string >::reverse_iterator r1, r2, r3;
+
+        if ( first != "mt_null" ) { rlist.push_back( first ); r1 = rlist.rbegin(); }
+        if ( second!= "mt_null" ) { rlist.push_back( second ); r2 = rlist.rbegin(); }
+        if ( third != "mt_null" ) { rlist.push_back( third ); r3 = rlist.rbegin(); }
+
+        double coin;
+        double slippage = boost::lexical_cast< double >(
+                            mnc.empty()?
+                            r.getOption<Route::FirstGwSlippage>( mcc ).getValue():
+                            r.getOption<Route::FirstGwSlippage>( mcc, mnc ).getValue()
+                          )*100;
+        coin = rand() % 100;
+        if ( ( rlist.size() >= 2 ) && ( coin < slippage ) ) std::swap( r1, r2 );
+        coin = rand() % 100;
+        if ( ( rlist.size() >= 3 ) && ( coin < slippage ) ) std::swap( r2, r3 );
 
         return rlist;
     }
