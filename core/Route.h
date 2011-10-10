@@ -282,6 +282,7 @@ public:
                             RouteValueChoise
                             <
                                 boost::mpl::vector<
+                                    boost::mpl::string< '0','.','0','0' >,
                                     boost::mpl::string< '0','.','0','1' >,
                                     boost::mpl::string< '0','.','0','2' >,
                                     boost::mpl::string< '0','.','0','3' >,
@@ -300,6 +301,7 @@ public:
                             RouteValueChoise
                             <
                                 boost::mpl::vector<
+                                    boost::mpl::string< '0','.','0','0' >,
                                     boost::mpl::string< '0','.','0','1' >,
                                     boost::mpl::string< '0','.','0','2' >,
                                     boost::mpl::string< '0','.','0','3' >,
