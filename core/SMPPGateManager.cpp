@@ -159,11 +159,10 @@ namespace sms {
                     r.getOption<Route::RouteThirdGate>( mcc, mnc ).getValue();
 
         std::list< string > rlist;
-        std::list< string >::reverse_iterator r1, r2, r3;
 
-        if ( first != "mt_null" ) { rlist.push_back( first ); r1 = rlist.rbegin(); }
-        if ( second!= "mt_null" ) { rlist.push_back( second ); r2 = rlist.rbegin(); }
-        if ( third != "mt_null" ) { rlist.push_back( third ); r3 = rlist.rbegin(); }
+        if ( first != "mt_null" ) rlist.push_back( first );
+        if ( second!= "mt_null" ) rlist.push_back( second );
+        if ( third != "mt_null" ) rlist.push_back( third );
 
         double coin;
         double slippage = boost::lexical_cast< double >(
@@ -172,9 +171,15 @@ namespace sms {
                             r.getOption<Route::FirstGwSlippage>( mcc, mnc ).getValue()
                           )*100;
         coin = rand() % 100;
-        if ( ( rlist.size() >= 2 ) && ( coin < slippage ) ) std::swap( *r1, *r2 );
-        coin = rand() % 100;
-        if ( ( rlist.size() >= 3 ) && ( coin < slippage ) ) std::swap( *r2, *r3 );
+        if ( ( rlist.size() >= 2 ) && ( coin < slippage ) ) {
+            std::string gw = rlist.front(); rlist.pop_front();
+            rlist.push_back(gw);
+            coin = rand() % 100;
+            if ( ( rlist.size() >= 3 ) && ( coin < slippage ) ) {
+                std::string gw = rlist.front(); rlist.pop_front();
+                rlist.push_back(gw);
+            }
+        }
 
         return rlist;
     }
