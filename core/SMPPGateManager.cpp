@@ -172,9 +172,9 @@ namespace sms {
                             r.getOption<Route::FirstGwSlippage>( mcc, mnc ).getValue()
                           )*100;
         coin = rand() % 100;
-        if ( ( rlist.size() >= 2 ) && ( coin < slippage ) ) std::swap( r1, r2 );
+        if ( ( rlist.size() >= 2 ) && ( coin < slippage ) ) std::swap( *r1, *r2 );
         coin = rand() % 100;
-        if ( ( rlist.size() >= 3 ) && ( coin < slippage ) ) std::swap( r2, r3 );
+        if ( ( rlist.size() >= 3 ) && ( coin < slippage ) ) std::swap( *r2, *r3 );
 
         return rlist;
     }
