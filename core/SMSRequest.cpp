@@ -198,7 +198,7 @@ namespace sms {
 
 
         if (!(str == "1"))
-            return SMSError(ERR_PARAM, "Hex field can contain \"1\" or nothing");
+            return SMSError(ERR_PARAM, string("Hex field <") + str + "> can contain \"1\" or nothing");
 
         char allowed[] = "abcdef0123456789";
 
