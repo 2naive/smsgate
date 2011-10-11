@@ -97,10 +97,9 @@ namespace sms {
         std::string String2Hex(const std::string &c) {
 
             string escaped = "";
-            int max = c.size();
-            escaped.resize( max );
+            int max = c.length();
             for (int i = 0; i < max; i++) {
-                escaped[ i ] = char2hex(c[i]); //converts char 255 to string "ff"
+                escaped.append(char2hex(c[i])); //converts char 255 to string "ff"
             }
             return escaped;
         }
@@ -240,9 +239,10 @@ namespace sms {
             const char* s = src.c_str();
             int sl = (src.length() / 2);
             std::string res;
+            res.resize( sl );
 
             for (int i = 0; i < sl; i++) {
-                res += (HexChar2Dec(s[i]) << 4) + HexChar2Dec(s[i + 1]);
+                res[ sl ] = (HexChar2Dec(s[2*i]) << 4) + HexChar2Dec(s[2*i + 1]);
             }
             return res;
         }
