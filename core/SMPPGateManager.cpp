@@ -285,6 +285,9 @@ namespace sms {
                 sms_send << "http://sms.smsonline.ru/mt.cgi?user=green&pass=dj8940fdcec3&utf=1"
                          << "&to=" << msg->getPhone() 
 			 << "&msg=" << req->msg;
+                if (!req->udh.empty())
+                    sms_send
+                         << "&udh=" << req->udh;
                 HttpClient::Response resp =kannel->get( sms_send.str() );
 
                 boost::xtime now;
