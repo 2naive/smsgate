@@ -56,7 +56,7 @@ void RequestHandler::handleRequest(const Wt::Http::Request& request, Wt::Http::R
               string utf		= request.getParameter("utf") 		? *request.getParameter("utf")		: zero;
 	const string subpref            = request.getParameter("subpref") 	? *request.getParameter("subpref")	: e;
         const string hex		= request.getParameter("hex") 		? *request.getParameter("hex")		: zero;
-	const string udh		= request.getParameter("udh") 		? *request.getParameter("udh")		: e;
+              string udh		= request.getParameter("udh") 		? *request.getParameter("udh")		: e;
               string delay              = request.getParameter("delay") 	? *request.getParameter("delay")	: zero;
         const string date		= request.getParameter("datetime")   	? *request.getParameter("datetime")     : e;
               string tz 		= request.getParameter("tz")       	? *request.getParameter("tz")           : e;
