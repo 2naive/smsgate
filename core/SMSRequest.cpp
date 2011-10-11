@@ -170,7 +170,7 @@ namespace sms {
             return SMSError(ERR_OK);
 
         if (!(str == "1"))
-            return SMSError(ERR_PARAM, string("Hex field <") + str + "> can contain \"1\" or nothing");
+            return SMSError(ERR_PARAM, string("Utf field <") + str + "> can contain \"1\" or nothing");
 
         return SMSError(ERR_OK);
     }
