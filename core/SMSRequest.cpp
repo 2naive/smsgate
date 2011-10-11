@@ -561,7 +561,7 @@ namespace sms {
 
         //TODO subpref
 
-        if ( udh != "0" )
+        if ( ( udh != "0" ) && ( !udh.empty() ) )
             out << "&udh=" << udh;
 
         return out.str();
