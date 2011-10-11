@@ -144,6 +144,7 @@ void RequestHandler::handleRequest(const Wt::Http::Request& request, Wt::Http::R
                 out << "user=" << uname << "\n";
                 out << "from=" << from << "\n";
                 out << "to=" << to << "\n";
+                out << "hex=" << hex << "\n";
                 Logger::get_mutable_instance().smsloginfo( out.str() );
 
                 response.out() << reqptr->genReport();
