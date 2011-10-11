@@ -562,7 +562,7 @@ namespace sms {
         //TODO subpref
 
         if ( ( udh != "0" ) && ( !udh.empty() ) )
-            out << "&udh=" << udh;
+            out << "&udh=" << utils::Hex2String( udh );
 
         return out.str();
     }
