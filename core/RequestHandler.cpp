@@ -76,7 +76,7 @@ void RequestHandler::handleRequest(const Wt::Http::Request& request, Wt::Http::R
 			Logger::get_mutable_instance().smslogwarn( "Invalid encoding" );
 			return;
 		}
-		utf = 1;
+                utf = "1";
 	}
 
         PartnerInfo ptnr;
