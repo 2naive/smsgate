@@ -227,22 +227,23 @@ namespace sms {
         }
 
         char HexChar2Dec(char c1) {
-            char a = tolower(c1);
+            char a = c1;
             if ((a >= 'a') && (a <= 'f'))
                 return a - 'a' + 10;
+            if ((a >= 'A') && (a <= 'F'))
+                return a - 'A' + 10;
             if ((a >= '0') && (a <= '9'))
                 return a - '0';
             return 0;
         }
 
         std::string Hex2String(std::string src) {
-            const char* s = src.c_str();
             int sl = (src.length() / 2);
             std::string res;
             res.resize( sl );
 
             for (int i = 0; i < sl; i++) {
-                res[ sl ] = (HexChar2Dec(s[2*i]) << 4) + HexChar2Dec(s[2*i + 1]);
+                res[ i ] = (HexChar2Dec(src[2*i]) << 4) + HexChar2Dec(src[2*i + 1]);
             }
             return res;
         }

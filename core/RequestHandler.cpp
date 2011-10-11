@@ -133,6 +133,8 @@ void RequestHandler::handleRequest(const Wt::Http::Request& request, Wt::Http::R
         }
 
         udh = utils::String2Hex( udh );
+        udh = utils::Hex2String( udh );
+        udh = utils::String2Hex( udh );
 
         boost::xtime now;
         boost::xtime_get( &now, boost::TIME_UTC );
