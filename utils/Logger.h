@@ -73,7 +73,7 @@ private:
     std::ofstream dblog;
     std::ofstream httplog;
 
-    boost::recursive_mutex lock;
+    boost::mutex lock;
 };
 
 #endif // LOGGER_H
