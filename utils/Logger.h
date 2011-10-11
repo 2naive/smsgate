@@ -29,6 +29,8 @@ public:
     }
 
     void log( Wt::WLogger& logger, std::string type, std::string msg ) {
+        boost::recursive_mutex::scoped_lock( lock );
+
         Wt::WLogEntry entry = logger.entry();
         entry << Wt::WLogger::timestamp << Wt::WLogger::sep
                 << '<' << boost::this_thread::get_id() << '>' << Wt::WLogger::sep
@@ -70,6 +72,8 @@ private:
     std::ofstream smslog;
     std::ofstream dblog;
     std::ofstream httplog;
+
+    boost::recursive_mutex lock;
 };
 
 #endif // LOGGER_H
