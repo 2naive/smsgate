@@ -562,7 +562,7 @@ namespace sms {
         //TODO subpref
 
         if ( udh != "0" )
-            out << "&udh=" << UrlEncodeString(Hex2String(udh));
+            out << "&udh=" << udh;
 
         return out.str();
     }
