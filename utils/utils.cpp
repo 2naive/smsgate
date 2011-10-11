@@ -94,6 +94,16 @@ namespace sms {
             return escaped;
         }
 
+        std::string String2Hex(const std::string &c) {
+
+            string escaped = "";
+            int max = c.length();
+            for (int i = 0; i < max; i++) {
+                escaped.append(char2hex(c[i])); //converts char 255 to string "ff"
+            }
+            return escaped;
+        }
+
         unsigned char hex_conv(char t) {
             if ((t >= '0') && (t <= '9'))
                 return static_cast<unsigned char> (t) - '0';

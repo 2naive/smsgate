@@ -35,6 +35,8 @@ namespace sms {
 	string StringRecodeFromTo(string src, const string from, string to) throw ( ParamError);
 
         string Hex2String(std::string src);
+        std::string String2Hex(const std::string &c);
+
         string str_join(const std::vector<std::string> & vec,const std::string & sep);
         string joinArgs(const std::map<string, string>& m);
         string escapeString( std::string where, std::string what, std::string by );
