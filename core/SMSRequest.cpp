@@ -224,9 +224,9 @@ namespace sms {
             return SMSError(ERR_PARAM, "Too long Udh (max 11)");
         }
 
-        if (!checkStr(str, allowed, true)) {
-            return SMSError(ERR_SYNTAX, "Illegal UDH");
-        }
+//        if (!checkStr(str, allowed, true)) {
+//            return SMSError(ERR_SYNTAX, "Illegal UDH");
+//        }
 
         return SMSError(ERR_OK);
     }
