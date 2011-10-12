@@ -34,6 +34,7 @@ set( smsgate_SRCS ${smsgate_SRCS} web/RouteOptionEditor.h )
 
 #Utils
 set( smsgate_SRCS ${smsgate_SRCS} utils/Cache.h )
+set( smsgate_SRCS ${smsgate_SRCS} utils/AdvancedQueue.h )
 set( smsgate_SRCS ${smsgate_SRCS} utils/DelayQueue.h )
 set( smsgate_SRCS ${smsgate_SRCS} utils/Error.h )
 set( smsgate_SRCS ${smsgate_SRCS} utils/LimitQueue.h )
