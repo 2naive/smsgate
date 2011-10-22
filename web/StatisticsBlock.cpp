@@ -89,9 +89,9 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             newMessage->addStyleClass( "link" );
             newMessage->clicked().connect( ppage, &StatisticsBlock::onNewMessage );
             //Auto update option
-            auto_refresh = new WCheckBox( WString::fromUTF8( "Автоматически обновлять" ) );
+            auto_refresh = new WCheckBox( WString::fromUTF8( "Обновлять" ) );
             //Last event update option
-            update_order = new WCheckBox( WString::fromUTF8( "Сортировать по дате обновления" ) );
+            update_order = new WCheckBox( WString::fromUTF8( "По изменению статуса" ) );
             options = new WTable();
             options->elementAt(0, 0)->addWidget( newMessage );
             options->elementAt(1, 0)->addWidget( auto_refresh );
