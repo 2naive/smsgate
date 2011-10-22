@@ -91,7 +91,7 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             //Auto update option
             auto_refresh = new WCheckBox( WString::fromUTF8( "Обновлять" ) );
             //Last event update option
-            update_order = new WCheckBox( WString::fromUTF8( "По изменению статуса" ) );
+            update_order = new WCheckBox( WString::fromUTF8( "По изменению" ) );
             options = new WTable();
             options->elementAt(0, 0)->addWidget( newMessage );
             options->elementAt(1, 0)->addWidget( auto_refresh );
