@@ -63,7 +63,10 @@ namespace sms {
                 ST_BUFFERED = 1,
                 ST_ABSENT = 2,
                 ST_PREPARING = 3,
-                ST_UNKNOWN = 4
+                ST_UNKNOWN = 4,
+                ST_BILLED = 5,
+                ST_PAID = 6,
+                ST_CANCELED = 7
             };
 
             static std::string statusDescr( const Status& st ) {
@@ -84,6 +87,12 @@ namespace sms {
                     return "ST_NOT_DELIVERED";
                 case ST_EXPIRED:
                     return "ST_EXPIRED";
+                case ST_BILLED:
+                    return "ST_BILLED";
+                case ST_PAID:
+                    return "ST_PAID";
+                case ST_CANCELED:
+                    return "ST_CANCELED";
                 }
             }
 
@@ -105,6 +114,12 @@ namespace sms {
                     return "Не доставлено";
                 case ST_EXPIRED:
                     return "Просрочено";
+                case ST_BILLED:
+                    return "Счет выставлен";
+                case ST_PAID:
+                    return "Оплачено";
+                case ST_CANCELED:
+                    return "Отказ оплаты";
                 }
             }
 
@@ -158,6 +173,13 @@ namespace sms {
                     return 98;
                 case ST_EXPIRED:
                     return 97;
+                case ST_BILLED:
+                    return 200;
+                case ST_PAID:
+                    return 202;
+                case ST_CANCELED:
+                    return 201;
+
                 }
                 return 0;
             }

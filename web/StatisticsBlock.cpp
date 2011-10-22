@@ -50,6 +50,9 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             WLineEdit* text;
             WComboBox* status;
             WTable* date;
+            WTable* options;
+            WCheckBox* auto_refresh;
+            WCheckBox* update_order;
             WLineEdit* country;
             WPushButton* reportbtn;
             WContainerWidget* controlBlock;
@@ -85,6 +88,15 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             newMessage = new WLabel( WString::fromUTF8( "Отправить сообщение" ) );
             newMessage->addStyleClass( "link" );
             newMessage->clicked().connect( ppage, &StatisticsBlock::onNewMessage );
+            //Auto update option
+            auto_refresh = new WCheckBox( WString::fromUTF8( "Автоматически обновлять" ) );
+            //Last event update option
+            update_order = new WCheckBox( WString::fromUTF8( "Сортировать по дате обновления" ) );
+            options = new WTable();
+            options->elementAt(0, 0)->addWidget( newMessage );
+            options->elementAt(1, 0)->addWidget( auto_refresh );
+            options->elementAt(2, 0)->addWidget( update_order );
+            options->addStyleClass("datetable");
             //Message text field
             text = new WLineEdit();
             text->setMinimumSize( WLength( 80, WLength::Percentage ), WLength::Auto );
@@ -95,6 +107,10 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             status->addItem(WString::fromUTF8("Отправлено"));
             status->addItem(WString::fromUTF8("Не доставлено"));
             status->addItem(WString::fromUTF8("Неверный номер"));
+            status->addItem(WString::fromUTF8("Счет выставлен"));
+            status->addItem(WString::fromUTF8("Оплачено"));
+            status->addItem(WString::fromUTF8("Отказ оплаты"));
+
             //Country input field
             country = new WLineEdit(); country->setMinimumSize(  WLength( 3, WLength::Centimeter ), WLength::Auto  );
             Wt::WSuggestionPopup::Options suggestOptions
@@ -180,6 +196,8 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             info.reportbtn = reportbtn;
             info.page = page;
             info.report_status = report_status;
+            info.auto_refresh = auto_refresh;
+            info.update_order = update_order;
 
             reportbtn->clicked().connect(boost::bind(
                                              &StatisticsBlock::onReportBtnClicked,
@@ -193,7 +211,7 @@ void WStatPageHeader::execute( int lnl, int lnr, RowList &data ) {
             r.push_back( text );
             r.push_back( status );
             r.push_back( country );
-            r.push_back( newMessage );
+            r.push_back( options );
             r.push_back( NULL );
             r.push_back( controlBlock );
 
@@ -304,7 +322,13 @@ void WStatPageData::prepareRequest( ) {
                 <<  "FROM smsrequest, message_status ";
         if ( !( user.ownerId.empty() || ( user.pId == pid_value) ) )
             req << ", partners ";
+        if ( sort_by_updated )
+            req << ", message_history ";
         req     << "WHERE smsrequest.\"REQUESTID\"=message_status.\"REQUESTID\" ";
+        if ( sort_by_updated ) {
+            req << "AND message_history.\"REQUESTID\"=message_status.\"REQUESTID\" ";
+            req << "AND message_history.\"MESSAGEID\"=message_status.\"MESSAGEID\" ";
+        }
         if ( !( user.ownerId.empty() || (user.pId == pid_value) ) )
             req <<  "AND \"PID\"=partners.pid ";
         if ( pid_filter )
@@ -323,7 +347,13 @@ void WStatPageData::prepareRequest( ) {
             req <<  "AND \"STATUS\"='" << status_value() << "' ";
         if ( !( user.ownerId.empty() || (user.pId == pid_value) ) )
             req << "AND partners.ownerid='" << tr->esc( ppage->pId ) << "' ";
-        req << "ORDER BY smsrequest.\"WHEN\" DESC;";
+        if ( sort_by_updated )
+            req << "GROUP BY message_status.\"REQUESTID\", message_status.\"MESSAGEID\", \"TXT\", \"FROM\", \"PID\", message_status.\"WHEN\", "
+                << "\"STATUS\", message_status.\"TO\", \"PARTS\", \"COUNTRY\", \"COUNTRYCODE\", \"OPERATOR\", \"OPERATORCODE\", \"REGION\", "
+                << "message_status.\"WHEN\", \"PARTNERPRICE\", \"OURPRICE\" "
+                << "ORDER BY MAX(message_history.\"WHEN\") DESC ";
+        else
+            req << "ORDER BY smsrequest.\"WHEN\" DESC;";
 
 
         {
@@ -394,6 +424,7 @@ void WStatPageData::resetFilter( ) {
     text_filter = false;
     country_filter = false;
     status_filter = false;
+    sort_by_updated = false;
 }
 
 void WStatPageData::setPidFilter( string pid ) {
@@ -429,6 +460,10 @@ void WStatPageData::setCountryFilter( string country ) {
 void WStatPageData::setStatusFilter( SMSMessage::Status status ) {
     status_filter = true;
     status_value = status;
+}
+
+void WStatPageData::setModifiedSearchOrder( ) {
+    sort_by_updated = true;
 }
 
 int WStatPageData::getTotalLines() {
@@ -649,6 +684,21 @@ void StatisticsBlock::onReportBtnClicked( RowInfo row ) {
         data.setStatusFilter( SMSMessage::Status( SMSMessage::Status::ST_REJECTED ) );
     }
 
+    if ( row.status->currentIndex() == 5 ) {
+        data.setStatusFilter( SMSMessage::Status( SMSMessage::Status::ST_BILLED ) );
+    }
+
+    if ( row.status->currentIndex() == 6 ) {
+        data.setStatusFilter( SMSMessage::Status( SMSMessage::Status::ST_PAID) );
+    }
+
+    if ( row.status->currentIndex() == 7 ) {
+        data.setStatusFilter( SMSMessage::Status( SMSMessage::Status::ST_CANCELED) );
+    }
+
+    if ( row.update_order->isChecked() ) {
+        data.setModifiedSearchOrder( );
+    }
 
     row.reportbtn->disable();
     row.report_status->setText(WString::fromUTF8("Обработка"));

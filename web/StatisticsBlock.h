@@ -14,6 +14,7 @@
 #include <Wt/WComboBox>
 #include <Wt/WSpinBox>
 #include <Wt/WPushButton>
+#include <Wt/WCheckBox>
 
 #include "WScrollTable.h"
 #include "DataSource.h"
@@ -65,6 +66,7 @@ public:
     void setTextFilter( std::string text );
     void setCountryFilter( std::string country );
     void setStatusFilter( SMSMessage::Status status );
+    void setModifiedSearchOrder( );
 
     void evaluateSummary( 	double &price, 
 				int &total, int &totalp,
@@ -86,6 +88,7 @@ private:
     bool text_filter; std::string text_value;
     bool country_filter; std::string country_value;
     bool status_filter; SMSMessage::Status status_value;
+    bool sort_by_updated;
 
     std::string view_name;
     std::string res_name;
@@ -104,6 +107,8 @@ public:
         Wt::WPushButton* reportbtn;
         Wt::WSpinBox* page;
         Wt::WLabel* report_status;
+        Wt::WCheckBox* auto_refresh;
+        Wt::WCheckBox* update_order;
     };
 
     StatisticsBlock( std::string pId, bool isAdmin, const Wt::WEnvironment& env, Wt::WContainerWidget* parent = 0 );
