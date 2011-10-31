@@ -80,9 +80,9 @@ namespace sms {
 
 
        if ( req->pid == "121" ) {
-           std::list< string > trial_list;
-           trial_list.push_back( "mt_inplat" );
-           return trial_list;
+           std::list< string > inp_list;
+           inp_list.push_back( "mt_inplat" );
+           return inp_list;
        }
 //        {
 //            boost::recursive_mutex::scoped_lock lck(lock);
