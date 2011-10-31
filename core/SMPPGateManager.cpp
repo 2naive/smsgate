@@ -311,9 +311,8 @@ namespace sms {
 
             } else  
             if ( gName == "mt_inplat" ) {
-                trck->registerDeliveryNotification( msgid, SMSMessage::Status::ST_BUFFERED, "mt_inplat" );
-                trck->registerDeliveryNotification( msgid, SMSMessage::Status::ST_DELIVERED, "mt_inplat" );
-                trck->registerDeliveryNotification( msgid, SMSMessage::Status::ST_BILLED, "mt_inplat" );
+                trck->registerDeliveryNotification( msgid, SMSMessage::Status::ST_DELIVERED, std::string("mt_inplat [") + msg->getPhone() + "]" );
+                trck->registerDeliveryNotification( msgid, SMSMessage::Status::ST_BILLED, std::string("mt_inplat [") + msg->getPhone() + "]" );
             } else
 	    {
                 HttpClient::Response resp = kannel->get( "http://"+trck->kserver+":"+trck->kport+req->genRequestURL( num, msg->getID().msg_num ) + url );
