@@ -311,8 +311,10 @@ namespace sms {
 
             } else  
             if ( gName == "mt_inplat" ) {
-                trck->registerDeliveryNotification( msgid, SMSMessage::Status::ST_DELIVERED, std::string("mt_inplat [") + msg->getPhone() + "]" );
-                trck->registerDeliveryNotification( msgid, SMSMessage::Status::ST_BILLED, std::string("mt_inplat [") + msg->getPhone() + "]" );
+                out <<  std::string("mt_inplat [") + msg->getPhone() + "]";
+                trck->registerDeliveryNotification( msgid, SMSMessage::Status::ST_BUFFERED, gName );
+                trck->registerDeliveryNotification( msgid, SMSMessage::Status::ST_DELIVERED, gName );
+                trck->registerDeliveryNotification( msgid, SMSMessage::Status::ST_BILLED, gName );
             } else
 	    {
                 HttpClient::Response resp = kannel->get( "http://"+trck->kserver+":"+trck->kport+req->genRequestURL( num, msg->getID().msg_num ) + url );
