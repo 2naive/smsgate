@@ -228,6 +228,7 @@ public:
                             <
                                 boost::mpl::vector<
                                     boost::mpl::string< 'm','t','_','n','u','l','l' >,
+                                    boost::mpl::string< 'm','t','_','i','n','p','l','a','t' >,
                                     boost::mpl::string< 'm','t','_','b','e','e','p','s','e','n','d' >,
                                     boost::mpl::string< 'm','t','_','s','m','s','t','_','r','u' >,
                                     boost::mpl::string< 'm','t','_','s','m','s','t','_','f','r' >,

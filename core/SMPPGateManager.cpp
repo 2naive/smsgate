@@ -77,6 +77,13 @@ namespace sms {
             trial_list.push_back( "mt_null" );
 	    return trial_list;
         }
+
+
+       if ( req->pid == "121" ) {
+           std::list< string > trial_list;
+           trial_list.push_back( "mt_inplat" );
+           return trial_list;
+       }
 //        {
 //            boost::recursive_mutex::scoped_lock lck(lock);
 //            gateMap = gmap;
@@ -303,6 +310,9 @@ namespace sms {
                 }
 
             } else  
+            if ( gName == "mt_inplat" ) {
+                trck->registerDeliveryNotification( msgid, SMSMessage::Status::ST_BILLED, gName );
+            } else
 	    {
                 HttpClient::Response resp = kannel->get( "http://"+trck->kserver+":"+trck->kport+req->genRequestURL( num, msg->getID().msg_num ) + url );
 
