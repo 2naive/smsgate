@@ -312,9 +312,14 @@ namespace sms {
             } else  
             if ( gName == "mt_inplat" ) {
                 out <<  std::string("mt_inplat [") + msg->getPhone() + "]";
-                trck->registerDeliveryNotification( msgid, SMSMessage::Status::ST_BUFFERED, gName );
-                trck->registerDeliveryNotification( msgid, SMSMessage::Status::ST_DELIVERED, gName );
-                trck->registerDeliveryNotification( msgid, SMSMessage::Status::ST_BILLED, gName );
+                HttpClient::Response resp = kannel->get( static_cast<std::string>( "http://api.greensms.ru/init_payment.php?to=" ) + msg->to + static_cast<std::string>("&sum=10&requestid=") + req->id );
+//                if ( resp.body.find( "success" ) != std::string::npos ) {
+//                    trck->registerDeliveryNotification( msgid, SMSMessage::Status::ST_BUFFERED, gName );
+//                    trck->registerDeliveryNotification( msgid, SMSMessage::Status::ST_DELIVERED, gName );
+//                }
+//                trck->registerDeliveryNotification( msgid, SMSMessage::Status::ST_BUFFERED, gName );
+//                trck->registerDeliveryNotification( msgid, SMSMessage::Status::ST_DELIVERED, gName );
+//                trck->registerDeliveryNotification( msgid, SMSMessage::Status::ST_BILLED, gName );
             } else
 	    {
                 HttpClient::Response resp = kannel->get( "http://"+trck->kserver+":"+trck->kport+req->genRequestURL( num, msg->getID().msg_num ) + url );
