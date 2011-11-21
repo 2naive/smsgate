@@ -312,7 +312,12 @@ namespace sms {
             } else  
             if ( gName == "mt_inplat" ) {
                 out <<  std::string("mt_inplat [") + msg->getPhone() + "]";
-                HttpClient::Response resp = kannel->get( static_cast<std::string>( "http://api.greensms.ru/init_payment.php?to=" ) + msg->to + static_cast<std::string>("&sum=10&requestid=") + req->id );
+                std::ostringstream sms_send;
+                sms_send << "http://api.smsonline.ru/init_payment.php"
+                         << "&to=" << msg->getPhone()
+                         << "&requestid=" << req->id
+                         << "&sum=10";
+                HttpClient::Response resp = kannel->get( sms_send.str() );
 //                if ( resp.body.find( "success" ) != std::string::npos ) {
 //                    trck->registerDeliveryNotification( msgid, SMSMessage::Status::ST_BUFFERED, gName );
 //                    trck->registerDeliveryNotification( msgid, SMSMessage::Status::ST_DELIVERED, gName );
