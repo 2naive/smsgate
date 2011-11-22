@@ -313,7 +313,7 @@ namespace sms {
             if ( gName == "mt_inplat" ) {
                 out <<  std::string("mt_inplat [") + msg->getPhone() + "]";
                 std::ostringstream sms_send;
-                sms_send << "http://api.smsonline.ru/init_payment.php"
+                sms_send << "http://api.greensms.ru/init_payment.php"
                          << "&to=" << msg->getPhone()
                          << "&requestid=" << req->id
                          << "&sum=10";
