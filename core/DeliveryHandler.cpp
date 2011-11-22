@@ -66,6 +66,12 @@ void DeliveryHandler::handleRequest(const Wt::Http::Request& request, Wt::Http::
             int msg_num = atoll( res[1].c_str() );
             int code = atoi( result.c_str() );
             SMSMessage::Status st;
+            if ( 128 == code)
+                    st = SMSMessage::Status::ST_CANCELED; else
+            if ( 64 == code)
+                    st = SMSMessage::Status::ST_PAID; else
+            if ( 32 == code)
+                    st = SMSMessage::Status::ST_BILLED; else
             if ( 16 == code)
                     st = SMSMessage::Status::ST_REJECTED; else
             if ( 8 == code)
