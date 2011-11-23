@@ -50,6 +50,15 @@ namespace sms {
     class MessageNotFoundError: public CriticalError {};
     class MessageAlreadyExistsError: public CriticalError {};
 
+    struct SMSTax {
+        std::string name;
+        int length;
+        double price;
+
+        SMSTax( std::string _name, int _length, double _price ): name(_name),length(_length),price(_price){}
+        SMSTax() {}
+    };
+
     namespace message {
 
         class Status {
@@ -262,6 +271,7 @@ namespace sms {
         MessageClassifier::CountryInfo getMsgClass() const;
         void setStatus( Status st );
         int getParts() const { return parts; }
+        std::map< std::string, SMSTax > taxes_map;
         friend class msg_compare;
         // SMSMessageManager needs access to private members such as construcotr
         friend class SMSMessageManager;

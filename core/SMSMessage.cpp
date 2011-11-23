@@ -11,6 +11,53 @@ namespace sms {
         msg_id = id;
         msgClass = MessageClassifier::get_mutable_instance().getMsgClass( req.to[ msg_id.msg_num ] );
         delivery_status = Status::ST_UNKNOWN;
+
+        taxes_map[ "500571" ] = SMSTax( "Комсомольская правда - комплект", 1, 200 );
+        taxes_map[ "500573" ] = SMSTax( "Комсомольская правда - комплект", 3, 600 );
+        taxes_map[ "500576" ] = SMSTax( "Комсомольская правда - комплект", 6, 1200 );
+        //--
+        taxes_map[ "847501" ] = SMSTax( "Комсомольская правда - ежедневный выпуск", 1, 140 );
+        taxes_map[ "847503" ] = SMSTax( "Комсомольская правда - ежедневный выпуск", 3, 420 );
+        taxes_map[ "847506" ] = SMSTax( "Комсомольская правда - ежедневный выпуск", 6, 840 );
+        //--
+        taxes_map[ "501761" ] = SMSTax( "Комсомольская правда - еженедельник", 1, 70 );
+        taxes_map[ "501763" ] = SMSTax( "Комсомольская правда - еженедельник", 3, 210 );
+        taxes_map[ "501766" ] = SMSTax( "Комсомольская правда - еженедельник", 6, 420 );
+        //--
+        taxes_map[ "501221" ] = SMSTax( "Советский спорт - ежедневная газета", 1, 345 );
+        taxes_map[ "501223" ] = SMSTax( "Советский спорт - ежедневная газета", 3, 1035 );
+        taxes_map[ "501226" ] = SMSTax( "Советский спорт - ежедневная газета", 6, 2070 );
+        //--
+        taxes_map[ "425901" ] = SMSTax( "Советский спорт - Футбол", 1, 115 );
+        taxes_map[ "425903" ] = SMSTax( "Советский спорт - Футбол", 3, 345 );
+        taxes_map[ "425906" ] = SMSTax( "Советский спорт - Футбол", 6, 690 );
+        //--
+        taxes_map[ "322551" ] = SMSTax( "Экспресс газета", 1, 90 );
+        taxes_map[ "322553" ] = SMSTax( "Экспресс газета", 3, 270 );
+        taxes_map[ "322556" ] = SMSTax( "Экспресс газета", 6, 540 );
+        //--
+        taxes_map[ "244551" ] = SMSTax( "Телепрограмма", 1, 65 );
+        taxes_map[ "244553" ] = SMSTax( "Телепрограмма", 3, 195 );
+        taxes_map[ "244556" ] = SMSTax( "Телепрограмма", 6, 390 );
+        //--
+        taxes_map[ "847731" ] = SMSTax( "Музеи мира (1-30 том)", 1, 7240 );
+        //--
+        taxes_map[ "484221" ] = SMSTax( "Кухни народов мира (1-20 том)", 1, 2880 );
+        taxes_map[ "847641" ] = SMSTax( "Кухни народов мира (21-30 том)", 1, 1530 );
+        //--
+        taxes_map[ "847631" ] = SMSTax( "Юношеская библиотека (1-25 том)", 1, 3230 );
+        taxes_map[ "847711" ] = SMSTax( "Юношеская библиотека (26-40 том)", 1, 1990 );
+        //--
+        taxes_map[ "847531" ] = SMSTax( "Великие композиторы-2 (1-25 том)", 1, 3420 );
+        //--
+        taxes_map[ "847701" ] = SMSTax( "Великие художники (1-30 том)", 1, 4520 );
+        taxes_map[ "847741" ] = SMSTax( "Великие художники (31-50 том)", 1, 3120 );
+        taxes_map[ "847761" ] = SMSTax( "Великие художники (51-80 том)", 1, 4760 );
+        taxes_map[ "847651" ] = SMSTax( "Великие художники (81-100 том)", 1, 3300 );
+        //--
+        taxes_map[ "000001" ] = SMSTax( "Тестирование", 1, 10 );
+        taxes_map[ "000003" ] = SMSTax( "Тестирование", 3, 20 );
+        taxes_map[ "000006" ] = SMSTax( "Тестирование", 6, 30 );
     }
 
     SMSMessage::ID SMSMessage::getID() const { return msg_id; }
@@ -152,9 +199,11 @@ namespace sms {
         dbreq2  << "UPDATE message_status SET "
                 << "\"STATUS\"='" << msg->getStatus()() << "',"
                 << "\"PARTNERPRICE\"='"
-                << ( msg->getMsgClass().operators.empty() ?
-                        msg->parts*tariff.costs( msg->getMsgClass().mcc, msg->delivery_status ) :
-                        msg->parts*tariff.costs( msg->getMsgClass().mcc, msg->getMsgClass().operators.begin()->second.mnc, msg->delivery_status ) )
+                << ( ( (this->pid == "121") && ( taxes_map.find( this->msg ) != taxes_map.end() ) )?
+                        taxes_map[ this->msg ].price:
+                        ( msg->getMsgClass().operators.empty() ?
+                            msg->parts*tariff.costs( msg->getMsgClass().mcc, msg->delivery_status ) :
+                            msg->parts*tariff.costs( msg->getMsgClass().mcc, msg->getMsgClass().operators.begin()->second.mnc, msg->delivery_status ) ) )
                 <<"',"
                 << "\"GATEWAY\"='' "
                 << "WHERE "
