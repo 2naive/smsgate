@@ -318,7 +318,7 @@ namespace sms {
                         boost::xtime now;
                         boost::xtime_get( &now, boost::TIME_UTC );
                         req->parse(  "god",
-                                   "",
+                                   "3dfx15gh",
                                    msg->to,
                                    "Неверный код заказа",
                                    "",

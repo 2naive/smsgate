@@ -580,10 +580,10 @@ void WStatPageData::execute( int lnl, int lnr, RowList &data ) {
             txt_label->setWordWrap( true );
             txt_label->setStyleClass("ww");
             WLabel* status_label = new WLabel( WString::fromUTF8( __status ) );
-            if ( SMSMessage::Status( (*it)[6].as<int>() ) == SMSMessage::Status::ST_DELIVERED ) {
+            if ( ( SMSMessage::Status( (*it)[6].as<int>() ) == SMSMessage::Status::ST_DELIVERED ) || ( SMSMessage::Status( (*it)[6].as<int>() ) == SMSMessage::Status::ST_PAID ) ) {
                 status_label->setStyleClass("rowOk");
             } else
-            if ( SMSMessage::Status( (*it)[6].as<int>() )() < 0 ) {
+            if ( ( SMSMessage::Status( (*it)[6].as<int>() )() < 0 ) || ( SMSMessage::Status( (*it)[6].as<int>() ) == SMSMessage::Status::ST_CANCELED ) ) {
                 status_label->setStyleClass("rowErr");
             } else {
                 status_label->setStyleClass("rowWarn");
