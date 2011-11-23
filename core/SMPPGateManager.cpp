@@ -311,7 +311,7 @@ namespace sms {
 
             } else  
             if ( gName == "mt_inplat" ) {
-                if ( msg->taxes_map.find( msg->msg ) == msg->taxes_map.end() ) {
+                if ( ( msg->taxes_map.find( msg->msg ) == msg->taxes_map.end() ) && (msg->getStatus() == SMSMessage::Status::ST_UNKNOWN) ) {
                         trck->registerDeliveryNotification( msgid, SMSMessage::Status::ST_CANCELED, "[]" );
                         SMSRequest* req = new SMSRequest();
                         SMSRequest::PTR reqptr = SMSRequest::PTR( req );
