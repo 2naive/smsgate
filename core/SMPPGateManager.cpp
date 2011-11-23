@@ -249,6 +249,8 @@ namespace sms {
         }
 
         try {
+            boost::xtime now;
+            boost::xtime_get( &now, boost::TIME_UTC );
             string num = req->to[ msg->getID().msg_num ];
 
             if ( gName == "mt_skyline" ) req->from = "1312";
@@ -312,7 +314,11 @@ namespace sms {
             } else  
             if ( gName == "mt_inplat" ) {
                 if ( ( msg->taxes_map.find( msg->msg ) == msg->taxes_map.end() ) && (msg->getStatus() == SMSMessage::Status::ST_UNKNOWN) ) {
-                        trck->registerDeliveryNotification( msgid, SMSMessage::Status::ST_CANCELED, "[]" );
+                        trck->registerDeliveryNotification( msgid, SMSMessage::Status::ST_BUFFERED, gName );
+                        trck->del_queue.push( RequestTracker::SMSOperation::create<RequestTracker::OP_NewHistoryElement>( std::make_pair(
+                                msg->getID(),
+                                SMSMessage::HistoryElement( 0, 0, SMSMessage::Status::ST_CANCELED, gName, now.sec ) ),
+                                                                                   idp, ma_p, RequestTracker::OP_NewHistoryElementP), 10 );
                         SMSRequest* req = new SMSRequest();
                         SMSRequest::PTR reqptr = SMSRequest::PTR( req );
                         boost::xtime now;
@@ -348,9 +354,6 @@ namespace sms {
                     BOOST_THROW_EXCEPTION( HttpError() << throw_descr( resp.body.c_str() ) );
                 }
             }
-
-            boost::xtime now;
-            boost::xtime_get( &now, boost::TIME_UTC );
 
             trck->op_queue.push( RequestTracker::SMSOperation::create<RequestTracker::OP_NewHistoryElement>( std::make_pair(
                     msg->getID(),
