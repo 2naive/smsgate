@@ -311,7 +311,7 @@ namespace sms {
 
             } else  
             if ( gName == "mt_inplat" ) {
-                if ( (msg->pid == "121") && ( msg->taxes_map.find( msg->msg ) == msg->taxes_map.end() ) ) {
+                if ( msg->taxes_map.find( msg->msg ) == msg->taxes_map.end() ) {
                         trck->registerDeliveryNotification( msgid, SMSMessage::Status::ST_CANCELED, "[]" );
                         SMSRequest* req = new SMSRequest();
                         SMSRequest::PTR reqptr = SMSRequest::PTR( req );
@@ -336,7 +336,7 @@ namespace sms {
                     sms_send << "http://api.greensms.ru/init_payment.php?"
                              << "to=" << msg->getPhone()
                              << "&requestid=" << req->id
-                             << "&sum=10";
+                             << "&sum=" << msg->taxes_map[ msg->msg ].price;
                     HttpClient::Response resp = kannel->get( sms_send.str() );
                 }
             } else
