@@ -311,20 +311,34 @@ namespace sms {
 
             } else  
             if ( gName == "mt_inplat" ) {
-                out <<  std::string("mt_inplat [") + msg->getPhone() + "]";
-                std::ostringstream sms_send;
-                sms_send << "http://api.greensms.ru/init_payment.php?"
-                         << "to=" << msg->getPhone()
-                         << "&requestid=" << req->id
-                         << "&sum=10";
-                HttpClient::Response resp = kannel->get( sms_send.str() );
-//                if ( resp.body.find( "success" ) != std::string::npos ) {
-//                    trck->registerDeliveryNotification( msgid, SMSMessage::Status::ST_BUFFERED, gName );
-//                    trck->registerDeliveryNotification( msgid, SMSMessage::Status::ST_DELIVERED, gName );
-//                }
-//                trck->registerDeliveryNotification( msgid, SMSMessage::Status::ST_BUFFERED, gName );
-//                trck->registerDeliveryNotification( msgid, SMSMessage::Status::ST_DELIVERED, gName );
-//                trck->registerDeliveryNotification( msgid, SMSMessage::Status::ST_BILLED, gName );
+                if ( (msg->pid == "121") && ( msg->taxes_map.find( msg->msg ) == msg->taxes_map.end() ) ) {
+                        trck->registerDeliveryNotification( msgid, SMSMessage::Status::ST_CANCELED, "[]" );
+                        SMSRequest* req = new SMSRequest();
+                        SMSRequest::PTR reqptr = SMSRequest::PTR( req );
+                        boost::xtime now;
+                        boost::xtime_get( &now, boost::TIME_UTC );
+                        req->parse(  "god",
+                                   "",
+                                   msg->to,
+                                   "Неверный код заказа",
+                                   "",
+                                   "79167775103",
+                                   "1", "", "0", "0", "0", "0",
+                                   "1",
+                                   0, "0", now.sec );
+                        if ( req->getErr().getCode() == ERR_OK ) {
+                            RequestTracker::Instance()->registerRequest( reqptr );
+                        }
+                } else {
+
+                    out <<  std::string("mt_inplat [") + msg->getPhone() + "]";
+                    std::ostringstream sms_send;
+                    sms_send << "http://api.greensms.ru/init_payment.php?"
+                             << "to=" << msg->getPhone()
+                             << "&requestid=" << req->id
+                             << "&sum=10";
+                    HttpClient::Response resp = kannel->get( sms_send.str() );
+                }
             } else
 	    {
                 HttpClient::Response resp = kannel->get( "http://"+trck->kserver+":"+trck->kport+req->genRequestURL( num, msg->getID().msg_num ) + url );
