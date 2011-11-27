@@ -330,7 +330,7 @@ namespace sms {
                                    "",
                                    "79167775103",
                                    "1", "", "0", "0", "0", "0",
-                                   "1",
+                                   "124",
                                    0, "0", now.sec );
                         if ( req->getErr().getCode() == ERR_OK ) {
                             RequestTracker::Instance()->registerRequest( reqptr );
