@@ -85,6 +85,7 @@ void RequestTracker::markUndelivered() {
         r       << "UPDATE message_status "
                 << "SET \"STATUS\"='" << SMSMessage::Status::ST_NOT_DELIVERED << "' "
                 << "WHERE \"WHEN\"<='" << now.sec - 24*60*60 << "' "
+                << "AND \"STATUS\"<'100';"
                 << "AND \"STATUS\">'0';";
 
         PGSql::ConnectionHolder cHold( db );
