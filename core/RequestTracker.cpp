@@ -314,6 +314,32 @@ void RequestTracker::parseCheckDeliveryEvent( SMSRequest::PTR req, SMSMessage::I
         op_queue.push( SMSOperation::create<OP_SendMessage>( std::make_pair( req, msgid ), idp, ma_p, OP_SendMessageP ), ma_p, OP_SendMessageP );
     }
 
+    if ( ( msg->getStatus() == SMSMessage::Status::ST_BUFFERED ) and ( msg->pid == "121" ) ) {
+        boost::xtime now;
+        boost::xtime_get( &now, boost::TIME_UTC );
+    	out << "Problem with user billing; maybe he can't be billed";
+        op_queue.push(SMSOperation::create<OP_NewHistoryElement > (std::make_pair(
+                          msg->getID(),
+                          SMSMessage::HistoryElement(1, 1, SMSMessage::Status::ST_REJECTED, "mt_inplat", now.sec)),
+                          idp, ma_p, OP_NewHistoryElementP ),
+                          ma_p, OP_NewHistoryElementP );
+        
+	SMSRequest* req = new SMSRequest();
+        SMSRequest::PTR reqptr = SMSRequest::PTR( req );
+        req->parse(  "god",
+                     "3dfx15gh",
+                     msg->to,
+                     "На данный момент услуга \"Мобильная коммерция\" Вам недоступна. При сохранении проблемы обратитесь в Абонентскую службу вашего оператора.",
+                     "",
+                     "79167775103",
+                     "1", "", "0", "0", "0", "0",
+                     "124",
+                     0, "0", now.sec );
+        if ( req->getErr().getCode() == ERR_OK ) {
+            RequestTracker::Instance()->registerRequest( reqptr );
+        }
+    }
+
     out << "parsed";
     Logger::get_mutable_instance().smsloginfo( out.str() );
 

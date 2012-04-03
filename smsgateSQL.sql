@@ -478,6 +478,264 @@ FROM pg_add_range_partition('message_history',
                '"WHEN" >= ts2int( TIMESTAMP ''2011-07-01'' ) AND "WHEN" < ts2int( TIMESTAMP ''2011-08-01'' )',
                'message_history_partitioning_helper');
 
+
+--2012
+-- creating partitions for 2012 Jan
+SELECT *
+FROM pg_add_range_partition('message_status',
+               'message_status_2012_01',
+               '"WHEN" >= ts2int( TIMESTAMP ''2012-01-01'' ) AND "WHEN" < ts2int( TIMESTAMP ''2012-02-01'' )',
+               'message_status_partitioning_helper');
+
+SELECT *
+FROM pg_add_range_partition('smsrequest',
+               'smsrequest_2012_01',
+               '"WHEN" >= ts2int( TIMESTAMP ''2012-01-01'' ) AND "WHEN" < ts2int( TIMESTAMP ''2012-02-01'' )',
+               'smsrequest_partitioning_helper');
+
+SELECT *
+FROM pg_add_range_partition('message_history',
+               'message_history_2012_01',
+               '"WHEN" >= ts2int( TIMESTAMP ''2012-01-01'' ) AND "WHEN" < ts2int( TIMESTAMP ''2012-02-01'' )',
+               'message_history_partitioning_helper');
+CREATE INDEX message_status_REQUESTID_2012_01 on message_status_2012_01( "REQUESTID" );
+CREATE INDEX message_status_WHEN_2012_01 on message_status_2012_01( "WHEN" );
+CREATE INDEX message_status_TO_2012_01 on message_status_2012_01( "TO" );
+CREATE INDEX message_status_COUNTRY_2012_01 on message_status_2012_01( "COUNTRY" );
+CREATE INDEX message_status_COUNTRYCODE_2012_01 on message_status_2012_01( "COUNTRYCODE" );
+CREATE INDEX message_status_OPERATOR_2012_01 on message_status_2012_01( "OPERATOR" );
+CREATE INDEX message_status_OPERATORCODE_2012_01 on message_status_2012_01( "OPERATORCODE" );
+CREATE INDEX message_status_REGION_2012_01 on message_status_2012_01( "REGION" );
+CREATE INDEX message_history_REQUESTID_2012_01 on message_history_2012_01( "REQUESTID" );
+CREATE INDEX message_history_WHEN_2012_01 on message_history_2012_01( "WHEN" );
+CREATE INDEX message_history_GATEWAY_2012_01 on message_history_2012_01( "GATEWAY" );
+CREATE INDEX message_history_WHEN_GATEWAY_2012_01 on message_history_2012_01( "WHEN", "GATEWAY" );
+CREATE INDEX smsrequest_REQUESTID_2012_01 on smsrequest_2012_01( "REQUESTID" );
+CREATE INDEX smsrequest_WHEN_2012_01 on smsrequest_2012_01( "WHEN" );
+CREATE INDEX smsrequest_TXT_2012_01 on smsrequest_2012_01( "TXT" );
+CREATE INDEX smsrequest_FROM_2012_01 on smsrequest_2012_01( "FROM" );
+CREATE INDEX smsrequest_TO_2012_01 on smsrequest_2012_01( "TO" );
+CREATE INDEX smsrequest_PID_2012_01 on smsrequest_2012_01( "PID" );
+-- creating partitions for 2012 Feb
+SELECT *
+FROM pg_add_range_partition('message_status',
+               'message_status_2012_02',
+               '"WHEN" >= ts2int( TIMESTAMP ''2012-02-01'' ) AND "WHEN" < ts2int( TIMESTAMP ''2012-03-01'' )',
+               'message_status_partitioning_helper');
+
+SELECT *
+FROM pg_add_range_partition('smsrequest',
+               'smsrequest_2012_02',
+               '"WHEN" >= ts2int( TIMESTAMP ''2012-02-01'' ) AND "WHEN" < ts2int( TIMESTAMP ''2012-03-01'' )',
+               'smsrequest_partitioning_helper');
+
+SELECT *
+FROM pg_add_range_partition('message_history',
+               'message_history_2012_02',
+               '"WHEN" >= ts2int( TIMESTAMP ''2012-02-01'' ) AND "WHEN" < ts2int( TIMESTAMP ''2012-03-01'' )',
+               'message_history_partitioning_helper');
+CREATE INDEX message_status_REQUESTID_2012_01 on message_status_2012_02( "REQUESTID" );
+CREATE INDEX message_status_WHEN_2012_02 on message_status_2012_02( "WHEN" );
+CREATE INDEX message_status_TO_2012_02 on message_status_2012_02( "TO" );
+CREATE INDEX message_status_COUNTRY_2012_02 on message_status_2012_02( "COUNTRY" );
+CREATE INDEX message_status_COUNTRYCODE_2012_02 on message_status_2012_02( "COUNTRYCODE" );
+CREATE INDEX message_status_OPERATOR_2012_02 on message_status_2012_02( "OPERATOR" );
+CREATE INDEX message_status_OPERATORCODE_2012_02 on message_status_2012_02( "OPERATORCODE" );
+CREATE INDEX message_status_REGION_2012_02 on message_status_2012_02( "REGION" );
+CREATE INDEX message_history_REQUESTID_2012_02 on message_history_2012_02( "REQUESTID" );
+CREATE INDEX message_history_WHEN_2012_02 on message_history_2012_02( "WHEN" );
+CREATE INDEX message_history_GATEWAY_2012_02 on message_history_2012_02( "GATEWAY" );
+CREATE INDEX message_history_WHEN_GATEWAY_2012_02 on message_history_2012_02( "WHEN", "GATEWAY" );
+CREATE INDEX smsrequest_REQUESTID_2012_02 on smsrequest_2012_02( "REQUESTID" );
+CREATE INDEX smsrequest_WHEN_2012_02 on smsrequest_2012_02( "WHEN" );
+CREATE INDEX smsrequest_TXT_2012_02 on smsrequest_2012_02( "TXT" );
+CREATE INDEX smsrequest_FROM_2012_02 on smsrequest_2012_02( "FROM" );
+CREATE INDEX smsrequest_TO_2012_02 on smsrequest_2012_02( "TO" );
+CREATE INDEX smsrequest_PID_2012_02 on smsrequest_2012_02( "PID" );
+-- creating partitions for 2011 Mar
+SELECT *
+FROM pg_add_range_partition('message_status',
+               'message_status_2011_03',
+               '"WHEN" >= ts2int( TIMESTAMP ''2011-03-01'' ) AND "WHEN" < ts2int( TIMESTAMP ''2011-04-01'' )',
+               'message_status_partitioning_helper');
+
+SELECT *
+FROM pg_add_range_partition('smsrequest',
+               'smsrequest_2011_03',
+               '"WHEN" >= ts2int( TIMESTAMP ''2011-03-01'' ) AND "WHEN" < ts2int( TIMESTAMP ''2011-04-01'' )',
+               'smsrequest_partitioning_helper');
+
+SELECT *
+FROM pg_add_range_partition('message_history',
+               'message_history_2011_03',
+               '"WHEN" >= ts2int( TIMESTAMP ''2011-03-01'' ) AND "WHEN" < ts2int( TIMESTAMP ''2011-04-01'' )',
+               'message_history_partitioning_helper');
+CREATE INDEX message_status_REQUESTID_2012_03 on message_status_2012_03( "REQUESTID" );
+CREATE INDEX message_status_WHEN_2012_03 on message_status_2012_03( "WHEN" );
+CREATE INDEX message_status_TO_2012_03 on message_status_2012_03( "TO" );
+CREATE INDEX message_status_COUNTRY_2012_03 on message_status_2012_03( "COUNTRY" );
+CREATE INDEX message_status_COUNTRYCODE_2012_03 on message_status_2012_03( "COUNTRYCODE" );
+CREATE INDEX message_status_OPERATOR_2012_03 on message_status_2012_03( "OPERATOR" );
+CREATE INDEX message_status_OPERATORCODE_2012_03 on message_status_2012_03( "OPERATORCODE" );
+CREATE INDEX message_status_REGION_2012_03 on message_status_2012_03( "REGION" );
+CREATE INDEX message_history_REQUESTID_2012_03 on message_history_2012_03( "REQUESTID" );
+CREATE INDEX message_history_WHEN_2012_03 on message_history_2012_03( "WHEN" );
+CREATE INDEX message_history_GATEWAY_2012_03 on message_history_2012_03( "GATEWAY" );
+CREATE INDEX message_history_WHEN_GATEWAY_2012_03 on message_history_2012_03( "WHEN", "GATEWAY" );
+CREATE INDEX smsrequest_REQUESTID_2012_03 on smsrequest_2012_03( "REQUESTID" );
+CREATE INDEX smsrequest_WHEN_2012_03 on smsrequest_2012_03( "WHEN" );
+CREATE INDEX smsrequest_TXT_2012_03 on smsrequest_2012_03( "TXT" );
+CREATE INDEX smsrequest_FROM_2012_03 on smsrequest_2012_03( "FROM" );
+CREATE INDEX smsrequest_TO_2012_03 on smsrequest_2012_03( "TO" );
+CREATE INDEX smsrequest_PID_2012_03 on smsrequest_2012_03( "PID" );
+-- creating partitions for 2011 Apr
+SELECT *
+FROM pg_add_range_partition('message_status',
+               'message_status_2011_04',
+               '"WHEN" >= ts2int( TIMESTAMP ''2011-04-01'' ) AND "WHEN" < ts2int( TIMESTAMP ''2011-05-01'' )',
+               'message_status_partitioning_helper');
+
+SELECT *
+FROM pg_add_range_partition('smsrequest',
+               'smsrequest_2011_04',
+               '"WHEN" >= ts2int( TIMESTAMP ''2011-04-01'' ) AND "WHEN" < ts2int( TIMESTAMP ''2011-05-01'' )',
+               'smsrequest_partitioning_helper');
+
+SELECT *
+FROM pg_add_range_partition('message_history',
+               'message_history_2011_04',
+               '"WHEN" >= ts2int( TIMESTAMP ''2011-04-01'' ) AND "WHEN" < ts2int( TIMESTAMP ''2011-05-01'' )',
+               'message_history_partitioning_helper');
+CREATE INDEX message_status_REQUESTID_2012_04 on message_status_2012_04( "REQUESTID" );
+CREATE INDEX message_status_WHEN_2012_04 on message_status_2012_04( "WHEN" );
+CREATE INDEX message_status_TO_2012_04 on message_status_2012_04( "TO" );
+CREATE INDEX message_status_COUNTRY_2012_04 on message_status_2012_04( "COUNTRY" );
+CREATE INDEX message_status_COUNTRYCODE_2012_04 on message_status_2012_04( "COUNTRYCODE" );
+CREATE INDEX message_status_OPERATOR_2012_04 on message_status_2012_04( "OPERATOR" );
+CREATE INDEX message_status_OPERATORCODE_2012_04 on message_status_2012_04( "OPERATORCODE" );
+CREATE INDEX message_status_REGION_2012_04 on message_status_2012_04( "REGION" );
+CREATE INDEX message_history_REQUESTID_2012_04 on message_history_2012_04( "REQUESTID" );
+CREATE INDEX message_history_WHEN_2012_04 on message_history_2012_04( "WHEN" );
+CREATE INDEX message_history_GATEWAY_2012_04 on message_history_2012_04( "GATEWAY" );
+CREATE INDEX message_history_WHEN_GATEWAY_2012_04 on message_history_2012_04( "WHEN", "GATEWAY" );
+CREATE INDEX smsrequest_REQUESTID_2012_04 on smsrequest_2012_04( "REQUESTID" );
+CREATE INDEX smsrequest_WHEN_2012_04 on smsrequest_2012_04( "WHEN" );
+CREATE INDEX smsrequest_TXT_2012_04 on smsrequest_2012_04( "TXT" );
+CREATE INDEX smsrequest_FROM_2012_04 on smsrequest_2012_04( "FROM" );
+CREATE INDEX smsrequest_TO_2012_04 on smsrequest_2012_04( "TO" );
+CREATE INDEX smsrequest_PID_2012_04 on smsrequest_2012_04( "PID" );
+
+-- creating partitions for 2012 May
+SELECT *
+FROM pg_add_range_partition('message_status',
+               'message_status_2012_05',
+               '"WHEN" >= ts2int( TIMESTAMP ''2012-05-01'' ) AND "WHEN" < ts2int( TIMESTAMP ''2012-06-01'' )',
+               'message_status_partitioning_helper');
+
+SELECT *
+FROM pg_add_range_partition('smsrequest',
+               'smsrequest_2012_05',
+               '"WHEN" >= ts2int( TIMESTAMP ''2012-05-01'' ) AND "WHEN" < ts2int( TIMESTAMP ''2012-06-01'' )',
+               'smsrequest_partitioning_helper');
+
+SELECT *
+FROM pg_add_range_partition('message_history',
+               'message_history_2012_05',
+               '"WHEN" >= ts2int( TIMESTAMP ''2012-05-01'' ) AND "WHEN" < ts2int( TIMESTAMP ''2012-06-01'' )',
+               'message_history_partitioning_helper');
+CREATE INDEX message_status_REQUESTID_2012_05 on message_status_2012_05( "REQUESTID" );
+CREATE INDEX message_status_WHEN_2012_05 on message_status_2012_05( "WHEN" );
+CREATE INDEX message_status_TO_2012_05 on message_status_2012_05( "TO" );
+CREATE INDEX message_status_COUNTRY_2012_05 on message_status_2012_05( "COUNTRY" );
+CREATE INDEX message_status_COUNTRYCODE_2012_05 on message_status_2012_05( "COUNTRYCODE" );
+CREATE INDEX message_status_OPERATOR_2012_05 on message_status_2012_05( "OPERATOR" );
+CREATE INDEX message_status_OPERATORCODE_2012_05 on message_status_2012_05( "OPERATORCODE" );
+CREATE INDEX message_status_REGION_2012_05 on message_status_2012_05( "REGION" );
+CREATE INDEX message_history_REQUESTID_2012_05 on message_history_2012_05( "REQUESTID" );
+CREATE INDEX message_history_WHEN_2012_05 on message_history_2012_05( "WHEN" );
+CREATE INDEX message_history_GATEWAY_2012_05 on message_history_2012_05( "GATEWAY" );
+CREATE INDEX message_history_WHEN_GATEWAY_2012_05 on message_history_2012_05( "WHEN", "GATEWAY" );
+CREATE INDEX smsrequest_REQUESTID_2012_05 on smsrequest_2012_05( "REQUESTID" );
+CREATE INDEX smsrequest_WHEN_2012_05 on smsrequest_2012_05( "WHEN" );
+CREATE INDEX smsrequest_TXT_2012_05 on smsrequest_2012_05( "TXT" );
+CREATE INDEX smsrequest_FROM_2012_05 on smsrequest_2012_05( "FROM" );
+CREATE INDEX smsrequest_TO_2012_05 on smsrequest_2012_05( "TO" );
+CREATE INDEX smsrequest_PID_2012_05 on smsrequest_2012_05( "PID" );
+
+-- creating partitions for 2012 Jun
+SELECT *
+FROM pg_add_range_partition('message_status',
+               'message_status_2012_06',
+               '"WHEN" >= ts2int( TIMESTAMP ''2012-06-01'' ) AND "WHEN" < ts2int( TIMESTAMP ''2012-07-01'' )',
+               'message_status_partitioning_helper');
+
+SELECT *
+FROM pg_add_range_partition('smsrequest',
+               'smsrequest_2012_06',
+               '"WHEN" >= ts2int( TIMESTAMP ''2012-06-01'' ) AND "WHEN" < ts2int( TIMESTAMP ''2012-07-01'' )',
+               'smsrequest_partitioning_helper');
+
+SELECT *
+FROM pg_add_range_partition('message_history',
+               'message_history_2012_06',
+               '"WHEN" >= ts2int( TIMESTAMP ''2012-06-01'' ) AND "WHEN" < ts2int( TIMESTAMP ''2012-07-01'' )',
+               'message_history_partitioning_helper');
+CREATE INDEX message_status_REQUESTID_2012_06 on message_status_2012_06( "REQUESTID" );
+CREATE INDEX message_status_WHEN_2012_06 on message_status_2012_06( "WHEN" );
+CREATE INDEX message_status_TO_2012_06 on message_status_2012_06( "TO" );
+CREATE INDEX message_status_COUNTRY_2012_06 on message_status_2012_06( "COUNTRY" );
+CREATE INDEX message_status_COUNTRYCODE_2012_06 on message_status_2012_06( "COUNTRYCODE" );
+CREATE INDEX message_status_OPERATOR_2012_06 on message_status_2012_06( "OPERATOR" );
+CREATE INDEX message_status_OPERATORCODE_2012_06 on message_status_2012_06( "OPERATORCODE" );
+CREATE INDEX message_status_REGION_2012_06 on message_status_2012_06( "REGION" );
+CREATE INDEX message_history_REQUESTID_2012_06 on message_history_2012_06( "REQUESTID" );
+CREATE INDEX message_history_WHEN_2012_06 on message_history_2012_06( "WHEN" );
+CREATE INDEX message_history_GATEWAY_2012_06 on message_history_2012_06( "GATEWAY" );
+CREATE INDEX message_history_WHEN_GATEWAY_2012_06 on message_history_2012_06( "WHEN", "GATEWAY" );
+CREATE INDEX smsrequest_REQUESTID_2012_06 on smsrequest_2012_06( "REQUESTID" );
+CREATE INDEX smsrequest_WHEN_2012_06 on smsrequest_2012_06( "WHEN" );
+CREATE INDEX smsrequest_TXT_2012_06 on smsrequest_2012_06( "TXT" );
+CREATE INDEX smsrequest_FROM_2012_06 on smsrequest_2012_06( "FROM" );
+CREATE INDEX smsrequest_TO_2012_06 on smsrequest_2012_06( "TO" );
+CREATE INDEX smsrequest_PID_2012_06 on smsrequest_2012_06( "PID" );
+-- creating partitions for 2012 Jul
+SELECT *
+FROM pg_add_range_partition('message_status',
+               'message_status_2012_07',
+               '"WHEN" >= ts2int( TIMESTAMP ''2012-07-01'' ) AND "WHEN" < ts2int( TIMESTAMP ''2012-08-01'' )',
+               'message_status_partitioning_helper');
+
+SELECT *
+FROM pg_add_range_partition('smsrequest',
+               'smsrequest_2012_07',
+               '"WHEN" >= ts2int( TIMESTAMP ''2012-07-01'' ) AND "WHEN" < ts2int( TIMESTAMP ''2012-08-01'' )',
+               'smsrequest_partitioning_helper');
+
+SELECT *
+FROM pg_add_range_partition('message_history',
+               'message_history_2012_07',
+               '"WHEN" >= ts2int( TIMESTAMP ''2012-07-01'' ) AND "WHEN" < ts2int( TIMESTAMP ''2012-08-01'' )',
+               'message_history_partitioning_helper');
+
+CREATE INDEX message_status_REQUESTID_2012_07 on message_status_2012_07( "REQUESTID" );
+CREATE INDEX message_status_WHEN_2012_07 on message_status_2012_07( "WHEN" );
+CREATE INDEX message_status_TO_2012_07 on message_status_2012_07( "TO" );
+CREATE INDEX message_status_COUNTRY_2012_07 on message_status_2012_07( "COUNTRY" );
+CREATE INDEX message_status_COUNTRYCODE_2012_07 on message_status_2012_07( "COUNTRYCODE" );
+CREATE INDEX message_status_OPERATOR_2012_07 on message_status_2012_07( "OPERATOR" );
+CREATE INDEX message_status_OPERATORCODE_2012_07 on message_status_2012_07( "OPERATORCODE" );
+CREATE INDEX message_status_REGION_2012_07 on message_status_2012_07( "REGION" );
+CREATE INDEX message_history_REQUESTID_2012_07 on message_history_2012_07( "REQUESTID" );
+CREATE INDEX message_history_WHEN_2012_07 on message_history_2012_07( "WHEN" );
+CREATE INDEX message_history_GATEWAY_2012_07 on message_history_2012_07( "GATEWAY" );
+CREATE INDEX message_history_WHEN_GATEWAY_2012_07 on message_history_2012_07( "WHEN", "GATEWAY" );
+CREATE INDEX smsrequest_REQUESTID_2012_07 on smsrequest_2012_07( "REQUESTID" );
+CREATE INDEX smsrequest_WHEN_2012_07 on smsrequest_2012_07( "WHEN" );
+CREATE INDEX smsrequest_TXT_2012_07 on smsrequest_2012_07( "TXT" );
+CREATE INDEX smsrequest_FROM_2012_07 on smsrequest_2012_07( "FROM" );
+CREATE INDEX smsrequest_TO_2012_07 on smsrequest_2012_07( "TO" );
+CREATE INDEX smsrequest_PID_2012_07 on smsrequest_2012_07( "PID" );
+
 -- enable partitioning
 CREATE TRIGGER message_status_partitioning_trigger
  BEFORE INSERT ON message_status

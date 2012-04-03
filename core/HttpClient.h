@@ -17,7 +17,6 @@
 #include <boost/thread.hpp>
 
 #include <curl/curl.h>
-#include <curl/types.h>
 #include <curl/easy.h>
 
 #include "Error.h"

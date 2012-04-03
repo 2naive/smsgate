@@ -74,7 +74,7 @@ set( smsgate_SRCS ${smsgate_SRCS} core/Route.h               core/Route.cpp )
 set( ghelper_SRCS ${ghelper_SRCS} core/SMPPGateFilterParser.h core/SMPPGateFilterParser.cpp )
 
 
-set( smsgate_linked_libs wt wthttp curl pqxx boost_serialization)
+set( smsgate_linked_libs wt wthttp curl pqxx boost_program_options boost_serialization boost_thread boost_signals boost_date_time)
 if ( ${CMAKE_SYSTEM_NAME} MATCHES FreeBSD )
         set( smsgate_linked_libs ${smsgate_linked_libs} iconv )
 endif ( ${CMAKE_SYSTEM_NAME} MATCHES FreeBSD )
