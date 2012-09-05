@@ -73,8 +73,15 @@ set( smsgate_SRCS ${smsgate_SRCS} core/Route.h               core/Route.cpp )
 
 set( ghelper_SRCS ${ghelper_SRCS} core/SMPPGateFilterParser.h core/SMPPGateFilterParser.cpp )
 
+#set (Boost_USE_STATIC_LIBS FALSE)
+#set (Boost_USE_MULTITHREADED TRUE)
 
-set( smsgate_linked_libs wt wthttp curl pqxx boost_program_options boost_serialization boost_thread boost_signals boost_date_time)
+#find_package (Boost 1.44 REQUIRED COMPONENTS system thread signals date_time regex program_options)
+
+#link_directories (${Boost_LIBRARY_DIRS})
+#include_directories (${Boost_INCLUDE_DIRS})
+
+set( smsgate_linked_libs wt wthttp curl pqxx boost_system-mt boost_thread-mt boost_serialization-mt boost_signals-mt boost_date_time-mt boost_regex-mt boost_program_options-mt)
 if ( ${CMAKE_SYSTEM_NAME} MATCHES FreeBSD )
         set( smsgate_linked_libs ${smsgate_linked_libs} iconv )
 endif ( ${CMAKE_SYSTEM_NAME} MATCHES FreeBSD )
