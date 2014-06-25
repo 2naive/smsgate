@@ -358,9 +358,9 @@ void WStatPageData::prepareRequest( ) {
 
         {
             boost::xtime from, to;
-            boost::xtime_get( &from, boost::TIME_UTC );
+            boost::xtime_get( &from, boost::TIME_UTC_ );
             tr->exec( req.str() );
-            boost::xtime_get( &to, boost::TIME_UTC );
+            boost::xtime_get( &to, boost::TIME_UTC_ );
             req << " for " << to.sec - from.sec << " seconds";
             Logger::get_mutable_instance().dbloginfo( req.str() );
         }
@@ -370,10 +370,10 @@ void WStatPageData::prepareRequest( ) {
 
         {
             boost::xtime from, to;
-            boost::xtime_get( &from, boost::TIME_UTC );
+            boost::xtime_get( &from, boost::TIME_UTC_ );
             tr->exec( req2.str() );
             tr->commit();
-            boost::xtime_get( &to, boost::TIME_UTC );
+            boost::xtime_get( &to, boost::TIME_UTC_ );
             req2 << " for " << to.sec - from.sec << " seconds";
             Logger::get_mutable_instance().dbloginfo( req2.str() );
         }
@@ -396,14 +396,14 @@ void WStatPageData::prepareRequest( ) {
 
         {
             boost::xtime from, to;
-            boost::xtime_get( &from, boost::TIME_UTC );
+            boost::xtime_get( &from, boost::TIME_UTC_ );
             Result res = tr->exec( req.str() );
             tr->commit();
 
             for ( Result::const_iterator it = res.begin(); it != res.end(); it++ ) {
                 __total_lines = (*it)[0].as<int>();
             }
-            boost::xtime_get( &to, boost::TIME_UTC );
+            boost::xtime_get( &to, boost::TIME_UTC_ );
             req << " for " << to.sec - from.sec << " seconds";
             Logger::get_mutable_instance().dbloginfo( req.str() );
         }
@@ -751,7 +751,7 @@ void StatisticsBlock::onNewMessage() {
             return;
 
         boost::xtime now;
-        boost::xtime_get( &now, boost::TIME_UTC );
+        boost::xtime_get( &now, boost::TIME_UTC_ );
 
         SMSRequest* req = new SMSRequest();
         SMSRequest::PTR reqptr = SMSRequest::PTR( req );

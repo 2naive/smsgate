@@ -46,7 +46,7 @@ ConnectionPTR ConnectionPool::getConnection() { boost:
             }
         }
         boost::xtime xt;
-        boost::xtime_get(&xt, boost::TIME_UTC);
+        boost::xtime_get(&xt, boost::TIME_UTC_);
         xt.nsec += 1e8;
         boost::thread::sleep(xt);
     }

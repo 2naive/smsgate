@@ -12,7 +12,7 @@ namespace sms {
     Timer::Timer() {
         lastid = 0;
         boost::xtime xt;
-        boost::xtime_get(&xt, boost::TIME_UTC);
+        boost::xtime_get(&xt, boost::TIME_UTC_);
         boost::thread eventloop(boost::bind( &Timer::MainLoop, this ));
     }
 
@@ -46,14 +46,14 @@ namespace sms {
 
                 boost::thread eventloop( boost::bind( &Timer::funcWrapper, this, functions[ funcid ], funcid ) );
 
-                boost::xtime_get(&xt, boost::TIME_UTC);
+                boost::xtime_get(&xt, boost::TIME_UTC_);
                 if ( delay_map[ funcid ] ) {
                     timertable.push_back( std::make_pair( xt.sec + delay_map[ funcid ], funcid ) );
                     std::push_heap( timertable.begin(), timertable.end(), Compare );
                 }
             }
 
-            boost::xtime_get(&xt, boost::TIME_UTC);
+            boost::xtime_get(&xt, boost::TIME_UTC_);
             xt.sec += 1;
             boost::thread::sleep(xt);
         }
@@ -72,7 +72,7 @@ namespace sms {
     long Timer::addSingleEvent( FuncPTR func, int delay ) {
         boost::recursive_mutex::scoped_lock( lock );
         boost::xtime xt;
-        boost::xtime_get(&xt, boost::TIME_UTC);
+        boost::xtime_get(&xt, boost::TIME_UTC_);
 
         lastid++;
         functions[ lastid ] = func;
@@ -89,7 +89,7 @@ namespace sms {
         //delay *= 2;
         boost::recursive_mutex::scoped_lock( lock );
         boost::xtime xt;
-        boost::xtime_get(&xt, boost::TIME_UTC);
+        boost::xtime_get(&xt, boost::TIME_UTC_);
 
         lastid++;
         functions[ lastid ] = func;

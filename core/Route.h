@@ -236,8 +236,9 @@ public:
                                     boost::mpl::string< 'm','t','_','s','m','s','t','_','z','r' >,
                                     boost::mpl::string< 'm','t','_','i','f','r','e','e' >,
                                     boost::mpl::string< 'm','t','_','r','o','u','t','e','s','m','s' >,
-                                    boost::mpl::string< 'm','t','_','m','o','b','i','w','e','b' >
-                                >,
+                                    boost::mpl::string< 'm','t','_','m','o','b','i','w','e','b' >,
+                                    boost::mpl::string< 'm','t','_','f','o','r','t','y','t','w','o' >
+				>,
                                 boost::mpl::string< 'm','t','_','n','u','l','l' >
                             >
                         > RouteFirstGate;
@@ -256,7 +257,8 @@ public:
                                     boost::mpl::string< 'm','t','_','s','m','s','t','_','z','r' >,
                                     boost::mpl::string< 'm','t','_','i','f','r','e','e' >,
                                     boost::mpl::string< 'm','t','_','r','o','u','t','e','s','m','s' >,
-                                    boost::mpl::string< 'm','t','_','m','o','b','i','w','e','b' >
+                                    boost::mpl::string< 'm','t','_','m','o','b','i','w','e','b' >,
+				    boost::mpl::string< 'm','t','_','f','o','r','t','y','t','w','o' >
                                 >,
                                 boost::mpl::string< 'm','t','_','n','u','l','l' >
                             >

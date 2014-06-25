@@ -576,7 +576,7 @@ namespace sms {
 
     SMSRequest::ID SMSRequest::genID() {
         boost::xtime xt;
-        boost::xtime_get(&xt, boost::TIME_UTC);
+        boost::xtime_get(&xt, boost::TIME_UTC_);
 
         boost::mutex::scoped_lock scoped_lock(lock);
         SMSRequest::ID res = (xt.sec * 1e6 + xt.nsec / 1e3)*1e2;

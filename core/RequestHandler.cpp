@@ -122,7 +122,7 @@ void RequestHandler::handleRequest(const Wt::Http::Request& request, Wt::Http::R
         if ( !date.empty() ) {
             try {
                 boost::xtime now;
-                boost::xtime_get( &now, boost::TIME_UTC );
+                boost::xtime_get( &now, boost::TIME_UTC_ );
 
                 int kdelay = utils::datetime2ts( date, boost::lexical_cast< int >( tz ) ) - now.sec;
                 if ( ( kdelay > 0 ) && ( delay == "0" ) )
@@ -137,7 +137,7 @@ void RequestHandler::handleRequest(const Wt::Http::Request& request, Wt::Http::R
         udh = utils::String2Hex( udh );
 
         boost::xtime now;
-        boost::xtime_get( &now, boost::TIME_UTC );
+        boost::xtime_get( &now, boost::TIME_UTC_ );
 
         req->parse( uname, pass, tov, txt, tid, from, utf, subpref, hex, udh, delay, dlr, pid, priority, garant, now.sec );
         SMSRequest::PTR reqptr = SMSRequest::PTR( req );

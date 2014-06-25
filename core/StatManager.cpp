@@ -54,7 +54,7 @@ namespace sms {
         Timer::Instance()->addSingleEvent( boost::bind( &StatManager::on1HourUpdateSMPPGate, this ), 0 );
         Timer::Instance()->addSingleEvent( boost::bind( &StatManager::on1DayUpdateSMPPGate, this ), 0 );
         Timer::Instance()->addSingleEvent( boost::bind( &StatManager::onCountryInfoUpdate, this ), 0 );
-        boost::xtime_get( &uptime, boost::TIME_UTC );
+        boost::xtime_get( &uptime, boost::TIME_UTC_ );
 
     }
 
@@ -270,9 +270,9 @@ namespace sms {
         ConnectionPTR conn;
         {
             boost::xtime from, to;
-            boost::xtime_get( &from, boost::TIME_UTC );
+            boost::xtime_get( &from, boost::TIME_UTC_ );
             conn = cHold.get();
-            boost::xtime_get( &to, boost::TIME_UTC );
+            boost::xtime_get( &to, boost::TIME_UTC_ );
             std::ostringstream out;
             out << "Connection hold" << " for " << to.sec - from.sec << " seconds";
             Logger::get_mutable_instance().dbloginfo( out.str() );
@@ -310,7 +310,7 @@ namespace sms {
         }
 
         boost::xtime now;
-        boost::xtime_get( &now, boost::TIME_UTC );
+        boost::xtime_get( &now, boost::TIME_UTC_ );
         try {
 
             {
@@ -326,9 +326,9 @@ namespace sms {
 
                 {
                     boost::xtime from, to;
-                    boost::xtime_get( &from, boost::TIME_UTC );
+                    boost::xtime_get( &from, boost::TIME_UTC_ );
                     tr->exec( req_view.str() );
-                    boost::xtime_get( &to, boost::TIME_UTC );
+                    boost::xtime_get( &to, boost::TIME_UTC_ );
                     req_view << " for " << to.sec - from.sec << " seconds";
                     Logger::get_mutable_instance().dbloginfo( req_view.str() );
                 }
@@ -338,13 +338,13 @@ namespace sms {
 
                 {
                     boost::xtime from, to;
-                    boost::xtime_get( &from, boost::TIME_UTC );
+                    boost::xtime_get( &from, boost::TIME_UTC_ );
                     Result res = tr->exec( req_jane.str() );
                     pres["jane"].requests =  res.size() > 0 ? ( res[0][0].is_null() ? 0: res[0][0].as<long>() ): 0;
                     pres["jane"].acks = 0;
                     pres["jane"].responses = 0;
                     pres["jane"].deliveres = res.size() > 1 ? ( res[1][0].is_null() ? 0: res[1][0].as<long>() ): 0;
-                    boost::xtime_get( &to, boost::TIME_UTC );
+                    boost::xtime_get( &to, boost::TIME_UTC_ );
                     req_jane << " for " << to.sec - from.sec << " seconds";
                     Logger::get_mutable_instance().dbloginfo( req_jane.str() );
                 }
@@ -370,12 +370,12 @@ namespace sms {
 
                 {
                     boost::xtime from, to;
-                    boost::xtime_get( &from, boost::TIME_UTC );
+                    boost::xtime_get( &from, boost::TIME_UTC_ );
                     Result res = tr->exec( req_dlr.str() );
                     for ( Result::const_iterator dbr = res.begin(); dbr != res.end(); dbr++ ) {
                         pres[(*dbr)[0].as<string>()].deliveres = (*dbr)[1].as<long>();
                     }
-                    boost::xtime_get( &to, boost::TIME_UTC );
+                    boost::xtime_get( &to, boost::TIME_UTC_ );
                     req_dlr << " for " << to.sec - from.sec << " seconds";
                     Logger::get_mutable_instance().dbloginfo( req_dlr.str() );
                 }
@@ -398,9 +398,9 @@ namespace sms {
 
         {
             boost::xtime from, to;
-            boost::xtime_get( &from, boost::TIME_UTC );
+            boost::xtime_get( &from, boost::TIME_UTC_ );
             tr->commit();
-            boost::xtime_get( &to, boost::TIME_UTC );
+            boost::xtime_get( &to, boost::TIME_UTC_ );
             std::ostringstream out;
             out << "Commited" << " for " << to.sec - from.sec << " seconds";
             Logger::get_mutable_instance().dbloginfo( out.str() );
@@ -411,7 +411,7 @@ namespace sms {
 
     StatManager::gNamePropMap StatManager::onUpdateDeltaSMPPGate( long delta ) {
         boost::xtime now;
-        boost::xtime_get( &now, boost::TIME_UTC );
+        boost::xtime_get( &now, boost::TIME_UTC_ );
 
         return onUpdateFromToSMPPGate( now.sec - delta, now.sec );
     }
@@ -451,7 +451,7 @@ namespace sms {
         out.setf(std::ios_base::right, std::ios_base::adjustfield);
         out.fill('0');
         boost::xtime now;
-        boost::xtime_get( &now, boost::TIME_UTC );
+        boost::xtime_get( &now, boost::TIME_UTC_ );
         out << std::setw(2) << ( now.sec - this->uptime.sec ) / ( 60*60*24 ) << ":" <<
                std::setw(2) << (( now.sec - this->uptime.sec ) / 3600) % 24 << ":" <<
                std::setw(2) << (( now.sec - this->uptime.sec ) / 60) %60 << ":" <<
@@ -485,8 +485,8 @@ namespace sms {
             }
             cpos++;
 
-            for ( MessageClassifier::CountryInfo::OperatorMapT::iterator gt = it->second.operators.begin(); gt != it->second.operators.end(); gt++, cpos++ ) {
-                string opname = gt->second.getName();
+            for ( MessageClassifier::CountryInfo::OperatorMapT::iterator ct = it->second.operators.begin(); ct != it->second.operators.end(); ct++, cpos++ ) {
+                string opname = ct->second.getName();
                 gNamePropMap gm = onUpdateFromToSMPPGateCountry( cname, opname );
                 gNamePropMap::const_iterator gt;
                 p.resize( cpos + 1 );

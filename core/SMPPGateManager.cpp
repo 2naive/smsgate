@@ -250,7 +250,7 @@ namespace sms {
 
         try {
             boost::xtime now;
-            boost::xtime_get( &now, boost::TIME_UTC );
+            boost::xtime_get( &now, boost::TIME_UTC_ );
             string num = req->to[ msg->getID().msg_num ];
 
             if ( gName == "mt_skyline" ) req->from = "1312";
@@ -275,7 +275,7 @@ namespace sms {
                 HttpClient::Response resp =kannel->post( "http://smsonline:password@sdp1.cpa.net.ua:8080/cpa2/receiver", sms_send.str() );
 
                 boost::xtime now;
-                boost::xtime_get( &now, boost::TIME_UTC );
+                boost::xtime_get( &now, boost::TIME_UTC_ );
 
                 if ( resp.body.find( "Accepted" ) != std::string::npos ) {
                     trck->registerDeliveryNotification( msgid, SMSMessage::Status::ST_BUFFERED, gName );
@@ -297,7 +297,7 @@ namespace sms {
                 HttpClient::Response resp =kannel->get( sms_send.str() );
 
                 boost::xtime now;
-                boost::xtime_get( &now, boost::TIME_UTC );
+                boost::xtime_get( &now, boost::TIME_UTC_ );
 
                 if ( resp.body.find( "<code>0</code>" ) != std::string::npos ) {
                     trck->registerDeliveryNotification( msgid, SMSMessage::Status::ST_BUFFERED, gName );
@@ -322,7 +322,7 @@ namespace sms {
                         SMSRequest* req = new SMSRequest();
                         SMSRequest::PTR reqptr = SMSRequest::PTR( req );
                         boost::xtime now;
-                        boost::xtime_get( &now, boost::TIME_UTC );
+                        boost::xtime_get( &now, boost::TIME_UTC_ );
                         req->parse(  "god",
                                    "3dfx15gh",
                                    msg->to,
@@ -600,14 +600,14 @@ namespace sms {
 
     bool SMPPGateManager::isExpiredACK( const msgqueue::MessageInfo& mi) {
         boost::xtime xt;
-        boost::xtime_get(&xt, boost::TIME_UTC);
+        boost::xtime_get(&xt, boost::TIME_UTC_);
 
         return ( xt.sec - mi.added > 20 );
     }
 
     bool SMPPGateManager::isExpired( const msgqueue::MessageInfo& mi) {
         boost::xtime xt;
-        boost::xtime_get(&xt, boost::TIME_UTC);
+        boost::xtime_get(&xt, boost::TIME_UTC_);
 
         return ( xt.sec - mi.added > 24*60*60 );
     }

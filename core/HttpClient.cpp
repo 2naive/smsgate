@@ -65,7 +65,7 @@ namespace sms {
     HttpClient::Response HttpClient::get(std::string url, int timeout) throw ( HttpError ) {
         boost::thread::id id = boost::this_thread::get_id();
         boost::xtime now;
-        boost::xtime_get( &now, boost::TIME_UTC );
+        boost::xtime_get( &now, boost::TIME_UTC_ );
 
         std::ostringstream out;
         out << "HttpClient::get URL=" << url << " ";
@@ -101,7 +101,7 @@ namespace sms {
         int err_code = curl_easy_perform(curl_handle);
 
         boost::xtime now2;
-        boost::xtime_get( &now2, boost::TIME_UTC );
+        boost::xtime_get( &now2, boost::TIME_UTC_ );
         long diff = (now2.sec-now.sec)*1000 + ( now2.nsec - now.nsec )/1e6;
         if ( err_code != CURLE_OK ) {
 
@@ -122,7 +122,7 @@ namespace sms {
     HttpClient::Response HttpClient::post(std::string url, std::string data, int timeout) throw ( HttpError ) {
         boost::thread::id id = boost::this_thread::get_id();
         boost::xtime now;
-        boost::xtime_get( &now, boost::TIME_UTC );
+        boost::xtime_get( &now, boost::TIME_UTC_ );
 
         std::ostringstream out;
         out << "HttpClient::post URL=" << url << " data=" << data << " ";
@@ -163,7 +163,7 @@ namespace sms {
 
         int err_code = curl_easy_perform(curl_handle);
         boost::xtime now2;
-        boost::xtime_get( &now2, boost::TIME_UTC );
+        boost::xtime_get( &now2, boost::TIME_UTC_ );
         long diff = (now2.sec-now.sec)*1000 + ( now2.nsec - now.nsec )/1e6;
         if ( err_code != CURLE_OK ) {
 

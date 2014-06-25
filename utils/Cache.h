@@ -86,7 +86,7 @@ namespace sms {
     void SCache<Type, TypeID>::onTimerTick() {
         boost::recursive_mutex::scoped_lock scoped_lock(lock);
         boost::xtime now;
-        boost::xtime_get( &now, boost::TIME_UTC );
+        boost::xtime_get( &now, boost::TIME_UTC_ );
 
         while ( ( !data.empty() ) && ( data.front().first <= now.sec ) ) {
             TypeID id = data.front().second;
@@ -116,7 +116,7 @@ namespace sms {
     void SCache<Type, TypeID>::push( const Type val, const TypeID id, int ttl ) {
         boost::recursive_mutex::scoped_lock scoped_lock(lock);
         boost::xtime now;
-        boost::xtime_get( &now, boost::TIME_UTC);
+        boost::xtime_get( &now, boost::TIME_UTC_);
 
         if ( ttl == -1 )
             ttl = default_ttl;

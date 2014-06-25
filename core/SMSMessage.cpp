@@ -150,7 +150,7 @@ namespace sms {
         PGSql& db = PGSqlConnPoolSystem::get_mutable_instance().getdb();
 
         boost::xtime now;
-        boost::xtime_get( &now, boost::TIME_UTC );
+        boost::xtime_get( &now, boost::TIME_UTC_ );
         PGSql::ConnectionHolder cHold( db );
         ConnectionPTR conn = cHold.get();
         TransactionPTR tr = db.openTransaction( conn, "RequestTracker::parseNewMessageEvent" );
@@ -310,7 +310,7 @@ namespace sms {
        //Logger::get_mutable_instance().smsloginfo( string( "Message " ) + msgid.to_str() + " is locked" );
        (*msg_data.get<tag_id>().find( msgid ))->info_lock.lock();
        boost::xtime xt;
-       boost::xtime_get(&xt, boost::TIME_UTC);
+       boost::xtime_get(&xt, boost::TIME_UTC_);
        boost::recursive_mutex::scoped_lock lck( msgdata_lock );
        (*msg_data.get<tag_id>().find( msgid ))->last_updated = xt.sec;
        msg_data.get<tag_id>().replace( msg_data.get<tag_id>().find( msgid ), *msg_data.get<tag_id>().find( msgid ) );
@@ -431,7 +431,7 @@ namespace sms {
             }
             cleanup();
             boost::xtime xt;
-            boost::xtime_get(&xt, boost::TIME_UTC);
+            boost::xtime_get(&xt, boost::TIME_UTC_);
             xt.nsec+=1e8;
             boost::thread::sleep(xt);
         }
@@ -443,7 +443,7 @@ namespace sms {
 	boost::recursive_mutex::scoped_lock lck( msgdata_lock );
         {
             boost::xtime now;
-            boost::xtime_get(&now, boost::TIME_UTC);
+            boost::xtime_get(&now, boost::TIME_UTC_);
             for ( itd = msg_data.get<tag_update>().begin(); itd !=  msg_data.get<tag_update>().end(); itd++ ) {
                 if ( (!(*itd)->dirty) && ( (*itd)->last_updated + 113 < now.sec ) && (*itd)->info_lock.try_lock() ) {
                     (*itd)->info_lock.unlock();
@@ -472,7 +472,7 @@ namespace sms {
                 }
             }
             boost::xtime xt;
-            boost::xtime_get(&xt, boost::TIME_UTC);
+            boost::xtime_get(&xt, boost::TIME_UTC_);
             xt.nsec+=1e5;
             boost::thread::sleep(xt);
         }

@@ -23,7 +23,7 @@ void RequestTracker::deliverUndelivered() {
     unsigned int ma_p = 0;
 
     boost::xtime now;
-    boost::xtime_get( &now, boost::TIME_UTC );
+    boost::xtime_get( &now, boost::TIME_UTC_ );
 
     try {
         std::ostringstream r;
@@ -55,7 +55,7 @@ void RequestTracker::deliverUndelivered() {
                 continue;
             }
 
-            boost::xtime_get( &now, boost::TIME_UTC );
+            boost::xtime_get( &now, boost::TIME_UTC_ );
 
             if ( st < SMSMessage::Status::ST_BUFFERED ) {
                 del_queue.push( SMSOperation::create<OP_CheckDelivery>( std::make_pair( req, msgid ), idp, ma_p, OP_CheckDeliveryP ), when - now.sec );
@@ -77,7 +77,7 @@ void RequestTracker::deliverUndelivered() {
 
 void RequestTracker::markUndelivered() {
     boost::xtime now;
-    boost::xtime_get( &now, boost::TIME_UTC );
+    boost::xtime_get( &now, boost::TIME_UTC_ );
 
     try {
         std::ostringstream r;
@@ -219,7 +219,7 @@ void RequestTracker::parseNewRequestEvent( SMSRequest::PTR req ) {
         TransactionPTR tr = db.openTransaction( conn, "RequestTracker::parseNewRequestEvent" );
 
         boost::xtime now;
-        boost::xtime_get( &now, boost::TIME_UTC );
+        boost::xtime_get( &now, boost::TIME_UTC_ );
         std::ostringstream r;
 
         r       << "INSERT INTO smsrequest "
@@ -316,7 +316,7 @@ void RequestTracker::parseCheckDeliveryEvent( SMSRequest::PTR req, SMSMessage::I
 
     if ( ( msg->getStatus() == SMSMessage::Status::ST_BUFFERED ) and ( msg->pid == "121" ) ) {
         boost::xtime now;
-        boost::xtime_get( &now, boost::TIME_UTC );
+        boost::xtime_get( &now, boost::TIME_UTC_ );
     	out << "Problem with user billing; maybe he can't be billed";
         op_queue.push(SMSOperation::create<OP_NewHistoryElement > (std::make_pair(
                           msg->getID(),
@@ -395,7 +395,7 @@ void RequestTracker::parseMarkUndeliveredEvent( SMSRequest::PTR req, SMSMessage:
     if ( msg->getStatus() < SMSMessage::Status::ST_NOT_DELIVERED ) {
         std::string gates;
         boost::xtime now;
-        boost::xtime_get( &now, boost::TIME_UTC );
+        boost::xtime_get( &now, boost::TIME_UTC_ );
         out << "Message expired; ";
         SMSMessage::HistoryType::const_iterator it;
         SMSMessage::HistoryType hst = msg->getHistory();
@@ -483,7 +483,7 @@ void RequestTracker::parseMessage2kannelEvent( SMSRequest::PTR req, SMSMessage::
     out << "OP_SendMessage ID=" << msg->getID().to_str() << " phase 2: queued to delivery ";
 
     boost::xtime now;
-    boost::xtime_get( &now, boost::TIME_UTC );
+    boost::xtime_get( &now, boost::TIME_UTC_ );
     SMPPGateManager* gateManager = SMPPGateManager::Instance();
 
     try {
@@ -616,7 +616,7 @@ void RequestTracker::parseNewDelivery( SMSMessage::ID msg_id, DeliveryInfo info 
     }
 
     boost::xtime now;
-    boost::xtime_get(&now, boost::TIME_UTC);
+    boost::xtime_get(&now, boost::TIME_UTC_);
     op_queue.push(SMSOperation::create<OP_NewHistoryElement > (std::make_pair(
                       msg_id,
                       SMSMessage::HistoryElement( 1, 1, info.status, info.gate, now.sec ) ),
@@ -689,7 +689,7 @@ void RequestTracker::MainEventLoop( ) {
             }
 
             boost::xtime xt;
-            boost::xtime_get(&xt, boost::TIME_UTC);
+            boost::xtime_get(&xt, boost::TIME_UTC_);
             xt.nsec += 1e6;
             boost::thread::sleep(xt);
         } catch ( FailureError& err ) {
@@ -746,7 +746,7 @@ void RequestTracker::DelayedEventLoop() {
             }
 
             boost::xtime xt;
-            boost::xtime_get(&xt, boost::TIME_UTC);
+            boost::xtime_get(&xt, boost::TIME_UTC_);
             xt.nsec+=1e6;
             boost::thread::sleep(xt);
         } catch ( FailureError& err ) {
@@ -794,7 +794,7 @@ void RequestTracker::OutboxPartnerEventLoop( ) {
             }
 
             boost::xtime xt;
-            boost::xtime_get(&xt, boost::TIME_UTC);
+            boost::xtime_get(&xt, boost::TIME_UTC_);
             xt.nsec+=1e6;
             boost::thread::sleep(xt);
         } catch ( FailureError& err ) {
@@ -829,7 +829,7 @@ void RequestTracker::OutboxEventLoop( ) {
             }
 
             boost::xtime xt;
-            boost::xtime_get(&xt, boost::TIME_UTC);
+            boost::xtime_get(&xt, boost::TIME_UTC_);
             xt.nsec+=1e6;
             boost::thread::sleep(xt);
         } catch ( FailureError& err ) {
